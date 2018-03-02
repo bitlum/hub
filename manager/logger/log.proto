@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package logs;
+package logger;
 
 // Log is the main object in the file which represent the log entry in the
 // log file.
