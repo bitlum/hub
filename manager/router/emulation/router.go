@@ -2,6 +2,9 @@ package emulation
 
 import "github.com/bitlum/hub/manager/router"
 
+// routerEmulation is an implementation of router. Router interface which
+// completely detached from real lightning network daemon and emulates it
+// activity.
 type routerEmulation struct {
 	network     *emulationNetwork
 	freeBalance uint64

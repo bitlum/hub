@@ -6,10 +6,9 @@ import (
 	"golang.org/x/net/context"
 )
 
-// emulationNetwork is used to emulate activity of local lightning network.
-// This structure is an implementation of gRPC service, it was done in order to
-// be able to emulate activity by third-party subsystems. external third-party
-// commands.
+// emulationNetwork is used to emulate activity of users in router local
+// lightning network. This structure is an implementation of gRPC service, it
+// was done in order to be able to emulate activity by third-party subsystems.
 type emulationNetwork struct {
 	channels     map[router.ChannelID]*router.Channel
 	users        map[router.UserID]*router.Channel
