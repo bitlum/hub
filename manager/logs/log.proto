@@ -8,9 +8,9 @@ message Log {
     int64 time = 1;
 
     oneof data {
-        RouterState state = 3;
-        Payment payment = 4;
-        ChannelChange channel_change = 5;
+        RouterState state = 2;
+        Payment payment = 3;
+        ChannelChange channel_change = 4;
     }
 }
 
@@ -30,8 +30,9 @@ message RouterState {
 // network topology.
 message Channel {
     uint64 user_id = 1;
-    uint64 user_balance = 2;
-    uint64 router_balance = 3;
+    uint64 channel_id = 2;
+    uint64 user_balance = 3;
+    uint64 router_balance = 4;
 }
 
 // Payment represent the attempt of peer in the local lightning network to
@@ -64,17 +65,19 @@ enum PaymentStatus {
 
 message ChannelChange {
     ChannelChangeType type = 1;
+
     uint64 user_id = 2;
+    uint64 channel_id = 3;
 
-    uint64 change_user_balance = 3;
-    uint64 change_router_balance = 4;
+    uint64 change_user_balance = 4;
+    uint64 change_router_balance = 5;
 
-    uint64 user_balance = 5;
-    uint64 router_balance = 6;
+    uint64 user_balance = 6;
+    uint64 router_balance = 7;
 
     // Fee which was taken by blockchain decentrilized computer / mainers or
     // some other form of smart contract manager.
-    uint64 fee = 7;
+    uint64 fee = 8;
 }
 
 // ChannelChangeType represent the type of action which were attempted to
