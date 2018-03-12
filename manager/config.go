@@ -14,6 +14,12 @@ import (
 )
 
 const (
+	defaultHubPort = "8686"
+	defaultHubHost = "localhost"
+
+	defaultEmulateNetworkPort = "9393"
+	defaultEmulateNetworkHost = "localhost"
+
 	defaultLogDirname     = "logs"
 	defaultLogLevel       = "info"
 	defaultConfigFilename = "hubmanager.conf"
@@ -35,9 +41,28 @@ type config struct {
 
 	UpdateLogFile string `long:"updateslog" description:"Path to log file in which manager will direct router network updates output"`
 
+	Hub     *hubConfig           `group:"Hub" namespace:"hub"`
+	Emulate *emulateRouterConfig `group:"Emulate" namespace:"emulate"`
+
 	ConfigFile string `long:"configfile" description:"Path to configuration file"`
 	LogDir     string `long:"logdir" description:"Directory to log output."`
 	DebugLevel string `long:"debuglevel" description:"Logging level for all subsystems {trace, debug, info, warn, error, critical} -- You may also specify <subsystem>=<level>,<subsystem2>=<level>,... to set the log level for individual subsystems -- Use show to list available subsystems"`
+}
+
+// hubConfig defines the parameters for gRPC endpoint of hub management,
+// with this third-party optimisation programs could send router equilinrium
+// state.
+type hubConfig struct {
+	Port string `long:"port" description:"Port on which GRPC hub manager is working"`
+	Host string `long:"host" description:"Host on which GRPC hub manager is working"`
+}
+
+// emulateRouterConfig defines the gRPC parameters for emulate router,
+// with this interface third-party service could send the emulation network
+// activity.
+type emulateRouterConfig struct {
+	Port string
+	Host string
 }
 
 // getDefaultConfig return default version of service config.
@@ -46,6 +71,14 @@ func getDefaultConfig() config {
 		ConfigFile: defaultConfigFile,
 		LogDir:     defaultLogDir,
 		DebugLevel: defaultLogLevel,
+		Hub: &hubConfig{
+			Port: defaultHubPort,
+			Host: defaultHubHost,
+		},
+		Emulate: &emulateRouterConfig{
+			Port: defaultEmulateNetworkPort,
+			Host: defaultEmulateNetworkHost,
+		},
 	}
 }
 
