@@ -69,15 +69,12 @@ message ChannelChange {
     uint64 user_id = 2;
     uint64 channel_id = 3;
 
-    uint64 change_user_balance = 4;
-    uint64 change_router_balance = 5;
-
-    uint64 user_balance = 6;
-    uint64 router_balance = 7;
+    uint64 user_balance = 4;
+    uint64 router_balance = 5;
 
     // Fee which was taken by blockchain decentrilized computer / mainers or
     // some other form of smart contract manager.
-    uint64 fee = 8;
+    uint64 fee = 6;
 }
 
 // ChannelChangeType represent the type of action which were attempted to
