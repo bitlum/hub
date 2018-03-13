@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='log.proto',
   package='logger',
   syntax='proto3',
-  serialized_pb=_b('\n\tlog.proto\x12\x06logger\"\x96\x01\n\x03Log\x12\x0c\n\x04time\x18\x01 \x01(\x03\x12$\n\x05state\x18\x02 \x01(\x0b\x32\x13.logger.RouterStateH\x00\x12\"\n\x07payment\x18\x03 \x01(\x0b\x32\x0f.logger.PaymentH\x00\x12/\n\x0e\x63hannel_change\x18\x04 \x01(\x0b\x32\x15.logger.ChannelChangeH\x00\x42\x06\n\x04\x64\x61ta\"F\n\x0bRouterState\x12!\n\x08\x63hannels\x18\x01 \x03(\x0b\x32\x0f.logger.Channel\x12\x14\n\x0c\x66ree_balance\x18\x02 \x01(\x04\"\\\n\x07\x43hannel\x12\x0f\n\x07user_id\x18\x01 \x01(\x04\x12\x12\n\nchannel_id\x18\x02 \x01(\x04\x12\x14\n\x0cuser_balance\x18\x03 \x01(\x04\x12\x16\n\x0erouter_balance\x18\x04 \x01(\x04\"\x83\x01\n\x07Payment\x12%\n\x06status\x18\x01 \x01(\x0e\x32\x15.logger.PaymentStatus\x12\x0e\n\x06sender\x18\x02 \x01(\x04\x12\x10\n\x08receiver\x18\x03 \x01(\x04\x12\x0f\n\x07\x63han_id\x18\x04 \x01(\x04\x12\x0e\n\x06\x61mount\x18\x05 \x01(\x04\x12\x0e\n\x06\x65\x61rned\x18\x06 \x01(\x03\"\x98\x01\n\rChannelChange\x12\'\n\x04type\x18\x01 \x01(\x0e\x32\x19.logger.ChannelChangeType\x12\x0f\n\x07user_id\x18\x02 \x01(\x04\x12\x12\n\nchannel_id\x18\x03 \x01(\x04\x12\x14\n\x0cuser_balance\x18\x04 \x01(\x04\x12\x16\n\x0erouter_balance\x18\x05 \x01(\x04\x12\x0b\n\x03\x66\x65\x65\x18\x06 \x01(\x04*G\n\rPaymentStatus\x12\x0b\n\x07success\x10\x00\x12\x16\n\x12unsufficient_funds\x10\x01\x12\x11\n\rexternal_fail\x10\x02*4\n\x11\x43hannelChangeType\x12\x08\n\x04open\x10\x00\x12\t\n\x05\x63lose\x10\x01\x12\n\n\x06udpate\x10\x02\x62\x06proto3')
+  serialized_pb=_b('\n\tlog.proto\x12\x06logger\"\x96\x01\n\x03Log\x12\x0c\n\x04time\x18\x01 \x01(\x03\x12$\n\x05state\x18\x02 \x01(\x0b\x32\x13.logger.RouterStateH\x00\x12\"\n\x07payment\x18\x03 \x01(\x0b\x32\x0f.logger.PaymentH\x00\x12/\n\x0e\x63hannel_change\x18\x04 \x01(\x0b\x32\x15.logger.ChannelChangeH\x00\x42\x06\n\x04\x64\x61ta\"F\n\x0bRouterState\x12!\n\x08\x63hannels\x18\x01 \x03(\x0b\x32\x0f.logger.Channel\x12\x14\n\x0c\x66ree_balance\x18\x02 \x01(\x04\"\\\n\x07\x43hannel\x12\x0f\n\x07user_id\x18\x01 \x01(\x04\x12\x12\n\nchannel_id\x18\x02 \x01(\x04\x12\x14\n\x0cuser_balance\x18\x03 \x01(\x04\x12\x16\n\x0erouter_balance\x18\x04 \x01(\x04\"r\n\x07Payment\x12%\n\x06status\x18\x01 \x01(\x0e\x32\x15.logger.PaymentStatus\x12\x0e\n\x06sender\x18\x02 \x01(\x04\x12\x10\n\x08receiver\x18\x03 \x01(\x04\x12\x0e\n\x06\x61mount\x18\x05 \x01(\x04\x12\x0e\n\x06\x65\x61rned\x18\x06 \x01(\x03\"\x98\x01\n\rChannelChange\x12\'\n\x04type\x18\x01 \x01(\x0e\x32\x19.logger.ChannelChangeType\x12\x0f\n\x07user_id\x18\x02 \x01(\x04\x12\x12\n\nchannel_id\x18\x03 \x01(\x04\x12\x14\n\x0cuser_balance\x18\x04 \x01(\x04\x12\x16\n\x0erouter_balance\x18\x05 \x01(\x04\x12\x0b\n\x03\x66\x65\x65\x18\x06 \x01(\x04*G\n\rPaymentStatus\x12\x0b\n\x07success\x10\x00\x12\x16\n\x12unsufficient_funds\x10\x01\x12\x11\n\rexternal_fail\x10\x02*4\n\x11\x43hannelChangeType\x12\x08\n\x04open\x10\x00\x12\t\n\x05\x63lose\x10\x01\x12\n\n\x06udpate\x10\x02\x62\x06proto3')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -45,8 +45,8 @@ _PAYMENTSTATUS = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=629,
-  serialized_end=700,
+  serialized_start=611,
+  serialized_end=682,
 )
 _sym_db.RegisterEnumDescriptor(_PAYMENTSTATUS)
 
@@ -72,8 +72,8 @@ _CHANNELCHANGETYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=702,
-  serialized_end=754,
+  serialized_start=684,
+  serialized_end=736,
 )
 _sym_db.RegisterEnumDescriptor(_CHANNELCHANGETYPE)
 
@@ -261,21 +261,14 @@ _PAYMENT = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='chan_id', full_name='logger.Payment.chan_id', index=3,
-      number=4, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='amount', full_name='logger.Payment.amount', index=4,
+      name='amount', full_name='logger.Payment.amount', index=3,
       number=5, type=4, cpp_type=4, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='earned', full_name='logger.Payment.earned', index=5,
+      name='earned', full_name='logger.Payment.earned', index=4,
       number=6, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -293,8 +286,8 @@ _PAYMENT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=341,
-  serialized_end=472,
+  serialized_start=340,
+  serialized_end=454,
 )
 
 
@@ -359,8 +352,8 @@ _CHANNELCHANGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=475,
-  serialized_end=627,
+  serialized_start=457,
+  serialized_end=609,
 )
 
 _LOG.fields_by_name['state'].message_type = _ROUTERSTATE

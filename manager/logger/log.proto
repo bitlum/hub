@@ -42,7 +42,6 @@ message Payment {
 
     uint64 sender = 2;
     uint64 receiver = 3;
-    uint64 chan_id = 4;
     uint64 amount = 5;
 
     // Earned is the number of funds which router earned by making this payment.
