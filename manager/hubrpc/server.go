@@ -1,10 +1,10 @@
 package hubrpc
 
 import (
-	"github.com/bitlum/hub/manager/hubrpc"
 	"golang.org/x/net/context"
 	"github.com/bitlum/hub/manager/router"
 	"github.com/go-errors/errors"
+	"github.com/davecgh/go-spew/spew"
 )
 
 // Hub is an implementation of gRPC server which receive the message from
@@ -24,15 +24,15 @@ func NewHub(r router.Router, s router.RebalancingStrategy) *Hub {
 }
 
 // Runtime check that Hub implements the hubrpc.ManagerServer interface.
-var _ hubrpc.ManagerServer = (*Hub)(nil)
+var _ ManagerServer = (*Hub)(nil)
 
 // SetState is used to receive equilibrium state from third-party optimisation
 // subsystem and depending on optimisation strategy make changes in the
 // topology of the router.
 //
-// NOTE: Part of the hubrpc.ManagerServer interface.
-func (h *Hub) SetState(_ context.Context, req *hubrpc.SetStateRequest) (
-	*hubrpc.SetStateResponse, error) {
+// NOTE: Part of the ManagerServer interface.
+func (h *Hub) SetState(_ context.Context, req *SetStateRequest) (
+	*SetStateResponse, error) {
 
 	currentNetwork, err := h.router.Network()
 	if err != nil {
@@ -44,17 +44,16 @@ func (h *Hub) SetState(_ context.Context, req *hubrpc.SetStateRequest) (
 		equilibriumNetwork[i] = &router.Channel{
 			ChannelID:     router.ChannelID(c.ChannelId),
 			UserID:        router.UserID(c.UserId),
+			RouterBalance: router.ChannelUnit(c.RouterBalance),
 			UserBalance:   0,
-			RouterBalance: c.RouterBalance,
 		}
 	}
 
 	actions := h.strategy.GenerateActions(currentNetwork, equilibriumNetwork)
 
 	for _, a := range actions {
-		switch a.(type) {
+		spew.Dump(a)
 		// TODO(andrew.shvv) Add actions
-		}
 	}
 
 	return nil, nil
