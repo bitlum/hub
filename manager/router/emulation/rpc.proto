@@ -23,8 +23,8 @@ service Emulator {
 }
 
 message SendPaymentRequest {
-    uint64 first_user = 1;
-    uint64 second_user = 2;
+    uint64 sender = 1;
+    uint64 receiver = 2;
     uint64 amount = 3;
     uint64 fee = 4;
 }
