@@ -23,10 +23,15 @@ service Emulator {
 }
 
 message SendPaymentRequest {
+    // Sender is the id of user which sends the payment. If equals zero than we
+    // believe that router is the sender.
     uint64 sender = 1;
+
+    // Receiver is the id of user who receive the payment. If equals zero than we
+    // believe that router is the receiver.
     uint64 receiver = 2;
-    uint64 amount = 3;
-    uint64 fee = 4;
+
+    uint64 amount = 4;
 }
 
 message SendPaymentResponse {

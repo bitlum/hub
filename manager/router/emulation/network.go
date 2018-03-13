@@ -4,66 +4,146 @@ import (
 	"github.com/bitlum/hub/manager/router"
 
 	"golang.org/x/net/context"
+	"google.golang.org/grpc"
+	"net"
+	"github.com/go-errors/errors"
+	"sync"
 )
 
 // emulationNetwork is used to emulate activity of users in router local
 // lightning network. This structure is an implementation of gRPC service, it
 // was done in order to be able to emulate activity by third-party subsystems.
 type emulationNetwork struct {
+	sync.Mutex
+
 	channels     map[router.ChannelID]*router.Channel
 	users        map[router.UserID]*router.Channel
 	updates      chan interface{}
 	channelIndex uint64
-	router       *routerEmulation
+	grpcServer   *grpc.Server
+	errChan      chan error
+	router       *RouterEmulation
 }
 
-// Runtime check that routerEmulation implements EmulatorServer interface.
+func newEmulationNetwork() *emulationNetwork {
+	grpcServer := grpc.NewServer([]grpc.ServerOption{}...)
+	network := &emulationNetwork{
+		channels:   make(map[router.ChannelID]*router.Channel),
+		users:      make(map[router.UserID]*router.Channel),
+		updates:    make(chan interface{}, 5),
+		errChan:    make(chan error),
+		grpcServer: grpcServer,
+	}
+
+	RegisterEmulatorServer(grpcServer, network)
+	return network
+}
+
+// Runtime check that RouterEmulation implements EmulatorServer interface.
 var _ EmulatorServer = (*emulationNetwork)(nil)
+
+// start...
+func (n *emulationNetwork) start(host, port string) {
+	go func() {
+		addr := net.JoinHostPort(host, port)
+		lis, err := net.Listen("tcp", addr)
+		if err != nil {
+			fail(n.errChan, "gRPC server unable to listen on %s", addr)
+			return
+		}
+		defer lis.Close()
+
+		if err := n.grpcServer.Serve(lis); err != nil {
+			fail(n.errChan, "gRPC server unable to serve on %s", addr)
+			return
+		}
+	}()
+}
+
+// stop gracefully stops the emulate network.
+func (n *emulationNetwork) stop() {
+	n.grpcServer.Stop()
+	close(n.errChan)
+}
+
+// done is used to notify other subsystem that service stop working.
+func (n *emulationNetwork) done() chan error {
+	return n.errChan
+}
 
 // SendPayment is used to emulate the activity of one user sending payment to
 // another within the local router network.
+//
 // NOTE: Part of the EmulatorServer interface.
 func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentRequest) (
 	*SendPaymentResponse, error) {
 
+	n.Lock()
+	defer n.Unlock()
+
 	var paymentFailed bool
 
-	if req.FirstUser != 0 {
-		channel := n.users[router.UserID(req.FirstUser)]
-		channel.UserBalance -= req.Amount
-		channel.RouterBalance += req.Amount
+	if req.Receiver == 0 && req.Sender == 0 {
+		return nil, errors.Errorf("both receiver and sender are zero")
+	}
+
+	if req.Sender != 0 {
+		// TODO(andrew.shvv) add multiple channels support
+		channel, ok := n.users[router.UserID(req.Sender)]
+		if !ok {
+			return nil, errors.Errorf("unable to find sender with %v id",
+				req.Sender)
+		}
+
+		channel.UserBalance -= router.ChannelUnit(req.Amount)
+		channel.RouterBalance += router.ChannelUnit(req.Amount)
 		defer func() {
 			if paymentFailed {
-				channel.UserBalance += req.Amount
-				channel.RouterBalance -= req.Amount
+				channel.UserBalance += router.ChannelUnit(req.Amount)
+				channel.RouterBalance -= router.ChannelUnit(req.Amount)
 			}
 		}()
 
 		if channel.UserBalance < 0 {
 			paymentFailed = true
-			return nil, nil
+			return nil, errors.New("insufficient user balance to " +
+				"make a payment")
 		}
 	}
 
-	if req.SecondUser != 0 {
-		channel := n.users[router.UserID(req.SecondUser)]
-		channel.RouterBalance -= req.Amount - req.Fee
-		channel.UserBalance += req.Amount - req.Fee
+	if req.Receiver != 0 {
+		// TODO(andrew.shvv) add multiple channels support
+		channel, ok := n.users[router.UserID(req.Receiver)]
+		if !ok {
+			return nil, errors.Errorf("unable to find receiver with %v id",
+				req.Sender)
+		}
+
+		channel.RouterBalance -= router.ChannelUnit(req.Amount - n.router.fee)
+		channel.UserBalance += router.ChannelUnit(req.Amount - n.router.fee)
 		defer func() {
 			if paymentFailed {
-				channel.RouterBalance += req.Amount - req.Fee
-				channel.UserBalance -= req.Amount - req.Fee
+				channel.RouterBalance += router.ChannelUnit(req.Amount + n.router.fee)
+				channel.UserBalance -= router.ChannelUnit(req.Amount + n.router.fee)
 			}
 		}()
 
 		if channel.RouterBalance < 0 {
 			paymentFailed = true
-			return nil, nil
+			return nil, errors.New("insufficient router balance to " +
+				"make a payment")
 		}
 	}
 
-	n.updates <- router.UpdatePayment{
-		// TODO(andrew.shvv) Populate with data
+	n.updates <- &router.UpdatePayment{
+		// TODO(andrew.shvv) Add status
+		Status:   "",
+		Sender:   req.Sender,
+		Receiver: req.Receiver,
+		Amount:   req.Amount,
+
+		// TODO(andrew.shvv) Add earned
+		Earned: 0,
 	}
 
 	return &SendPaymentResponse{}, nil
@@ -75,22 +155,36 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelRequest) (
 	*OpenChannelResponse, error) {
 
+	n.Lock()
+	defer n.Unlock()
+
 	n.channelIndex++
 	chanID := router.ChannelID(n.channelIndex)
 	userID := router.UserID(req.UserId)
 
+	if _, ok := n.users[userID]; ok {
+		// TODO(andrew.shvv) add multiple channels support
+		return nil, errors.Errorf("multiple channels unsupported")
+	}
+
 	c := &router.Channel{
 		ChannelID:     chanID,
 		UserID:        userID,
-		UserBalance:   req.LockedByUser,
+		UserBalance:   router.ChannelUnit(req.LockedByUser),
 		RouterBalance: 0,
 	}
 
 	n.users[userID] = c
 	n.channels[chanID] = c
 
-	n.updates <- router.UpdateChannelOpened{
-		// TODO(andrew.shvv) Populate with data
+	n.updates <- &router.UpdateChannelOpened{
+		UserID:        c.UserID,
+		ChannelID:     c.ChannelID,
+		UserBalance:   router.ChannelUnit(c.UserBalance),
+		RouterBalance: router.ChannelUnit(c.RouterBalance),
+
+		// TODO(andrew.shvv) Add work with fee
+		Fee: 0,
 	}
 
 	return &OpenChannelResponse{}, nil
@@ -101,17 +195,26 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 // NOTE: Part of the EmulatorServer interface.
 func (n *emulationNetwork) CloseChannel(_ context.Context, req *CloseChannelRequest) (
 	*CloseChannelResponse, error) {
+
+	n.Lock()
+	defer n.Unlock()
+
 	chanID := router.ChannelID(req.ChanId)
 	c := n.channels[chanID]
 
 	delete(n.channels, chanID)
 	delete(n.users, c.UserID)
 
-	n.updates <- router.UpdateChannelClosed{
-		// TODO(andrew.shvv) Populate with data
+	n.updates <- &router.UpdateChannelClosed{
+		UserID:    c.UserID,
+		ChannelID: c.ChannelID,
+
+
+		// TODO(andrew.shvv) Add work with fee
+		Fee: 0,
 	}
 
-	// TODO(andrew.shvv) better persist layer separation
+	// Increase router balance on amount which we locked on his side.
 	n.router.freeBalance += c.RouterBalance
 
 	return nil, nil
