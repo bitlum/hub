@@ -7,14 +7,16 @@ import (
 	"github.com/go-errors/errors"
 )
 
-// Hub...
+// Hub is an implementation of gRPC server which receive the message from
+// external optimisation subsystem and apply those changes to the local
+// router accordingly with initialised re-balancing strategy.
 type Hub struct {
 	router   router.Router
-	strategy router.OptimiseStrategy
+	strategy router.RebalancingStrategy
 }
 
-// NewHub...
-func NewHub(r router.Router, s router.OptimiseStrategy) *Hub {
+// NewHub creates new instance of the Hub.
+func NewHub(r router.Router, s router.RebalancingStrategy) *Hub {
 	return &Hub{
 		router:   r,
 		strategy: s,
@@ -27,6 +29,8 @@ var _ hubrpc.ManagerServer = (*Hub)(nil)
 // SetState is used to receive equilibrium state from third-party optimisation
 // subsystem and depending on optimisation strategy make changes in the
 // topology of the router.
+//
+// NOTE: Part of the hubrpc.ManagerServer interface.
 func (h *Hub) SetState(_ context.Context, req *hubrpc.SetStateRequest) (
 	*hubrpc.SetStateResponse, error) {
 
