@@ -1,12 +1,12 @@
 package main
 
 import (
-	"io"
 	"github.com/bitlum/hub/manager/logger"
 	"time"
 	"github.com/bitlum/hub/manager/router"
 	"github.com/go-errors/errors"
 	"github.com/kr/pretty"
+	"os"
 )
 
 // getState...
@@ -53,7 +53,7 @@ func getState(r router.Router) (*logger.Log, error) {
 // the current router state and channel updates.
 //
 // NOTE: Should be run as goroutine.
-func updateLogFileGoroutine(r router.Router, w io.Writer, errChan chan error) {
+func updateLogFileGoroutine(r router.Router, f *os.File, errChan chan error) {
 	mainLog.Info("Write initial log state of the router in log file")
 
 	var logEntry *logger.Log
@@ -67,7 +67,14 @@ func updateLogFileGoroutine(r router.Router, w io.Writer, errChan chan error) {
 	for {
 		mainLog.Infof("Write log entry: %v", pretty.Sprint(logEntry))
 
-		if err := logger.WriteLog(w, logEntry); err != nil {
+		if err := logger.WriteLog(f, logEntry); err != nil {
+			fail(errChan, "unable to write new log entry: %v", err)
+			return
+		}
+
+		// Calling os.File.Sync() will call the fsync() syscall which will force
+		// the file system to flush it's buffers to disk.
+		if err := f.Sync(); err != nil {
 			fail(errChan, "unable to write new log entry: %v", err)
 			return
 		}
