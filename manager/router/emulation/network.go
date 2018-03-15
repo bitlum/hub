@@ -36,6 +36,7 @@ func newEmulationNetwork() *emulationNetwork {
 	}
 
 	RegisterEmulatorServer(grpcServer, network)
+
 	return network
 }
 
@@ -46,6 +47,7 @@ var _ EmulatorServer = (*emulationNetwork)(nil)
 func (n *emulationNetwork) start(host, port string) {
 	go func() {
 		addr := net.JoinHostPort(host, port)
+		log.Infof("Start listening on: %v", addr)
 		lis, err := net.Listen("tcp", addr)
 		if err != nil {
 			fail(n.errChan, "gRPC server unable to listen on %s", addr)
@@ -53,10 +55,13 @@ func (n *emulationNetwork) start(host, port string) {
 		}
 		defer lis.Close()
 
+		log.Infof("Start gRPC serving on: %v", addr)
 		if err := n.grpcServer.Serve(lis); err != nil {
 			fail(n.errChan, "gRPC server unable to serve on %s", addr)
 			return
 		}
+
+		log.Infof("Stop gRPC serving on: %v", addr)
 	}()
 }
 
@@ -164,7 +169,8 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 
 	if _, ok := n.users[userID]; ok {
 		// TODO(andrew.shvv) add multiple channels support
-		return nil, errors.Errorf("multiple channels unsupported")
+		return nil, errors.Errorf("multiple channels with the same " +
+			"user id unsupported")
 	}
 
 	c := &router.Channel{

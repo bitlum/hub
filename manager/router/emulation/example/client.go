@@ -6,7 +6,7 @@ import (
 	"os"
 	"context"
 	"fmt"
-	"github.com/davecgh/go-spew/spew"
+	"github.com/AndrewSamokhvalov/go-spew/spew"
 )
 
 func main() {
@@ -18,7 +18,7 @@ func main() {
 		grpc.WithInsecure(),
 	}
 
-	conn, err := grpc.Dial("localhost:3333", ops...)
+	conn, err := grpc.Dial("localhost:9393", ops...)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)

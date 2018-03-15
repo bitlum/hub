@@ -10,6 +10,7 @@ import (
 
 	"github.com/btcsuite/btclog"
 	"github.com/jrick/logrotate/rotator"
+	"github.com/bitlum/hub/manager/router/emulation"
 )
 
 // logWriter implements an io.Writer that outputs to both standard output and
@@ -45,15 +46,19 @@ var (
 	// It is written to by the Write method of the logWriter type.
 	logRotatorPipe *io.PipeWriter
 
-	mainLog = backendLog.Logger("MAIN")
+	mainLog      = backendLog.Logger("MAIN")
+	emulationLog = backendLog.Logger("EMULATION")
 )
 
 // Initialize package-global logger variables.
-func init() {}
+func init() {
+	emulation.UseLogger(emulationLog)
+}
 
 // subsystemLoggers maps each subsystem identifier to its associated logger.
 var subsystemLoggers = map[string]btclog.Logger{
-	"BACKEND": mainLog,
+	"BACKEND":   mainLog,
+	"EMULATION": emulationLog,
 }
 
 // initLogRotator initializes the logging rotator to write logs to logFile and

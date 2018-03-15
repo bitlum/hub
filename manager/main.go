@@ -54,6 +54,7 @@ func backendMain() error {
 	errChan := make(chan error)
 	r := emulation.NewRouter(10)
 	r.Start(config.Emulate.Host, config.Emulate.Port)
+	defer r.Stop()
 
 	go updateLogFileGoroutine(r, updateLogFile, errChan)
 
@@ -68,6 +69,7 @@ func backendMain() error {
 
 	go func() {
 		addr := net.JoinHostPort(config.Hub.Host, config.Hub.Port)
+		mainLog.Infof("Start listening on: %v", addr)
 		lis, err := net.Listen("tcp", addr)
 		if err != nil {
 			fail(errChan, "gRPC server unable to listen on %s", addr)
@@ -75,15 +77,17 @@ func backendMain() error {
 		}
 		defer lis.Close()
 
+		mainLog.Infof("Start gRPC server serving on: %v", addr)
 		if err := grpcServer.Serve(lis); err != nil {
 			fail(errChan, "gRPC server unable to serve on %s", addr)
 			return
 		}
+
+		mainLog.Infof("Stopped gRPC server serving on: %v", addr)
 	}()
 
 	addInterruptHandler(shutdownChannel, func() {
 		grpcServer.Stop()
-		r.Stop()
 	})
 
 	select {

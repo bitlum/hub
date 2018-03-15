@@ -6,6 +6,7 @@ import (
 	"time"
 	"github.com/bitlum/hub/manager/router"
 	"github.com/go-errors/errors"
+	"github.com/kr/pretty"
 )
 
 // getState...
@@ -64,6 +65,8 @@ func updateLogFileGoroutine(r router.Router, w io.Writer, errChan chan error) {
 	}
 
 	for {
+		mainLog.Infof("Write log entry: %v", pretty.Sprint(logEntry))
+
 		if err := logger.WriteLog(w, logEntry); err != nil {
 			fail(errChan, "unable to write new log entry: %v", err)
 			return
