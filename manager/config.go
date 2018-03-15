@@ -41,8 +41,8 @@ type config struct {
 
 	UpdateLogFile string `long:"updateslog" description:"Path to log file in which manager will direct router network updates output"`
 
-	Hub     *hubConfig           `group:"Hub" namespace:"hub"`
 	Emulate *emulateRouterConfig `group:"Emulate" namespace:"emulate"`
+	Hub     *hubConfig           `group:"Hub" namespace:"hub"`
 
 	ConfigFile string `long:"configfile" description:"Path to configuration file"`
 	LogDir     string `long:"logdir" description:"Directory to log output."`
@@ -61,8 +61,8 @@ type hubConfig struct {
 // with this interface third-party service could send the emulation network
 // activity.
 type emulateRouterConfig struct {
-	Port string
-	Host string
+	Port string `long:"port" description:"Port on which GRPC emulator router is working"` 
+	Host string `long:"host" description:"Host on which GRPC emulator router is working"`
 }
 
 // getDefaultConfig return default version of service config.
