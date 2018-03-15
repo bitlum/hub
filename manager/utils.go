@@ -71,7 +71,7 @@ func updateLogFileGoroutine(r router.Router, w io.Writer, errChan chan error) {
 
 		select {
 		case update, ok := <-r.ReceiveUpdates():
-			if ok {
+			if !ok {
 				mainLog.Info("Router update channel close, " +
 					"exiting log update goroutine")
 				return
