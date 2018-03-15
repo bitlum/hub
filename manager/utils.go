@@ -28,13 +28,13 @@ func getState(r router.Router) (*logger.Log, error) {
 	}
 
 	channels := make([]*logger.Channel, len(routerChannels))
-	for _, c := range routerChannels {
-		channels = append(channels, &logger.Channel{
+	for i, c := range routerChannels {
+		channels[i] = &logger.Channel{
 			ChannelId:     uint64(c.ChannelID),
 			UserId:        uint64(c.UserID),
 			UserBalance:   uint64(c.UserBalance),
 			RouterBalance: uint64(c.RouterBalance),
-		})
+		}
 	}
 
 	return &logger.Log{
