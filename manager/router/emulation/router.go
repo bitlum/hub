@@ -169,7 +169,7 @@ func (r *RouterEmulation) Network() ([]*router.Channel, error) {
 		})
 	}
 
-	return nil, nil
+	return channels, nil
 }
 
 // FreeBalance returns the amount of funds at router disposal.
