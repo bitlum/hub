@@ -40,13 +40,6 @@ func backendMain() error {
 		return errors.Errorf("update log file should be specified")
 	}
 
-	mainLog.Infof("Init update log file, try to open it: %v",
-		config.UpdateLogFile)
-	updateLogFile, err := os.Create(config.UpdateLogFile)
-	if err != nil {
-		return errors.Errorf("unable to open update log file")
-	}
-
 	// Create router and connect to emulation or real network,
 	// and subscribe on topology updates which will transformed and written
 	// in the file, so that third-party optimisation program could read it
@@ -56,7 +49,7 @@ func backendMain() error {
 	r.Start(config.Emulate.Host, config.Emulate.Port)
 	defer r.Stop()
 
-	go updateLogFileGoroutine(r, updateLogFile, errChan)
+	go updateLogFileGoroutine(r, config.UpdateLogFile, errChan)
 
 	// Setup gRPC endpoint to receive the management commands, and initialise
 	// optimisation strategy which will dictate us how to convert from one

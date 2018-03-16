@@ -53,9 +53,7 @@ func getState(r router.Router) (*logger.Log, error) {
 // the current router state and channel updates.
 //
 // NOTE: Should be run as goroutine.
-func updateLogFileGoroutine(r router.Router, f *os.File, errChan chan error) {
-	mainLog.Info("Write initial log state of the router in log file")
-
+func updateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 	var logEntry *logger.Log
 
 	logEntry, err := getState(r)
@@ -65,17 +63,23 @@ func updateLogFileGoroutine(r router.Router, f *os.File, errChan chan error) {
 	}
 
 	for {
-		mainLog.Infof("Write log entry: %v", pretty.Sprint(logEntry))
-
-		if err := logger.WriteLog(f, logEntry); err != nil {
-			fail(errChan, "unable to write new log entry: %v", err)
+		// NOTE: If move open/close of the file out of this cycle than this
+		// would lead to optimisation third-party program unable to get and
+		// log update via watchdog package.
+		mainLog.Debugf("Open update log file(%v) to write an update: %v",
+			path, pretty.Sprint(logEntry))
+		updateLogFile, err := os.Create(path)
+		if err != nil {
+			fail(errChan, "unable to open update log file: %v", err)
 			return
 		}
 
-		// Calling os.File.Sync() will call the fsync() syscall which will force
-		// the file system to flush it's buffers to disk.
-		if err := f.Sync(); err != nil {
+		if err := logger.WriteLog(updateLogFile, logEntry); err != nil {
 			fail(errChan, "unable to write new log entry: %v", err)
+			return
+		}
+		if err := updateLogFile.Close(); err != nil {
+			fail(errChan, "unable to close log file: %v", err)
 			return
 		}
 
