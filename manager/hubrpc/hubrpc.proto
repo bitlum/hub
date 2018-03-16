@@ -6,7 +6,9 @@ package hubrpc;
 // subsystem to send the equilibrium state.
 service Manager {
     //
-    // SetState is used to change the local state of the
+    // SetState is used to notify router about the fact that it should change
+    // his state in accordance with givein in request. This hook is used by
+    // third-parties to put new equilibritum state.
     rpc SetState (SetStateRequest) returns (SetStateResponse);
 }
 

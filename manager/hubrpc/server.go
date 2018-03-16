@@ -4,7 +4,6 @@ import (
 	"golang.org/x/net/context"
 	"github.com/bitlum/hub/manager/router"
 	"github.com/go-errors/errors"
-	"github.com/davecgh/go-spew/spew"
 )
 
 // Hub is an implementation of gRPC server which receive the message from
@@ -12,11 +11,11 @@ import (
 // router accordingly with initialised re-balancing strategy.
 type Hub struct {
 	router   router.Router
-	strategy router.RebalancingStrategy
+	strategy router.RouterStateStrategy
 }
 
 // NewHub creates new instance of the Hub.
-func NewHub(r router.Router, s router.RebalancingStrategy) *Hub {
+func NewHub(r router.Router, s router.RouterStateStrategy) *Hub {
 	return &Hub{
 		router:   r,
 		strategy: s,
@@ -50,10 +49,11 @@ func (h *Hub) SetState(_ context.Context, req *SetStateRequest) (
 	}
 
 	actions := h.strategy.GenerateActions(currentNetwork, equilibriumNetwork)
-
-	for _, a := range actions {
-		spew.Dump(a)
-		// TODO(andrew.shvv) Add actions
+	for _, changeState := range actions {
+		if err := changeState(h.router); err != nil {
+			return nil, errors.Errorf("unable to apply change state "+
+				"function to the router: %v", err)
+		}
 	}
 
 	return nil, nil
