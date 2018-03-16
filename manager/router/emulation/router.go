@@ -96,6 +96,7 @@ func (r *RouterEmulation) OpenChannel(userID router.UserID,
 		Fee: 0,
 	}
 
+	log.Trace("Close router user(%v) channel(%v)", userID, chanID)
 	return nil
 }
 
@@ -114,33 +115,43 @@ func (r *RouterEmulation) CloseChannel(id router.ChannelID) error {
 		if channel.ChannelID == id {
 			delete(r.network.users, userID)
 			r.freeBalance += channel.RouterBalance
-			return nil
+			break
 		}
 	}
 
+	log.Trace("Close router channel(%v)", id)
 	return nil
 }
 
 // UpdateChannel updates the number of locked funds in the specified
 // channel.
 func (r *RouterEmulation) UpdateChannel(id router.ChannelID,
-	funds router.ChannelUnit) error {
+	newRouterBalance router.ChannelUnit) error {
 	r.network.Lock()
 	defer r.network.Unlock()
-
-	if funds > r.freeBalance {
-		return errors.Errorf("insufficient free funds")
-	}
 
 	channel, ok := r.network.channels[id]
 	if !ok {
 		return errors.Errorf("unable to find the channel with %v id", id)
 	}
 
-	channel.RouterBalance += funds
-	r.freeBalance -= funds
+	if newRouterBalance < 0 {
+		return errors.New("new balance is lower than zero")
+	}
+
+	diff := newRouterBalance - channel.RouterBalance
+	if diff < r.freeBalance {
+		return errors.Errorf("insufficient free funds")
+	}
+
+	log.Trace("Update channel(%v) balance, old(%v) => new(%v)",
+		channel.RouterBalance, newRouterBalance)
+
+	r.freeBalance -= diff
+	channel.RouterBalance = newRouterBalance
 
 	return nil
+
 }
 
 // ReceiveUpdates returns updates about router local network topology

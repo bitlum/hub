@@ -80,7 +80,7 @@ func TestEmulationNetwork(t *testing.T) {
 	}
 
 	// Check that we couldn't lock more that we have
-	if err := r.UpdateChannel(2, 105); err == nil {
+	if err := r.UpdateChannel(2, 1000); err == nil {
 		t.Fatalf("error haven't been received")
 	}
 
