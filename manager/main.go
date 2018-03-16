@@ -63,7 +63,7 @@ func backendMain() error {
 	// router state to another.
 	grpcServer := grpc.NewServer([]grpc.ServerOption{}...)
 
-	s := router.NewRebalancingStrategy()
+	s := router.NewChannelUpdateStrategy()
 	hub := hubrpc.NewHub(r, s)
 	hubrpc.RegisterManagerServer(grpcServer, hub)
 
