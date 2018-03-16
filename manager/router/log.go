@@ -1,4 +1,4 @@
-package emulation
+package router
 
 import "github.com/btcsuite/btclog"
 
