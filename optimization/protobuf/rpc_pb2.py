@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='rpc.proto',
   package='emulation',
   syntax='proto3',
-  serialized_pb=_b('\n\trpc.proto\x12\temulation\"F\n\x12SendPaymentRequest\x12\x0e\n\x06sender\x18\x01 \x01(\x04\x12\x10\n\x08receiver\x18\x02 \x01(\x04\x12\x0e\n\x06\x61mount\x18\x04 \x01(\x04\"\x15\n\x13SendPaymentResponse\"N\n\x12OpenChannelRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\x04\x12\x16\n\x0elocked_by_user\x18\x02 \x01(\x04\x12\x0f\n\x07\x63han_id\x18\x03 \x01(\x04\"\x15\n\x13OpenChannelResponse\"&\n\x13\x43loseChannelRequest\x12\x0f\n\x07\x63han_id\x18\x03 \x01(\x04\"\x16\n\x14\x43loseChannelResponse2\xf7\x01\n\x08\x45mulator\x12L\n\x0bSendPayment\x12\x1d.emulation.SendPaymentRequest\x1a\x1e.emulation.SendPaymentResponse\x12L\n\x0bOpenChannel\x12\x1d.emulation.OpenChannelRequest\x1a\x1e.emulation.OpenChannelResponse\x12O\n\x0c\x43loseChannel\x12\x1e.emulation.CloseChannelRequest\x1a\x1f.emulation.CloseChannelResponseb\x06proto3')
+  serialized_pb=_b('\n\trpc.proto\x12\temulation\"F\n\x12SendPaymentRequest\x12\x0e\n\x06sender\x18\x01 \x01(\x04\x12\x10\n\x08receiver\x18\x02 \x01(\x04\x12\x0e\n\x06\x61mount\x18\x04 \x01(\x04\"\x15\n\x13SendPaymentResponse\"=\n\x12OpenChannelRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\x04\x12\x16\n\x0elocked_by_user\x18\x02 \x01(\x04\"&\n\x13OpenChannelResponse\x12\x0f\n\x07\x63han_id\x18\x03 \x01(\x04\"&\n\x13\x43loseChannelRequest\x12\x0f\n\x07\x63han_id\x18\x03 \x01(\x04\"\x16\n\x14\x43loseChannelResponse2\xf7\x01\n\x08\x45mulator\x12L\n\x0bSendPayment\x12\x1d.emulation.SendPaymentRequest\x1a\x1e.emulation.SendPaymentResponse\x12L\n\x0bOpenChannel\x12\x1d.emulation.OpenChannelRequest\x1a\x1e.emulation.OpenChannelResponse\x12O\n\x0c\x43loseChannel\x12\x1e.emulation.CloseChannelRequest\x1a\x1f.emulation.CloseChannelResponseb\x06proto3')
 )
 
 
@@ -115,8 +115,32 @@ _OPENCHANNELREQUEST = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=119,
+  serialized_end=180,
+)
+
+
+_OPENCHANNELRESPONSE = _descriptor.Descriptor(
+  name='OpenChannelResponse',
+  full_name='emulation.OpenChannelResponse',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
     _descriptor.FieldDescriptor(
-      name='chan_id', full_name='emulation.OpenChannelRequest.chan_id', index=2,
+      name='chan_id', full_name='emulation.OpenChannelResponse.chan_id', index=0,
       number=3, type=4, cpp_type=4, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -134,31 +158,7 @@ _OPENCHANNELREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=119,
-  serialized_end=197,
-)
-
-
-_OPENCHANNELRESPONSE = _descriptor.Descriptor(
-  name='OpenChannelResponse',
-  full_name='emulation.OpenChannelResponse',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=199,
+  serialized_start=182,
   serialized_end=220,
 )
 

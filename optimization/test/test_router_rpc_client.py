@@ -38,10 +38,14 @@ class ActivityGenerator:
         self.ind_user = ind_user
         request = proto.OpenChannelRequest()
         request.user_id = self.users_id[self.ind_user]
-        request.locked_by_user = 10000
-        request.chan_id = self.chans_id[self.ind_user]
+        request.locked_by_user = 1000000
         print('open:', request, sep='\n')
         return request
+
+    def set_channel_id(self, ind_user, response_):
+        self.chans_id[ind_user] = response_.chan_id
+        print('channel_id for user ', self.users_id[ind_user], ' is set ',
+              self.chans_id[ind_user])
 
     def close_channel_request(self, ind_user):
         self.ind_user = ind_user
@@ -53,11 +57,11 @@ class ActivityGenerator:
 
 if __name__ == '__main__':
     users_num = 3
-    trans_num = 5
-    min_am = 1
-    max_am = 2
+    trans_num = 1
+    min_am = 100
+    max_am = 200
 
-    sleep_time = 1
+    sleep_time = 0.5
 
     generator = ActivityGenerator(users_num, min_am, max_am)
 
@@ -67,12 +71,18 @@ if __name__ == '__main__':
 
     for ind in range(users_num):
         time.sleep(sleep_time)
-        stub.OpenChannel(generator.open_channel_request(ind))
+        response = stub.OpenChannel(generator.open_channel_request(ind))
+        generator.set_channel_id(ind, response)
 
-    for _ in range(trans_num):
-        time.sleep(sleep_time)
-        stub.SendPayment(generator.send_payment_request())
-
-    for ind in range(users_num):
-        time.sleep(sleep_time)
-        stub.CloseChannel(generator.close_channel_request(ind))
+    # for _ in range(trans_num):
+    #     time.sleep(sleep_time)
+    #     stub.SendPayment(generator.send_payment_request())
+    #
+    # for ind in range(users_num):
+    #     time.sleep(sleep_time)
+    #     stub.CloseChannel(generator.close_channel_request(ind))
+    #
+    # for ind in range(users_num):
+    #     time.sleep(sleep_time)
+    #     response = stub.OpenChannel(generator.open_channel_request(ind))
+    #     generator.set_channel_id(ind, response)

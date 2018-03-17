@@ -17,7 +17,9 @@ class Emulator(proto_rpc.EmulatorServicer):
 
     def OpenChannel(self, request, context):
         print('open:', request, sep='\n')
-        return proto.OpenChannelResponse()
+        response = proto.OpenChannelResponse()
+        response.chan_id = request.user_id
+        return response
 
     def CloseChannel(self, request, context):
         print('close:', request, sep='\n')
@@ -27,7 +29,7 @@ class Emulator(proto_rpc.EmulatorServicer):
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     proto_rpc.add_EmulatorServicer_to_server(Emulator(), server)
-    server.add_insecure_port('[::]:50051')
+    server.add_insecure_port('[::]:9393')
     server.start()
     print('serve() is started')
     try:

@@ -1,5 +1,6 @@
 import os
 from watchdog.events import PatternMatchingEventHandler
+from datetime import datetime
 
 import protobuf.log_pb2 as proto
 
@@ -17,6 +18,7 @@ class WatchLogRead(PatternMatchingEventHandler):
         self.file = None
 
     def process(self, event):
+        print(event.event_type, datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
         if (event.event_type == 'modified') and (
                 event.src_path == self.file_name):
             self.read_new_messages()
@@ -52,7 +54,7 @@ class WatchLogRead(PatternMatchingEventHandler):
                 self.pos_cur += 2
                 self.smart_log.append(self.read_message())
                 self.pos_cur += self.size_message_cur
-                print(self.smart_log)
+                print(self.smart_log.messages[-1])
 
 
 def split_path_name(file_name):

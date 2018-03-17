@@ -40,10 +40,10 @@ message SendPaymentResponse {
 message OpenChannelRequest {
     uint64 user_id = 1;
     uint64 locked_by_user = 2;
-    uint64 chan_id = 3;
 }
 
 message OpenChannelResponse {
+    uint64 chan_id = 3;
 }
 
 message CloseChannelRequest {
