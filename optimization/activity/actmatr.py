@@ -35,7 +35,7 @@ def actmatr_gen(file_name_inlet):
                                               freqmatr_stdev[i][j]))
 
                     if timematr[i][j][-1] <= timematr[i][j][-2]:
-                        timematr[i][j][-2] = timematr[i][j][-1] + \
+                        timematr[i][j][-1] = timematr[i][j][-1] + \
                                              freqmatr_mean[i][j]
 
                     transmatr[i][j].append(random.gauss(sizematr_mean[i][j],
