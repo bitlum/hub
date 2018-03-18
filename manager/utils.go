@@ -68,7 +68,8 @@ func updateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 		// log update via watchdog package.
 		mainLog.Debugf("Open update log file(%v) to write an update: %v",
 			path, pretty.Sprint(logEntry))
-		updateLogFile, err := os.Create(path)
+		updateLogFile, err := os.OpenFile(path, os.O_APPEND | os.O_RDWR|
+			os.O_CREATE, 0666)
 		if err != nil {
 			fail(errChan, "unable to open update log file: %v", err)
 			return
@@ -78,6 +79,7 @@ func updateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 			fail(errChan, "unable to write new log entry: %v", err)
 			return
 		}
+
 		if err := updateLogFile.Close(); err != nil {
 			fail(errChan, "unable to close log file: %v", err)
 			return

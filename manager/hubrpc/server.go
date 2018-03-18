@@ -53,6 +53,7 @@ func (h *Hub) SetState(_ context.Context, req *SetStateRequest) (
 		if err := changeState(h.router); err != nil {
 			return nil, errors.Errorf("unable to apply change state "+
 				"function to the router: %v", err)
+
 		}
 	}
 
