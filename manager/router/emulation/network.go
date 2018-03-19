@@ -206,7 +206,10 @@ func (n *emulationNetwork) CloseChannel(_ context.Context, req *CloseChannelRequ
 	defer n.Unlock()
 
 	chanID := router.ChannelID(req.ChanId)
-	c := n.channels[chanID]
+	c, ok := n.channels[chanID]
+	if !ok {
+		return nil, errors.Errorf("unable to find the channel with %v id", chanID)
+	}
 
 	delete(n.channels, chanID)
 	delete(n.users, c.UserID)
@@ -223,5 +226,5 @@ func (n *emulationNetwork) CloseChannel(_ context.Context, req *CloseChannelRequ
 	// Increase router balance on amount which we locked on his side.
 	n.router.freeBalance += c.RouterBalance
 
-	return nil, nil
+	return &CloseChannelResponse{}, nil
 }
