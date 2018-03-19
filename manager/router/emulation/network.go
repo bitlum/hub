@@ -111,6 +111,9 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 
 		if channel.UserBalance < 0 {
 			paymentFailed = true
+
+			// In the case real system such information would be accessible
+			// to us, for that return error, emulating wallet experience.
 			return nil, errors.New("insufficient user balance to " +
 				"make a payment")
 		}
@@ -135,14 +138,23 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 
 		if channel.RouterBalance < 0 {
 			paymentFailed = true
-			return nil, errors.New("insufficient router balance to " +
-				"make a payment")
+
+			// As far as this is emulation we shouldn't return error,
+			// but instead notify another subsystem about error,
+			// so that it might be written in log for example an later examined.
+			n.updates <- &router.UpdatePayment{
+				Status:   router.InsufficientFunds,
+				Sender:   req.Sender,
+				Receiver: req.Receiver,
+				Amount:   req.Amount,
+			}
+
+			return &SendPaymentResponse{}, nil
 		}
 	}
 
 	n.updates <- &router.UpdatePayment{
-		// TODO(andrew.shvv) Add status
-		Status:   "",
+		Status:   router.Successful,
 		Sender:   req.Sender,
 		Receiver: req.Receiver,
 		Amount:   req.Amount,
