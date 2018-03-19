@@ -112,8 +112,9 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 		if channel.UserBalance < 0 {
 			paymentFailed = true
 
-			// In the case real system such information would be accessible
-			// to us, for that return error, emulating wallet experience.
+			// In the case of real system such information wouldn't be
+			// accessible to us, for that return error, emulating user wallet
+			// experience.
 			return nil, errors.New("insufficient user balance to " +
 				"make a payment")
 		}
