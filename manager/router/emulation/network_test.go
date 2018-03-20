@@ -75,8 +75,14 @@ func TestEmulationNetwork(t *testing.T) {
 		Sender:   1,
 		Receiver: 2,
 		Amount:   5,
-	}); err == nil {
-		t.Fatalf("error haven't been recevied")
+	}); err != nil {
+		t.Fatalf("unable to make a payment")
+	}
+
+	// Router error should be sent as a update info rather than error.
+	obj = &router.UpdatePayment{}
+	if err := checkUpdate(t, r.network.updates, obj); err != nil {
+		t.Fatal(err)
 	}
 
 	// Check that we couldn't lock more that we have
