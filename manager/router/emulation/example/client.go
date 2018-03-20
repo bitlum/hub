@@ -29,7 +29,6 @@ func main() {
 		&emulation.OpenChannelRequest{
 			UserId:       1,
 			LockedByUser: 10,
-			ChanId:       1,
 		}); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
