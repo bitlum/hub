@@ -8,6 +8,7 @@ import (
 	"net"
 	"github.com/go-errors/errors"
 	"sync"
+	"time"
 )
 
 // emulationNetwork is used to emulate activity of users in router local
@@ -23,16 +24,19 @@ type emulationNetwork struct {
 	grpcServer   *grpc.Server
 	errChan      chan error
 	router       *RouterEmulation
+
+	blockNotifier *blockNotifier
 }
 
 func newEmulationNetwork() *emulationNetwork {
 	grpcServer := grpc.NewServer([]grpc.ServerOption{}...)
 	network := &emulationNetwork{
-		channels:   make(map[router.ChannelID]*router.Channel),
-		users:      make(map[router.UserID]*router.Channel),
-		updates:    make(chan interface{}, 5),
-		errChan:    make(chan error),
-		grpcServer: grpcServer,
+		channels:      make(map[router.ChannelID]*router.Channel),
+		users:         make(map[router.UserID]*router.Channel),
+		updates:       make(chan interface{}, 5),
+		errChan:       make(chan error),
+		grpcServer:    grpcServer,
+		blockNotifier: newBlockNotifier(200 * time.Millisecond),
 	}
 
 	RegisterEmulatorServer(grpcServer, network)
@@ -98,6 +102,9 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 		if !ok {
 			return nil, errors.Errorf("unable to find sender with %v id",
 				req.Sender)
+		} else if channel.IsLocked {
+			return nil, errors.Errorf("channel %v is locked",
+				channel.ChannelID)
 		}
 
 		channel.UserBalance -= router.ChannelUnit(req.Amount)
@@ -126,6 +133,9 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 		if !ok {
 			return nil, errors.Errorf("unable to find receiver with %v id",
 				req.Sender)
+		} else if channel.IsLocked {
+			return nil, errors.Errorf("channel %v is locked",
+				channel.ChannelID)
 		}
 
 		channel.RouterBalance -= router.ChannelUnit(req.Amount - n.router.fee)
@@ -191,20 +201,37 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 		UserID:        userID,
 		UserBalance:   router.ChannelUnit(req.LockedByUser),
 		RouterBalance: 0,
+		IsLocked:      true,
 	}
 
 	n.users[userID] = c
 	n.channels[chanID] = c
 
-	n.updates <- &router.UpdateChannelOpened{
-		UserID:        c.UserID,
-		ChannelID:     c.ChannelID,
-		UserBalance:   router.ChannelUnit(c.UserBalance),
-		RouterBalance: router.ChannelUnit(c.RouterBalance),
+	// Channel is able to operate only after block is generated.
+	// Send update that channel is opened only after it is unlocked.
+	go func() {
+		n.Lock()
+		defer n.Unlock()
 
-		// TODO(andrew.shvv) Add work with fee
-		Fee: 0,
-	}
+		// Subscribe on block notification and update channel when block is
+		// generated.
+		s := n.blockNotifier.Subscribe()
+		defer n.blockNotifier.RemoveSubscription(s)
+
+		<-s.C
+
+		c.IsLocked = false
+		n.updates <- &router.UpdateChannelOpened{
+			UserID:        c.UserID,
+			ChannelID:     c.ChannelID,
+			UserBalance:   router.ChannelUnit(c.UserBalance),
+			RouterBalance: router.ChannelUnit(c.RouterBalance),
+
+			// TODO(andrew.shvv) Add work with fee
+			Fee: 0,
+		}
+
+	}()
 
 	return &OpenChannelResponse{
 		ChanId: n.channelIndex,
@@ -221,25 +248,57 @@ func (n *emulationNetwork) CloseChannel(_ context.Context, req *CloseChannelRequ
 	defer n.Unlock()
 
 	chanID := router.ChannelID(req.ChanId)
-	c, ok := n.channels[chanID]
+	channel, ok := n.channels[chanID]
 	if !ok {
 		return nil, errors.Errorf("unable to find the channel with %v id", chanID)
+	} else if channel.IsLocked {
+		return nil, errors.Errorf("channel %v is locked",
+			channel.ChannelID)
 	}
 
 	delete(n.channels, chanID)
-	delete(n.users, c.UserID)
+	delete(n.users, channel.UserID)
 
 	n.updates <- &router.UpdateChannelClosed{
-		UserID:    c.UserID,
-		ChannelID: c.ChannelID,
+		UserID:    channel.UserID,
+		ChannelID: channel.ChannelID,
 
 
 		// TODO(andrew.shvv) Add work with fee
 		Fee: 0,
 	}
 
-	// Increase router balance on amount which we locked on his side.
-	n.router.freeBalance += c.RouterBalance
+	// Update router free balance only after block is mined and increase
+	// router balance on amount which we locked on our side in this channel.
+	go func() {
+		n.Lock()
+		defer n.Unlock()
+
+		// Subscribe on block notification and return funds when block is
+		// generated.
+		s := n.blockNotifier.Subscribe()
+		defer n.blockNotifier.RemoveSubscription(s)
+
+		<-s.C
+		n.router.freeBalance += channel.RouterBalance
+	}()
 
 	return &CloseChannelResponse{}, nil
+}
+
+// SetBlockGenDuration is used to set the time which is needed for blokc
+// to be generatedtime. This would impact channel creation, channel
+// update and channel close.
+func (n *emulationNetwork) SetBlockGenDuration(_ context.Context,
+	req *SetBlockGenDurationRequest) (*SetBlockGenDurationResponse, error) {
+
+	n.Lock()
+	defer n.Unlock()
+
+	d := time.Millisecond * time.Duration(req.Duration)
+	if err := n.blockNotifier.SetBlockGenDuration(d); err != nil {
+		return nil, errors.Errorf("unable set block generation duration: %v", err)
+	}
+
+	return &SetBlockGenDurationResponse{}, nil
 }

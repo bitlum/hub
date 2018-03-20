@@ -12,7 +12,7 @@ func TestNotification(t *testing.T) {
 	go notifier.Start()
 	defer notifier.Stop()
 
-	s := notifier.Subscribe()
+	s, _ := notifier.Subscribe()
 	defer notifier.RemoveSubscription(s)
 
 	select {
@@ -33,12 +33,30 @@ func TestSetDuration(t *testing.T) {
 		t.Fatalf("unable to set block gen duration: %v", err)
 	}
 
-	s := notifier.Subscribe()
+	s, _ := notifier.Subscribe()
 	defer notifier.RemoveSubscription(s)
 
 	select {
 	case <-s.C:
 	case <-time.After(2 * delay):
+		t.Fatalf("haven't received notification")
+	}
+}
+
+func TestMine(t *testing.T) {
+	notifier := newBlockNotifier(time.Hour)
+
+	go notifier.Start()
+	defer notifier.Stop()
+
+	s, _ := notifier.Subscribe()
+	defer notifier.RemoveSubscription(s)
+
+	notifier.MineBlock()
+
+	select {
+	case <-s.C:
+	case <-time.After(time.Second):
 		t.Fatalf("haven't received notification")
 	}
 }

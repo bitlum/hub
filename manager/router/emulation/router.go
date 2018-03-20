@@ -105,8 +105,11 @@ func (r *RouterEmulation) CloseChannel(id router.ChannelID) error {
 	r.network.Lock()
 	defer r.network.Unlock()
 
-	if _, ok := r.network.channels[id]; !ok {
+	if channel, ok := r.network.channels[id]; !ok {
 		return errors.Errorf("unable to find channel with %v id: %v", id)
+	} else if channel.IsLocked {
+		return errors.Errorf("channel %v is locked",
+			channel.ChannelID)
 	}
 
 	// TODO(andrew.shvv) add multiple channels support
@@ -133,6 +136,9 @@ func (r *RouterEmulation) UpdateChannel(id router.ChannelID,
 	channel, ok := r.network.channels[id]
 	if !ok {
 		return errors.Errorf("unable to find the channel with %v id", id)
+	} else if channel.IsLocked {
+		return errors.Errorf("channel %v is locked",
+			channel.ChannelID)
 	}
 
 	if newRouterBalance < 0 {

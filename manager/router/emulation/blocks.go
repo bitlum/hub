@@ -3,7 +3,8 @@ package emulation
 import (
 	"sync"
 	"time"
-	"github.com/bitlum/graphql-go/errors"
+
+	"errors"
 )
 
 // blockNotifier is used to mock the block generation notifications,
@@ -17,6 +18,7 @@ type blockNotifier struct {
 
 	blockTicker       *time.Ticker
 	subscriptionIndex int64
+	commands          chan interface{}
 }
 
 func newBlockNotifier(blockGenDuration time.Duration) *blockNotifier {
@@ -25,36 +27,44 @@ func newBlockNotifier(blockGenDuration time.Duration) *blockNotifier {
 		blockTicker:   time.NewTicker(blockGenDuration),
 		subscriptions: make(map[int64]chan struct{}),
 		quit:          make(chan struct{}),
+		commands:      make(chan interface{}, 1),
 	}
 }
 
-// Start start goroutine which generates the block notifications and resend
+// StartNotifying start goroutine which generates the block notifications and resend
 // them to all subscribers.
 //
 // NOTE: Should run as goroutine.
 func (n *blockNotifier) Start() {
-	// Func is used to resend notification about block to every
-	// subscribed on notification client.
-	notifySubscribers := func(ntf struct{}) {
-		n.Lock()
-		defer n.Unlock()
-
-		for _, s := range n.subscriptions {
-			go func(s chan struct{}) {
-				select {
-				case s <- ntf:
-				case <-time.After(time.Second):
-				}
-			}(s)
-		}
-	}
-
 	for {
 		select {
 		case ntf := <-n.notifications:
-			notifySubscribers(ntf)
+			// Resend notification about block to every
+			// subscribed on notification client.
+			for _, s := range n.subscriptions {
+				s <- ntf
+			}
 		case <-n.blockTicker.C:
-			n.notifications <- struct{}{}
+			n.MineBlock()
+		case c := <-n.commands:
+			switch cmd := c.(type) {
+			case *subscribeCmd:
+				channel := make(chan struct{}, 5)
+
+				n.subscriptionIndex++
+				n.subscriptions[n.subscriptionIndex] = channel
+
+				cmd.errChan <- nil
+				cmd.sChan <- &Subscription{
+					C:  channel,
+					id: n.subscriptionIndex,
+				}
+			case *removeSubscriptionCmd:
+				delete(n.subscriptions, cmd.s.id)
+			case *setBlockGenCmd:
+				n.blockTicker.Stop()
+				n.blockTicker = time.NewTicker(cmd.t)
+			}
 		case <-n.quit:
 			return
 		}
@@ -66,30 +76,39 @@ func (n *blockNotifier) Stop() {
 	close(n.quit)
 }
 
+// MineBlock is used to trigger the block generation notification.
+func (n *blockNotifier) MineBlock() {
+	n.notifications <- struct{}{}
+}
+
 type Subscription struct {
 	C  <-chan struct{}
 	id int64
 }
 
+type subscribeCmd struct {
+	sChan   chan *Subscription
+	errChan chan error
+}
+
 // Subscribe subscribe on new block generation notification.
-func (n *blockNotifier) Subscribe() *Subscription {
+func (n *blockNotifier) Subscribe() (*Subscription, error) {
+	cmd := &subscribeCmd{
+		sChan:   make(chan *Subscription, 1),
+		errChan: make(chan error, 1),
+	}
+
 	select {
 	case <-n.quit:
-		return nil
-	default:
+		return nil, errors.New("block notifier has stopped")
+	case n.commands <- cmd:
 	}
 
-	n.Lock()
-	defer n.Unlock()
+	return <-cmd.sChan, <-cmd.errChan
+}
 
-	c := make(chan struct{})
-
-	n.subscriptionIndex++
-	n.subscriptions[n.subscriptionIndex] = c
-	return &Subscription{
-		C:  c,
-		id: n.subscriptionIndex,
-	}
+type removeSubscriptionCmd struct {
+	s *Subscription
 }
 
 // RemoveSubscription...
@@ -97,13 +116,14 @@ func (n *blockNotifier) RemoveSubscription(s *Subscription) {
 	select {
 	case <-n.quit:
 		return
-	default:
+	case n.commands <- &removeSubscriptionCmd{
+		s: s,
+	}:
 	}
+}
 
-	n.Lock()
-	defer n.Unlock()
-
-	delete(n.subscriptions, s.id)
+type setBlockGenCmd struct {
+	t time.Duration
 }
 
 // SetBlockGenDuration is used to set the new block generation duration time,
@@ -111,14 +131,11 @@ func (n *blockNotifier) RemoveSubscription(s *Subscription) {
 func (n *blockNotifier) SetBlockGenDuration(duration time.Duration) error {
 	select {
 	case <-n.quit:
-		return errors.Errorf("notifier was stopped")
-	default:
+		return errors.New("block notifier has stopped")
+	case n.commands <- &setBlockGenCmd{
+		t: duration,
+	}:
 	}
 
-	n.Lock()
-	defer n.Unlock()
-
-	n.blockTicker.Stop()
-	n.blockTicker = time.NewTicker(duration)
 	return nil
 }
