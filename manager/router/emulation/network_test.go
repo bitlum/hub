@@ -24,7 +24,6 @@ func TestEmulationNetwork(t *testing.T) {
 
 	if _, err := r.network.OpenChannel(context.Background(), &OpenChannelRequest{
 		UserId:       1,
-		ChanId:       1,
 		LockedByUser: 10,
 	}); err != nil {
 		t.Fatalf("unable to emulate user openning channel: %v", err)
@@ -37,7 +36,6 @@ func TestEmulationNetwork(t *testing.T) {
 
 	if _, err := r.network.OpenChannel(context.Background(), &OpenChannelRequest{
 		UserId:       2,
-		ChanId:       2,
 		LockedByUser: 0,
 	}); err != nil {
 		t.Fatalf("unable to emulate user openning channel: %v", err)
