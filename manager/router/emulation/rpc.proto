@@ -43,6 +43,7 @@ message OpenChannelRequest {
 }
 
 message OpenChannelResponse {
+    uint64 chan_id = 3;
 }
 
 message CloseChannelRequest {

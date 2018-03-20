@@ -206,7 +206,9 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 		Fee: 0,
 	}
 
-	return &OpenChannelResponse{}, nil
+	return &OpenChannelResponse{
+		ChanId: n.channelIndex,
+	}, nil
 }
 
 // CloseChannel is used to emulate that user has closed the channel with the
