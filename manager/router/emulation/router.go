@@ -140,7 +140,7 @@ func (r *RouterEmulation) UpdateChannel(id router.ChannelID,
 	}
 
 	diff := newRouterBalance - channel.RouterBalance
-	if diff < r.freeBalance {
+	if diff > r.freeBalance {
 		return errors.Errorf("insufficient free funds")
 	}
 
