@@ -165,6 +165,13 @@ func updateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 			}
 
 		case <-time.After(10 * time.Second):
+			// With this we ensure that state of router is not written in
+			// the log if not changes we made. Basically we ensure that there
+			// will be no two state updates consequently.
+			if _, ok := logEntry.Data.(*logger.Log_State); ok {
+				continue
+			}
+
 			mainLog.Info("Synchronise state of the router and write state in the log")
 
 			logEntry, err = getState(r)
