@@ -1,0 +1,7 @@
+{
+    "users_number": 10,
+    "flow_mean": 100,
+    "flow_stdev": 55,
+    "receivers_frac": 0.5,
+    "flowvect_file_name": "flowvect.json"
+}
