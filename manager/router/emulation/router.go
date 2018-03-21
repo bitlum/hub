@@ -10,7 +10,6 @@ import (
 // activity.
 type RouterEmulation struct {
 	freeBalance router.ChannelUnit
-	errChan     chan error
 	network     *emulationNetwork
 	fee         uint64
 }
@@ -25,7 +24,6 @@ func NewRouter(freeBalance router.ChannelUnit) *RouterEmulation {
 	n := newEmulationNetwork()
 	r := &RouterEmulation{
 		freeBalance: freeBalance,
-		errChan:     errChan,
 		network:     n,
 	}
 	n.router = r
@@ -36,7 +34,7 @@ func NewRouter(freeBalance router.ChannelUnit) *RouterEmulation {
 // Done is used to notify external subsystems that emulator router stopped
 // working.
 func (r *RouterEmulation) Done() chan error {
-	return r.errChan
+	return r.network.errChan
 }
 
 // Stop...
@@ -47,7 +45,6 @@ func (r *RouterEmulation) Start(host, port string) {
 // Stop...
 func (r *RouterEmulation) Stop() {
 	r.network.stop()
-	close(r.errChan)
 }
 
 // SendPayment makes the payment on behalf of router. In the context of
