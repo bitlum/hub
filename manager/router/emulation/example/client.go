@@ -7,10 +7,11 @@ import (
 	"context"
 	"fmt"
 	"github.com/AndrewSamokhvalov/go-spew/spew"
+	"time"
 )
 
 func main() {
-	r := emulation.NewRouter(100)
+	r := emulation.NewRouter(100, 200*time.Millisecond)
 	r.Start("localhost", "3333")
 	defer r.Stop()
 

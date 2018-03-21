@@ -13,6 +13,7 @@ import (
 	"github.com/bitlum/hub/manager/hubrpc"
 	"google.golang.org/grpc"
 	"net"
+	"time"
 )
 
 var (
@@ -45,7 +46,7 @@ func backendMain() error {
 	// in the file, so that third-party optimisation program could read it
 	// and make optimisation decisions.
 	errChan := make(chan error)
-	r := emulation.NewRouter(10)
+	r := emulation.NewRouter(10, 200 * time.Millisecond)
 	r.Start(config.Emulate.Host, config.Emulate.Port)
 	defer r.Stop()
 

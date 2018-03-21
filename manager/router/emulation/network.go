@@ -28,7 +28,7 @@ type emulationNetwork struct {
 	blockNotifier *blockNotifier
 }
 
-func newEmulationNetwork() *emulationNetwork {
+func newEmulationNetwork(blockGeneration time.Duration) *emulationNetwork {
 	grpcServer := grpc.NewServer([]grpc.ServerOption{}...)
 	network := &emulationNetwork{
 		channels:      make(map[router.ChannelID]*router.Channel),
@@ -36,7 +36,7 @@ func newEmulationNetwork() *emulationNetwork {
 		updates:       make(chan interface{}, 5),
 		errChan:       make(chan error),
 		grpcServer:    grpcServer,
-		blockNotifier: newBlockNotifier(200 * time.Millisecond),
+		blockNotifier: newBlockNotifier(blockGeneration),
 	}
 
 	RegisterEmulatorServer(grpcServer, network)
@@ -67,11 +67,14 @@ func (n *emulationNetwork) start(host, port string) {
 
 		log.Infof("Stop gRPC serving on: %v", addr)
 	}()
+
+	go n.blockNotifier.Start()
 }
 
 // stop gracefully stops the emulate network.
 func (n *emulationNetwork) stop() {
 	n.grpcServer.Stop()
+	n.blockNotifier.Stop()
 	close(n.errChan)
 }
 
@@ -207,17 +210,17 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 	n.users[userID] = c
 	n.channels[chanID] = c
 
+	// Subscribe on block notification and update channel when block is
+	// generated.
+	s, err := n.blockNotifier.Subscribe()
+	if err != nil {
+		return nil, errors.Errorf("unable to send update payment: %v", err)
+	}
+
 	// Channel is able to operate only after block is generated.
 	// Send update that channel is opened only after it is unlocked.
 	go func() {
-		n.Lock()
-		defer n.Unlock()
-
-		// Subscribe on block notification and update channel when block is
-		// generated.
-		s := n.blockNotifier.Subscribe()
 		defer n.blockNotifier.RemoveSubscription(s)
-
 		<-s.C
 
 		c.IsLocked = false
@@ -268,19 +271,23 @@ func (n *emulationNetwork) CloseChannel(_ context.Context, req *CloseChannelRequ
 		Fee: 0,
 	}
 
+	// Subscribe on block notification and return funds when block is
+	// generated.
+	s, err := n.blockNotifier.Subscribe()
+	if err != nil {
+		return nil, errors.Errorf("unable to increase router free "+
+			"balance: %v", err)
+	}
+
 	// Update router free balance only after block is mined and increase
 	// router balance on amount which we locked on our side in this channel.
 	go func() {
-		n.Lock()
-		defer n.Unlock()
-
-		// Subscribe on block notification and return funds when block is
-		// generated.
-		s := n.blockNotifier.Subscribe()
 		defer n.blockNotifier.RemoveSubscription(s)
-
 		<-s.C
+
+		n.Lock()
 		n.router.freeBalance += channel.RouterBalance
+		n.Unlock()
 	}()
 
 	return &CloseChannelResponse{}, nil

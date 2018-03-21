@@ -3,6 +3,7 @@ package emulation
 import (
 	"github.com/bitlum/hub/manager/router"
 	"github.com/go-errors/errors"
+	"time"
 )
 
 // RouterEmulation is an implementation of router. Router interface which
@@ -18,10 +19,10 @@ type RouterEmulation struct {
 var _ router.Router = (*RouterEmulation)(nil)
 
 // NewRouter creates new entity of emulator router and start grpc server which l
-func NewRouter(freeBalance router.ChannelUnit) *RouterEmulation {
-	errChan := make(chan error)
+func NewRouter(freeBalance router.ChannelUnit,
+	blockGeneration time.Duration) *RouterEmulation {
 
-	n := newEmulationNetwork()
+	n := newEmulationNetwork(blockGeneration)
 	r := &RouterEmulation{
 		freeBalance: freeBalance,
 		network:     n,

@@ -6,10 +6,11 @@ import (
 	"github.com/bitlum/hub/manager/router"
 	"reflect"
 	"errors"
+	"time"
 )
 
 func TestStartNetwork(t *testing.T) {
-	n := newEmulationNetwork()
+	n := newEmulationNetwork(10 * time.Millisecond)
 	n.start("localhost", "12674")
 	n.stop()
 	if err := <-n.done(); err != nil {
@@ -20,13 +21,29 @@ func TestStartNetwork(t *testing.T) {
 func TestEmulationNetwork(t *testing.T) {
 	var obj interface{}
 
-	r := NewRouter(100)
+	// Manually start the block notifier without starting the router.
+	r := NewRouter(100, time.Hour)
+	go r.network.blockNotifier.Start()
+	defer r.network.blockNotifier.Stop()
+
+	// This subscription is used to understand when new block has been
+	// generated.
+	s, _ := r.network.blockNotifier.Subscribe()
 
 	if _, err := r.network.OpenChannel(context.Background(), &OpenChannelRequest{
 		UserId:       1,
 		LockedByUser: 10,
 	}); err != nil {
 		t.Fatalf("unable to emulate user openning channel: %v", err)
+	}
+
+	// Manually trigger block generation and wait for block notification to be
+	// received.
+	r.network.blockNotifier.MineBlock()
+	select {
+	case <-s.C:
+	case <-time.After(time.Second):
+		t.Fatalf("haven't received block notification")
 	}
 
 	obj = &router.UpdateChannelOpened{}
@@ -39,6 +56,15 @@ func TestEmulationNetwork(t *testing.T) {
 		LockedByUser: 0,
 	}); err != nil {
 		t.Fatalf("unable to emulate user openning channel: %v", err)
+	}
+
+	// Manually trigger block generation and wait for block notification to be
+	// received.
+	r.network.blockNotifier.MineBlock()
+	select {
+	case <-s.C:
+	case <-time.After(time.Second):
+		t.Fatalf("haven't received block notification")
 	}
 
 	obj = &router.UpdateChannelOpened{}
@@ -125,7 +151,12 @@ func TestEmulationNetwork(t *testing.T) {
 		t.Fatalf("unable to close the channel")
 	}
 
-	if r.freeBalance != 95 {
+	balance, err := r.FreeBalance()
+	if err != nil {
+		t.Fatalf("unable to get free balance: %v", err)
+	}
+
+	if balance != 95 {
 		t.Fatalf("router free balance hasn't been updated")
 	}
 
@@ -135,20 +166,37 @@ func TestEmulationNetwork(t *testing.T) {
 		t.Fatalf("unable to close the channel")
 	}
 
-	if r.freeBalance != 100 {
+	// Manually trigger block generation and wait for block notification to be
+	// received.
+	r.network.blockNotifier.MineBlock()
+	select {
+	case <-s.C:
+	case <-time.After(time.Second):
+		t.Fatalf("haven't received block notification")
+	}
+
+	// Wait for balance to be updated after block is generated.
+	time.Sleep(100 * time.Millisecond)
+
+	balance, err = r.FreeBalance()
+	if err != nil {
+		t.Fatalf("unable to get free balance: %v", err)
+	}
+
+	if balance != 100 {
 		t.Fatalf("router free balance hasn't been updated")
 	}
 }
 
-func checkUpdate(t *testing.T, updates chan interface{}, obj interface{}) error {
+func checkUpdate(t *testing.T, updatesChan chan interface{}, obj interface{}) error {
 	desiredType := reflect.TypeOf(obj)
 
 	select {
-	case update := <-updates:
+	case update := <-updatesChan:
 		if desiredType != reflect.TypeOf(update) {
 			return errors.New("wrong update type")
 		}
-	default:
+	case <-time.After(time.Second):
 		return errors.New("haven't received update")
 	}
 
