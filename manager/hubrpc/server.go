@@ -57,5 +57,5 @@ func (h *Hub) SetState(_ context.Context, req *SetStateRequest) (
 		}
 	}
 
-	return nil, nil
+	return &SetStateResponse{}, nil
 }
