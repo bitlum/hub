@@ -78,6 +78,7 @@ func (n *blockNotifier) Stop() {
 
 // MineBlock is used to trigger the block generation notification.
 func (n *blockNotifier) MineBlock() {
+	log.Tracef("Block generated/mined")
 	n.notifications <- struct{}{}
 }
 

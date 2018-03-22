@@ -210,6 +210,8 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 	n.users[userID] = c
 	n.channels[chanID] = c
 
+	log.Tracef("User(%v) opened channel(%v) with router", userID, chanID)
+
 	// Subscribe on block notification and update channel when block is
 	// generated.
 	s, err := n.blockNotifier.Subscribe()
@@ -234,6 +236,7 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 			Fee: 0,
 		}
 
+		log.Tracef("Channel(%v) with user(%v) unlocked", chanID, userID)
 	}()
 
 	return &OpenChannelResponse{
@@ -271,6 +274,8 @@ func (n *emulationNetwork) CloseChannel(_ context.Context, req *CloseChannelRequ
 		Fee: 0,
 	}
 
+	log.Tracef("User(%v) closed channel(%v)", channel.UserID, channel.ChannelID)
+
 	// Subscribe on block notification and return funds when block is
 	// generated.
 	s, err := n.blockNotifier.Subscribe()
@@ -288,13 +293,16 @@ func (n *emulationNetwork) CloseChannel(_ context.Context, req *CloseChannelRequ
 		n.Lock()
 		n.router.freeBalance += channel.RouterBalance
 		n.Unlock()
+
+		log.Tracef("Router received %v money previously locked in"+
+			" channel(%v)", channel.RouterBalance, channel.ChannelID)
 	}()
 
 	return &CloseChannelResponse{}, nil
 }
 
 // SetBlockGenDuration is used to set the time which is needed for blokc
-// to be generatedtime. This would impact channel creation, channel
+// to be generated time. This would impact channel creation, channel
 // update and channel close.
 func (n *emulationNetwork) SetBlockGenDuration(_ context.Context,
 	req *SetBlockGenDurationRequest) (*SetBlockGenDurationResponse, error) {
