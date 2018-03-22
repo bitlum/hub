@@ -24,6 +24,14 @@ message RouterState {
     // FreeBalance it is free number of funds under router managment which
     // could be used to lock them in the channels.
     uint64 free_balance = 2;
+
+    // PendingBalance is the amount of funds which in the process of
+	// being accepted by blockchain.
+    uint64 pending_balance = 3;
+
+    // AverageChangeUpdateDuration is number of milliseconds which
+    // is needed to change of state of chanel over blockchain.
+    uint64 average_change_update_duration = 4;
 }
 
 // Channel is used as the building block in describing of the lightning
