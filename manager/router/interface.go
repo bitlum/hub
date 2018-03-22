@@ -1,5 +1,7 @@
 package router
 
+import "time"
+
 // Router aka payment provider, aka hub, aka lightning network node.
 // This interface gives as unified way of managing different implementations of
 // lightning network daemons. With this interface we could control hub/router
@@ -36,6 +38,14 @@ type Router interface {
 
 	// FreeBalance returns the amount of funds at router disposal.
 	FreeBalance() (ChannelUnit, error)
+
+	// PendingBalance returns the amount of funds which in the process of
+	// being accepted by blockchain.
+	PendingBalance() (ChannelUnit, error)
+
+	// AverageChangeUpdateDuration average time which is needed the change of
+	// state to ba updated over blockchain.
+	AverageChangeUpdateDuration() (time.Duration, error)
 }
 
 // ChannelID uniquely identifies the channel in the lightning network.

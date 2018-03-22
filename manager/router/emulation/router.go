@@ -10,9 +10,10 @@ import (
 // completely detached from real lightning network daemon and emulates it
 // activity.
 type RouterEmulation struct {
-	freeBalance router.ChannelUnit
-	network     *emulationNetwork
-	fee         uint64
+	freeBalance    router.ChannelUnit
+	pendingBalance router.ChannelUnit
+	network        *emulationNetwork
+	fee            uint64
 }
 
 // Runtime check that RouterEmulation implements router.Router interface.
@@ -100,6 +101,9 @@ func (r *RouterEmulation) OpenChannel(userID router.UserID,
 		defer r.network.blockNotifier.RemoveSubscription(s)
 		<-s.C
 
+		r.network.Lock()
+		defer r.network.Unlock()
+
 		c.IsLocked = false
 		r.network.updates <- &router.UpdateChannelOpened{
 			UserID:        c.UserID,
@@ -130,10 +134,12 @@ func (r *RouterEmulation) CloseChannel(id router.ChannelID) error {
 	}
 
 	// TODO(andrew.shvv) add multiple channels support
-	delete(r.network.channels, id)
 	for userID, channel := range r.network.users {
 		if channel.ChannelID == id {
 			delete(r.network.users, userID)
+			delete(r.network.channels, id)
+
+			r.pendingBalance += channel.RouterBalance
 
 			r.network.updates <- &router.UpdateChannelClosed{
 				UserID:    userID,
@@ -160,6 +166,7 @@ func (r *RouterEmulation) CloseChannel(id router.ChannelID) error {
 				<-s.C
 
 				r.network.Lock()
+				r.pendingBalance -= channel.RouterBalance
 				r.freeBalance += channel.RouterBalance
 				r.network.Unlock()
 
@@ -194,25 +201,83 @@ func (r *RouterEmulation) UpdateChannel(id router.ChannelID,
 	}
 
 	diff := newRouterBalance - channel.RouterBalance
-	if diff > r.freeBalance {
-		return errors.Errorf("insufficient free funds")
+
+	if diff > 0 {
+		// Number of funds we want to add from our free balance to the
+		// channel on router side.
+		sliceInFunds := diff
+
+		if sliceInFunds > r.freeBalance {
+			return errors.Errorf("insufficient free funds")
+		}
+
+		r.freeBalance -= sliceInFunds
+		r.pendingBalance += sliceInFunds
+	} else {
+		// Number of funds we want to get from our channel to the
+		// channel on free balance.
+		sliceOutFunds := -diff
+
+		// Redundant check, left here just for security if input values would
+		if sliceOutFunds > channel.RouterBalance {
+			return errors.Errorf("insufficient funds in channel")
+		}
+
+		channel.RouterBalance -= sliceOutFunds
+		r.pendingBalance += sliceOutFunds
 	}
 
-	log.Tracef("Update channel(%v) balance, old(%v) => new(%v)",
-		channel.RouterBalance, newRouterBalance)
+	// During channel update make it locked, so that it couldn't be used by
+	// both sides.
+	channel.IsLocked = true
 
-	r.freeBalance -= diff
-	channel.RouterBalance = newRouterBalance
-
-	r.network.updates <- &router.UpdateChannelUpdated{
-		UserID:        channel.UserID,
-		ChannelID:     channel.ChannelID,
-		UserBalance:   channel.UserBalance,
-		RouterBalance: channel.RouterBalance,
-
-		// TODO(andrew.shvv) Add work with fee
-		Fee: 0,
+	// Subscribe on block notification and return funds when block is
+	// generated.
+	s, err := r.network.blockNotifier.Subscribe()
+	if err != nil {
+		return errors.Errorf("unable subscribe "+
+			"on block notifications: %v", err)
 	}
+
+	// Update router free balance only after block is mined and increase
+	// router balance on amount which we locked on our side in this channel.
+	go func() {
+		defer r.network.blockNotifier.RemoveSubscription(s)
+		<-s.C
+
+		r.network.Lock()
+		defer r.network.Unlock()
+
+		if diff > 0 {
+			// Number of funds we want to add from our pending balance to the
+			// channel on router side.
+			sliceInFunds := diff
+
+			r.pendingBalance -= sliceInFunds
+			channel.RouterBalance += sliceInFunds
+		} else {
+			// Number of funds we want to get from our pending channel
+			// balance to the free balance.
+			sliceOutFunds := -diff
+
+			r.pendingBalance -= sliceOutFunds
+			r.freeBalance += sliceOutFunds
+		}
+
+		log.Tracef("Update channel(%v) balance, old(%v) => new(%v)",
+			channel.RouterBalance, newRouterBalance)
+
+		channel.IsLocked = false
+		r.network.updates <- &router.UpdateChannelUpdated{
+			UserID:        channel.UserID,
+			ChannelID:     channel.ChannelID,
+			UserBalance:   channel.UserBalance,
+			RouterBalance: channel.RouterBalance,
+
+			// TODO(andrew.shvv) Add work with fee
+			Fee: 0,
+		}
+	}()
 
 	return nil
 
@@ -255,7 +320,24 @@ func (r *RouterEmulation) FreeBalance() (router.ChannelUnit, error) {
 	return r.freeBalance, nil
 }
 
-// FreeBalance returns the amount of funds at router disposal.
+// PendingBalance returns the amount of funds which in the process of
+// being accepted by blockchain.
+func (r *RouterEmulation) PendingBalance() (router.ChannelUnit, error) {
+	r.network.Lock()
+	defer r.network.Unlock()
+
+	return r.pendingBalance, nil
+}
+
+// AverageChangeUpdateDuration average time which is needed the change of
+// state to ba updated over blockchain.
+func (r *RouterEmulation) AverageChangeUpdateDuration() (time.Duration, error) {
+	r.network.Lock()
+	defer r.network.Unlock()
+
+	return r.network.blockGeneration, nil
+}
+
 func (r *RouterEmulation) SetFee(fee uint64) error {
 	r.network.Lock()
 	defer r.network.Unlock()

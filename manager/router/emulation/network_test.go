@@ -119,6 +119,26 @@ func TestEmulationNetwork(t *testing.T) {
 		t.Fatalf("unable to update channel: %v", err)
 	}
 
+	pendingBalance, err := r.PendingBalance()
+	if err != nil {
+		t.Fatalf("unable to get pending balance: %v", err)
+	}
+
+	if pendingBalance != 10 {
+		t.Fatal("wrong pending balance")
+	}
+
+	// Manually trigger block generation and wait for block notification to be
+	// received.
+	r.network.blockNotifier.MineBlock()
+	select {
+	case <-s.C:
+		// Wait for balance to be updated after block is generated.
+		time.Sleep(100 * time.Millisecond)
+	case <-time.After(time.Second):
+		t.Fatalf("haven't received block notification")
+	}
+
 	if _, err := r.network.SendPayment(context.Background(), &SendPaymentRequest{
 		Sender:   1,
 		Receiver: 2,
@@ -157,12 +177,11 @@ func TestEmulationNetwork(t *testing.T) {
 	r.network.blockNotifier.MineBlock()
 	select {
 	case <-s.C:
+		// Wait for balance to be updated after block is generated.
+		time.Sleep(100 * time.Millisecond)
 	case <-time.After(time.Second):
 		t.Fatalf("haven't received block notification")
 	}
-
-	// Wait for balance to be updated after block is generated.
-	time.Sleep(100 * time.Millisecond)
 
 	balance, err := r.FreeBalance()
 	if err != nil {

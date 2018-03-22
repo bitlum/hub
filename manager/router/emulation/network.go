@@ -25,18 +25,20 @@ type emulationNetwork struct {
 	errChan      chan error
 	router       *RouterEmulation
 
-	blockNotifier *blockNotifier
+	blockNotifier   *blockNotifier
+	blockGeneration time.Duration
 }
 
 func newEmulationNetwork(blockGeneration time.Duration) *emulationNetwork {
 	grpcServer := grpc.NewServer([]grpc.ServerOption{}...)
 	network := &emulationNetwork{
-		channels:      make(map[router.ChannelID]*router.Channel),
-		users:         make(map[router.UserID]*router.Channel),
-		updates:       make(chan interface{}, 5),
-		errChan:       make(chan error),
-		grpcServer:    grpcServer,
-		blockNotifier: newBlockNotifier(blockGeneration),
+		channels:        make(map[router.ChannelID]*router.Channel),
+		users:           make(map[router.UserID]*router.Channel),
+		updates:         make(chan interface{}, 5),
+		errChan:         make(chan error),
+		grpcServer:      grpcServer,
+		blockNotifier:   newBlockNotifier(blockGeneration),
+		blockGeneration: blockGeneration,
 	}
 
 	RegisterEmulatorServer(grpcServer, network)
@@ -265,6 +267,9 @@ func (n *emulationNetwork) CloseChannel(_ context.Context, req *CloseChannelRequ
 	delete(n.channels, chanID)
 	delete(n.users, channel.UserID)
 
+	// Increase the pending balance till block is generated.
+	n.router.pendingBalance += channel.RouterBalance
+
 	n.updates <- &router.UpdateChannelClosed{
 		UserID:    channel.UserID,
 		ChannelID: channel.ChannelID,
@@ -291,6 +296,7 @@ func (n *emulationNetwork) CloseChannel(_ context.Context, req *CloseChannelRequ
 		<-s.C
 
 		n.Lock()
+		n.router.pendingBalance -= channel.RouterBalance
 		n.router.freeBalance += channel.RouterBalance
 		n.Unlock()
 
