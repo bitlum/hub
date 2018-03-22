@@ -62,6 +62,13 @@ func updateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 		return
 	}
 
+	var needWriteState <-chan time.Time
+	triggerStateWrite := func() {
+		if needWriteState == nil {
+			needWriteState = time.After(10 * time.Second)
+		}
+	}
+
 	for {
 		// NOTE: If move open/close of the file out of this cycle than this
 		// would lead to optimisation third-party program unable to get and
@@ -164,7 +171,10 @@ func updateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 				}
 			}
 
-		case <-time.After(10 * time.Second):
+			// After we have update the state somehow
+			triggerStateWrite()
+
+		case <-needWriteState:
 			// With this we ensure that state of router is not written in
 			// the log if not changes we made. Basically we ensure that there
 			// will be no two state updates consequently.
@@ -179,6 +189,8 @@ func updateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 				fail(errChan, "unable to get state: %v", err)
 				return
 			}
+
+			needWriteState = nil
 		}
 	}
 }
