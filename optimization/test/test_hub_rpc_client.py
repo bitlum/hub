@@ -50,7 +50,7 @@ if __name__ == '__main__':
     stub = proto_rpc_hub.ManagerStub(channel)
 
     generator.set_router_balances(ind_user=0, router_balance=1)
-    generator.set_router_balances(ind_user=1, router_balance=1)
-    generator.set_router_balances(ind_user=2, router_balance=1)
+    generator.set_router_balances(ind_user=1, router_balance=2)
+    generator.set_router_balances(ind_user=2, router_balance=3)
 
     stub.SetState(generator.set_state_request())

@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='rpc.proto',
   package='emulation',
   syntax='proto3',
-  serialized_pb=_b('\n\trpc.proto\x12\temulation\"F\n\x12SendPaymentRequest\x12\x0e\n\x06sender\x18\x01 \x01(\x04\x12\x10\n\x08receiver\x18\x02 \x01(\x04\x12\x0e\n\x06\x61mount\x18\x04 \x01(\x04\"\x15\n\x13SendPaymentResponse\"=\n\x12OpenChannelRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\x04\x12\x16\n\x0elocked_by_user\x18\x02 \x01(\x04\"&\n\x13OpenChannelResponse\x12\x0f\n\x07\x63han_id\x18\x03 \x01(\x04\"&\n\x13\x43loseChannelRequest\x12\x0f\n\x07\x63han_id\x18\x03 \x01(\x04\"\x16\n\x14\x43loseChannelResponse2\xf7\x01\n\x08\x45mulator\x12L\n\x0bSendPayment\x12\x1d.emulation.SendPaymentRequest\x1a\x1e.emulation.SendPaymentResponse\x12L\n\x0bOpenChannel\x12\x1d.emulation.OpenChannelRequest\x1a\x1e.emulation.OpenChannelResponse\x12O\n\x0c\x43loseChannel\x12\x1e.emulation.CloseChannelRequest\x1a\x1f.emulation.CloseChannelResponseb\x06proto3')
+  serialized_pb=_b('\n\trpc.proto\x12\temulation\"F\n\x12SendPaymentRequest\x12\x0e\n\x06sender\x18\x01 \x01(\x04\x12\x10\n\x08receiver\x18\x02 \x01(\x04\x12\x0e\n\x06\x61mount\x18\x04 \x01(\x04\"\x15\n\x13SendPaymentResponse\"=\n\x12OpenChannelRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\x04\x12\x16\n\x0elocked_by_user\x18\x02 \x01(\x04\"&\n\x13OpenChannelResponse\x12\x0f\n\x07\x63han_id\x18\x03 \x01(\x04\"&\n\x13\x43loseChannelRequest\x12\x0f\n\x07\x63han_id\x18\x03 \x01(\x04\"\x16\n\x14\x43loseChannelResponse\".\n\x1aSetBlockGenDurationRequest\x12\x10\n\x08\x64uration\x18\x03 \x01(\x03\"\x1d\n\x1bSetBlockGenDurationResponse2\xdd\x02\n\x08\x45mulator\x12L\n\x0bSendPayment\x12\x1d.emulation.SendPaymentRequest\x1a\x1e.emulation.SendPaymentResponse\x12L\n\x0bOpenChannel\x12\x1d.emulation.OpenChannelRequest\x1a\x1e.emulation.OpenChannelResponse\x12O\n\x0c\x43loseChannel\x12\x1e.emulation.CloseChannelRequest\x1a\x1f.emulation.CloseChannelResponse\x12\x64\n\x13SetBlockGenDuration\x12%.emulation.SetBlockGenDurationRequest\x1a&.emulation.SetBlockGenDurationResponseb\x06proto3')
 )
 
 
@@ -217,12 +217,69 @@ _CLOSECHANNELRESPONSE = _descriptor.Descriptor(
   serialized_end=284,
 )
 
+
+_SETBLOCKGENDURATIONREQUEST = _descriptor.Descriptor(
+  name='SetBlockGenDurationRequest',
+  full_name='emulation.SetBlockGenDurationRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='duration', full_name='emulation.SetBlockGenDurationRequest.duration', index=0,
+      number=3, type=3, cpp_type=2, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=286,
+  serialized_end=332,
+)
+
+
+_SETBLOCKGENDURATIONRESPONSE = _descriptor.Descriptor(
+  name='SetBlockGenDurationResponse',
+  full_name='emulation.SetBlockGenDurationResponse',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=334,
+  serialized_end=363,
+)
+
 DESCRIPTOR.message_types_by_name['SendPaymentRequest'] = _SENDPAYMENTREQUEST
 DESCRIPTOR.message_types_by_name['SendPaymentResponse'] = _SENDPAYMENTRESPONSE
 DESCRIPTOR.message_types_by_name['OpenChannelRequest'] = _OPENCHANNELREQUEST
 DESCRIPTOR.message_types_by_name['OpenChannelResponse'] = _OPENCHANNELRESPONSE
 DESCRIPTOR.message_types_by_name['CloseChannelRequest'] = _CLOSECHANNELREQUEST
 DESCRIPTOR.message_types_by_name['CloseChannelResponse'] = _CLOSECHANNELRESPONSE
+DESCRIPTOR.message_types_by_name['SetBlockGenDurationRequest'] = _SETBLOCKGENDURATIONREQUEST
+DESCRIPTOR.message_types_by_name['SetBlockGenDurationResponse'] = _SETBLOCKGENDURATIONRESPONSE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 SendPaymentRequest = _reflection.GeneratedProtocolMessageType('SendPaymentRequest', (_message.Message,), dict(
@@ -267,6 +324,20 @@ CloseChannelResponse = _reflection.GeneratedProtocolMessageType('CloseChannelRes
   ))
 _sym_db.RegisterMessage(CloseChannelResponse)
 
+SetBlockGenDurationRequest = _reflection.GeneratedProtocolMessageType('SetBlockGenDurationRequest', (_message.Message,), dict(
+  DESCRIPTOR = _SETBLOCKGENDURATIONREQUEST,
+  __module__ = 'rpc_pb2'
+  # @@protoc_insertion_point(class_scope:emulation.SetBlockGenDurationRequest)
+  ))
+_sym_db.RegisterMessage(SetBlockGenDurationRequest)
+
+SetBlockGenDurationResponse = _reflection.GeneratedProtocolMessageType('SetBlockGenDurationResponse', (_message.Message,), dict(
+  DESCRIPTOR = _SETBLOCKGENDURATIONRESPONSE,
+  __module__ = 'rpc_pb2'
+  # @@protoc_insertion_point(class_scope:emulation.SetBlockGenDurationResponse)
+  ))
+_sym_db.RegisterMessage(SetBlockGenDurationResponse)
+
 
 
 _EMULATOR = _descriptor.ServiceDescriptor(
@@ -275,8 +346,8 @@ _EMULATOR = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   options=None,
-  serialized_start=287,
-  serialized_end=534,
+  serialized_start=366,
+  serialized_end=715,
   methods=[
   _descriptor.MethodDescriptor(
     name='SendPayment',
@@ -303,6 +374,15 @@ _EMULATOR = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_CLOSECHANNELREQUEST,
     output_type=_CLOSECHANNELRESPONSE,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='SetBlockGenDuration',
+    full_name='emulation.Emulator.SetBlockGenDuration',
+    index=3,
+    containing_service=None,
+    input_type=_SETBLOCKGENDURATIONREQUEST,
+    output_type=_SETBLOCKGENDURATIONRESPONSE,
     options=None,
   ),
 ])

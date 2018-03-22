@@ -44,14 +44,21 @@ class ActivityGenerator:
 
     def set_channel_id(self, ind_user, response_):
         self.chans_id[ind_user] = response_.chan_id
-        print('channel_id for user ', self.users_id[ind_user], ' is set ',
-              self.chans_id[ind_user])
+        print('channel_id for user_id ', self.users_id[ind_user], ' is set ',
+              self.chans_id[ind_user], '\n')
 
     def close_channel_request(self, ind_user):
         self.ind_user = ind_user
         request = proto.CloseChannelRequest()
         request.chan_id = self.chans_id[self.ind_user]
         print('close:', request, sep='\n')
+        return request
+
+    @staticmethod
+    def set_block_gen_duration_request(duration):
+        request = proto.SetBlockGenDurationRequest()
+        request.duration = duration
+        print('duration:', request, sep='\n')
         return request
 
 
@@ -61,7 +68,7 @@ if __name__ == '__main__':
     min_am = 100
     max_am = 200
 
-    sleep_time = 0.5
+    sleep_time = 2
 
     generator = ActivityGenerator(users_num, min_am, max_am)
 
@@ -69,10 +76,12 @@ if __name__ == '__main__':
 
     stub = proto_rpc.EmulatorStub(channel)
 
-    for ind in range(users_num):
+    # stub.OpenChannel(generator.set_block_gen_duration_request(duration=1))
+
+    for user_ind in range(users_num):
         time.sleep(sleep_time)
-        response = stub.OpenChannel(generator.open_channel_request(ind))
-        generator.set_channel_id(ind, response)
+        response = stub.OpenChannel(generator.open_channel_request(user_ind))
+        generator.set_channel_id(user_ind, response)
 
     # for _ in range(trans_num):
     #     time.sleep(sleep_time)

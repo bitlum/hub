@@ -20,6 +20,12 @@ service Emulator {
     // CloseChannel is used to emulate that user has closed the channel with the
     // router.
     rpc CloseChannel (CloseChannelRequest) returns (CloseChannelResponse);
+
+    //
+    // SetBlockGenDuration is used to set the time which is needed for blokc
+    // to be generatedtime. This would impact channel creation, channel
+    // update and channel close.
+    rpc SetBlockGenDuration (SetBlockGenDurationRequest) returns (SetBlockGenDurationResponse);
 }
 
 message SendPaymentRequest {
@@ -51,5 +57,14 @@ message CloseChannelRequest {
 }
 
 message CloseChannelResponse {
+}
+
+message SetBlockGenDurationRequest {
+    // Duration is the number of millisecond channel has to be in the locked
+    // state after it openes or updates.
+    int64 duration = 3;
+}
+
+message SetBlockGenDurationResponse {
 }
 

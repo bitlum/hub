@@ -31,6 +31,11 @@ class EmulatorStub(object):
         request_serializer=rpc__pb2.CloseChannelRequest.SerializeToString,
         response_deserializer=rpc__pb2.CloseChannelResponse.FromString,
         )
+    self.SetBlockGenDuration = channel.unary_unary(
+        '/emulation.Emulator/SetBlockGenDuration',
+        request_serializer=rpc__pb2.SetBlockGenDurationRequest.SerializeToString,
+        response_deserializer=rpc__pb2.SetBlockGenDurationResponse.FromString,
+        )
 
 
 class EmulatorServicer(object):
@@ -66,6 +71,16 @@ class EmulatorServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def SetBlockGenDuration(self, request, context):
+    """
+    SetBlockGenDuration is used to set the time which is needed for blokc
+    to be generatedtime. This would impact channel creation, channel
+    update and channel close.
+    """
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
 
 def add_EmulatorServicer_to_server(servicer, server):
   rpc_method_handlers = {
@@ -83,6 +98,11 @@ def add_EmulatorServicer_to_server(servicer, server):
           servicer.CloseChannel,
           request_deserializer=rpc__pb2.CloseChannelRequest.FromString,
           response_serializer=rpc__pb2.CloseChannelResponse.SerializeToString,
+      ),
+      'SetBlockGenDuration': grpc.unary_unary_rpc_method_handler(
+          servicer.SetBlockGenDuration,
+          request_deserializer=rpc__pb2.SetBlockGenDurationRequest.FromString,
+          response_serializer=rpc__pb2.SetBlockGenDurationResponse.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(
