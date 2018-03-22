@@ -28,6 +28,19 @@ func getState(r router.Router) (*logger.Log, error) {
 		return nil, err
 	}
 
+	// Get the number of money which is in the process of being proceeded by
+	// blockchain.
+	pendingBalance, err := r.PendingBalance()
+	if err != nil {
+		return nil, err
+	}
+
+	duration, err := r.AverageChangeUpdateDuration()
+	if err != nil {
+		return nil, err
+	}
+	milliseconds := duration.Nanoseconds() / int64(time.Millisecond)
+
 	channels := make([]*logger.Channel, len(routerChannels))
 	for i, c := range routerChannels {
 		channels[i] = &logger.Channel{
@@ -42,8 +55,10 @@ func getState(r router.Router) (*logger.Log, error) {
 		Time: time.Now().UnixNano(),
 		Data: &logger.Log_State{
 			State: &logger.RouterState{
-				FreeBalance: uint64(freeBalance),
-				Channels:    channels,
+				FreeBalance:                 uint64(freeBalance),
+				PendingBalance:              uint64(pendingBalance),
+				AverageChangeUpdateDuration: uint64(milliseconds),
+				Channels:                    channels,
 			},
 		},
 	}, nil
