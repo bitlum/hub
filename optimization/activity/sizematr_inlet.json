@@ -1,0 +1,8 @@
+{
+    "mean_stdev_size": 0.1,
+    "stdev_stdev_size": 0.01,
+    "flowmatr_file_name": "flowmatr.json",
+    "freqmatr_mean_file_name": "freqmatr_mean.json",
+    "sizematr_mean_file_name": "sizematr_mean.json",
+    "sizematr_stdev_file_name": "sizematr_stdev.json"
+}
