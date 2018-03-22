@@ -79,22 +79,41 @@ func (r *RouterEmulation) OpenChannel(userID router.UserID,
 		UserID:        userID,
 		UserBalance:   0,
 		RouterBalance: funds,
+		IsLocked:      true,
 	}
 
 	r.network.users[userID] = c
 	r.network.channels[chanID] = c
 
-	r.network.updates <- &router.UpdateChannelOpened{
-		UserID:        c.UserID,
-		ChannelID:     c.ChannelID,
-		UserBalance:   router.ChannelUnit(c.UserBalance),
-		RouterBalance: router.ChannelUnit(c.RouterBalance),
+	log.Tracef("Router opened channel(%v) with user(%v)", chanID, userID)
 
-		// TODO(andrew.shvv) Add work with fee
-		Fee: 0,
+	// Subscribe on block notification and update channel when block is
+	// generated.
+	s, err := r.network.blockNotifier.Subscribe()
+	if err != nil {
+		return errors.Errorf("unable to send update payment: %v", err)
 	}
 
-	log.Trace("Close router user(%v) channel(%v)", userID, chanID)
+	// Channel is able to operate only after block is generated.
+	// Send update that channel is opened only after it is unlocked.
+	go func() {
+		defer r.network.blockNotifier.RemoveSubscription(s)
+		<-s.C
+
+		c.IsLocked = false
+		r.network.updates <- &router.UpdateChannelOpened{
+			UserID:        c.UserID,
+			ChannelID:     c.ChannelID,
+			UserBalance:   router.ChannelUnit(c.UserBalance),
+			RouterBalance: router.ChannelUnit(c.RouterBalance),
+
+			// TODO(andrew.shvv) Add work with fee
+			Fee: 0,
+		}
+
+		log.Tracef("Channel(%v) with user(%v) unlocked", chanID, userID)
+	}()
+
 	return nil
 }
 
@@ -124,12 +143,34 @@ func (r *RouterEmulation) CloseChannel(id router.ChannelID) error {
 				Fee: 0,
 			}
 
-			r.freeBalance += channel.RouterBalance
+			log.Tracef("Router closed channel(%v)", id)
+
+			// Subscribe on block notification and return funds when block is
+			// generated.
+			s, err := r.network.blockNotifier.Subscribe()
+			if err != nil {
+				return errors.Errorf("unable subscribe "+
+					"on block notifications: %v", err)
+			}
+
+			// Update router free balance only after block is mined and increase
+			// router balance on amount which we locked on our side in this channel.
+			go func() {
+				defer r.network.blockNotifier.RemoveSubscription(s)
+				<-s.C
+
+				r.network.Lock()
+				r.freeBalance += channel.RouterBalance
+				r.network.Unlock()
+
+				log.Tracef("Router received %v money previously locked in"+
+					" channel(%v)", channel.RouterBalance, id)
+			}()
+
 			break
 		}
 	}
 
-	log.Trace("Close router channel(%v)", id)
 	return nil
 }
 
@@ -157,7 +198,7 @@ func (r *RouterEmulation) UpdateChannel(id router.ChannelID,
 		return errors.Errorf("insufficient free funds")
 	}
 
-	log.Trace("Update channel(%v) balance, old(%v) => new(%v)",
+	log.Tracef("Update channel(%v) balance, old(%v) => new(%v)",
 		channel.RouterBalance, newRouterBalance)
 
 	r.freeBalance -= diff

@@ -152,6 +152,18 @@ func TestEmulationNetwork(t *testing.T) {
 		t.Fatalf("unable to close the channel")
 	}
 
+	// Manually trigger block generation and wait for block notification to be
+	// received.
+	r.network.blockNotifier.MineBlock()
+	select {
+	case <-s.C:
+	case <-time.After(time.Second):
+		t.Fatalf("haven't received block notification")
+	}
+
+	// Wait for balance to be updated after block is generated.
+	time.Sleep(100 * time.Millisecond)
+
 	balance, err := r.FreeBalance()
 	if err != nil {
 		t.Fatalf("unable to get free balance: %v", err)
