@@ -115,6 +115,15 @@ func (r *RouterEmulation) CloseChannel(id router.ChannelID) error {
 	for userID, channel := range r.network.users {
 		if channel.ChannelID == id {
 			delete(r.network.users, userID)
+
+			r.network.updates <- &router.UpdateChannelClosed{
+				UserID:    userID,
+				ChannelID: id,
+
+				// TODO(andrew.shvv) Add work with fee
+				Fee: 0,
+			}
+
 			r.freeBalance += channel.RouterBalance
 			break
 		}
@@ -153,6 +162,16 @@ func (r *RouterEmulation) UpdateChannel(id router.ChannelID,
 
 	r.freeBalance -= diff
 	channel.RouterBalance = newRouterBalance
+
+	r.network.updates <- &router.UpdateChannelUpdated{
+		UserID:        channel.UserID,
+		ChannelID:     channel.ChannelID,
+		UserBalance:   channel.UserBalance,
+		RouterBalance: channel.RouterBalance,
+
+		// TODO(andrew.shvv) Add work with fee
+		Fee: 0,
+	}
 
 	return nil
 

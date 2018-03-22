@@ -1,5 +1,7 @@
 package router
 
+import "fmt"
+
 // Defer is function which changes the state of the router, but executed a bit
 // afterward.
 type Defer func(r Router) error

@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"errors"
 	"time"
+	"google.golang.org/grpc"
 )
 
 func TestStartNetwork(t *testing.T) {
@@ -186,6 +187,70 @@ func TestEmulationNetwork(t *testing.T) {
 	if balance != 100 {
 		t.Fatalf("router free balance hasn't been updated")
 	}
+}
+
+func TestSimpleStrategy(t *testing.T) {
+	strategy := router.NewChannelUpdateStrategy()
+	r := NewRouter(100, time.Hour)
+
+	// Start emulation router serving on port, and connect to it over gRPC
+	// client.
+	r.Start("localhost", "37968")
+	defer r.Stop()
+
+	ops := []grpc.DialOption{
+		grpc.WithInsecure(),
+	}
+
+	conn, err := grpc.Dial("localhost:37968", ops...)
+	if err != nil {
+		t.Fatalf("unable to connect to router: %v", err)
+	}
+	c := NewEmulatorClient(conn)
+
+	// Send request for opening channel from user side.
+	if _, err := c.OpenChannel(context.Background(), &OpenChannelRequest{
+		UserId:       1,
+		LockedByUser: 1000,
+	}); err != nil {
+		t.Fatalf("user unable to open channel: %v", err)
+	}
+
+	// As far as update requires block generating we have to emulate it and
+	// wait for state update notification to be received.
+	r.network.blockNotifier.MineBlock()
+	<-r.ReceiveUpdates()
+
+	// Change the network and lock
+	currentNetwork, err := r.Network()
+	if err != nil {
+		t.Fatalf("unable to get router topology: %v", err)
+	}
+
+	// Create empty network. All channels in this case has to be removed.
+	var newNetwork []*router.Channel
+
+	actions := strategy.GenerateActions(currentNetwork, newNetwork)
+	for _, changeState := range actions {
+		if err := changeState(r); err != nil {
+			t.Fatalf("unable to apply change state function to "+
+				"the router: %v", err)
+
+		}
+	}
+
+	r.network.blockNotifier.MineBlock()
+	<-r.ReceiveUpdates()
+
+	currentNetwork, err = r.Network()
+	if err != nil {
+		t.Fatalf("unable to get router topology: %v", err)
+	}
+
+	if len(currentNetwork) != 0 {
+		t.Fatalf("network is not empty")
+	}
+
 }
 
 func checkUpdate(t *testing.T, updatesChan chan interface{}, obj interface{}) error {
