@@ -48,6 +48,7 @@ func getState(r router.Router) (*logger.Log, error) {
 			UserId:        uint64(c.UserID),
 			UserBalance:   uint64(c.UserBalance),
 			RouterBalance: uint64(c.RouterBalance),
+			IsPending:     c.IsPending,
 		}
 	}
 
