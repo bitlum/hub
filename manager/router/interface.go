@@ -63,7 +63,7 @@ type Channel struct {
 	UserID        UserID
 	UserBalance   ChannelUnit
 	RouterBalance ChannelUnit
-	IsLocked      bool
+	IsPending     bool
 }
 
 type UpdateChannelClosed struct {

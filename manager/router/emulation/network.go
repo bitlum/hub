@@ -107,7 +107,7 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 		if !ok {
 			return nil, errors.Errorf("unable to find sender with %v id",
 				req.Sender)
-		} else if channel.IsLocked {
+		} else if channel.IsPending {
 			return nil, errors.Errorf("channel %v is locked",
 				channel.ChannelID)
 		}
@@ -138,7 +138,7 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 		if !ok {
 			return nil, errors.Errorf("unable to find receiver with %v id",
 				req.Sender)
-		} else if channel.IsLocked {
+		} else if channel.IsPending {
 			return nil, errors.Errorf("channel %v is locked",
 				channel.ChannelID)
 		}
@@ -206,7 +206,7 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 		UserID:        userID,
 		UserBalance:   router.ChannelUnit(req.LockedByUser),
 		RouterBalance: 0,
-		IsLocked:      true,
+		IsPending:     true,
 	}
 
 	n.users[userID] = c
@@ -227,7 +227,7 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 		defer n.blockNotifier.RemoveSubscription(s)
 		<-s.C
 
-		c.IsLocked = false
+		c.IsPending = false
 		n.updates <- &router.UpdateChannelOpened{
 			UserID:        c.UserID,
 			ChannelID:     c.ChannelID,
@@ -259,7 +259,7 @@ func (n *emulationNetwork) CloseChannel(_ context.Context, req *CloseChannelRequ
 	channel, ok := n.channels[chanID]
 	if !ok {
 		return nil, errors.Errorf("unable to find the channel with %v id", chanID)
-	} else if channel.IsLocked {
+	} else if channel.IsPending {
 		return nil, errors.Errorf("channel %v is locked",
 			channel.ChannelID)
 	}

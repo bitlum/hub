@@ -80,7 +80,7 @@ func (r *RouterEmulation) OpenChannel(userID router.UserID,
 		UserID:        userID,
 		UserBalance:   0,
 		RouterBalance: funds,
-		IsLocked:      true,
+		IsPending:     true,
 	}
 
 	r.network.users[userID] = c
@@ -104,7 +104,7 @@ func (r *RouterEmulation) OpenChannel(userID router.UserID,
 		r.network.Lock()
 		defer r.network.Unlock()
 
-		c.IsLocked = false
+		c.IsPending = false
 		r.network.updates <- &router.UpdateChannelOpened{
 			UserID:        c.UserID,
 			ChannelID:     c.ChannelID,
@@ -128,7 +128,7 @@ func (r *RouterEmulation) CloseChannel(id router.ChannelID) error {
 
 	if channel, ok := r.network.channels[id]; !ok {
 		return errors.Errorf("unable to find channel with %v id: %v", id)
-	} else if channel.IsLocked {
+	} else if channel.IsPending {
 		return errors.Errorf("channel %v is locked",
 			channel.ChannelID)
 	}
@@ -191,7 +191,7 @@ func (r *RouterEmulation) UpdateChannel(id router.ChannelID,
 	channel, ok := r.network.channels[id]
 	if !ok {
 		return errors.Errorf("unable to find the channel with %v id", id)
-	} else if channel.IsLocked {
+	} else if channel.IsPending {
 		return errors.Errorf("channel %v is locked",
 			channel.ChannelID)
 	}
@@ -229,7 +229,7 @@ func (r *RouterEmulation) UpdateChannel(id router.ChannelID,
 
 	// During channel update make it locked, so that it couldn't be used by
 	// both sides.
-	channel.IsLocked = true
+	channel.IsPending = true
 
 	// Subscribe on block notification and return funds when block is
 	// generated.
@@ -267,7 +267,7 @@ func (r *RouterEmulation) UpdateChannel(id router.ChannelID,
 		log.Tracef("Update channel(%v) balance, old(%v) => new(%v)",
 			channel.RouterBalance, newRouterBalance)
 
-		channel.IsLocked = false
+		channel.IsPending = false
 		r.network.updates <- &router.UpdateChannelUpdated{
 			UserID:        channel.UserID,
 			ChannelID:     channel.ChannelID,
