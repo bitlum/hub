@@ -1,8 +1,8 @@
 {
     "mean_mean_freq": 2,
-    "stdev_mean_freq": 0.2,
+    "stdev_mean_freq": 0.1,
     "mean_stdev_freq": 0.1,
-    "stdev_stdev_freq": 0.01,
+    "stdev_stdev_freq": 0.7,
     "flowmatr_file_name": "flowmatr.json",
     "freqmatr_mean_file_name": "freqmatr_mean.json",
     "freqmatr_stdev_file_name": "freqmatr_stdev.json"

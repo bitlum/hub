@@ -16,7 +16,7 @@ def flowmatr_gen(file_name_inlet):
     flowmatr = [copy.deepcopy(flowvect) for _ in range(len(flowvect))]
 
     for i in range(len(flowmatr)):
-        flowmatr[i][i] = 0
+        flowmatr[i][i] = 0.
 
     for i in range(len(flowmatr)):
         for j in range(len(flowmatr[i])):

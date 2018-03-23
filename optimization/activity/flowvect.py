@@ -9,7 +9,11 @@ def flowvect_gen(file_name_inlet):
         inlet = json.load(f)
 
     flowvect = generate_sample(inlet['users_number'], inlet['flow_mean'],
-                               inlet['flow_stdev'])
+                               inlet['flow_mean'] * inlet['flow_stdev'])
+
+    for i in range(len(flowvect)):
+        if flowvect[i] < 0:
+            flowvect[i] = 0.
 
     receivers = [0 for _ in range(inlet['users_number'])]
 

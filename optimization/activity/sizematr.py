@@ -19,9 +19,14 @@ def sizematr_gen(file_name_inlet):
     for i in range(len(flowmatr)):
         for j in range(len(flowmatr[i])):
             if flowmatr[i][j] != 0:
+
                 sizematr_mean[i][j] = flowmatr[i][j] / freqmatr_mean[i][j]
+
                 sizematr_stdev[i][j] = random.gauss(inlet['mean_stdev_size'],
+                                                    inlet['mean_stdev_size'] *
                                                     inlet['stdev_stdev_size'])
+                if sizematr_stdev[i][j] < 0:
+                    sizematr_stdev[i][j] = 0.
 
     with open(inlet['sizematr_mean_file_name'], 'w') as f:
         json.dump({'sizematr_mean': sizematr_mean}, f, sort_keys=True,
