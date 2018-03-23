@@ -26,7 +26,7 @@ message RouterState {
     uint64 free_balance = 2;
 
     // PendingBalance is the amount of funds which in the process of
-	// being accepted by blockchain.
+    // being accepted by blockchain.
     uint64 pending_balance = 3;
 
     // AverageChangeUpdateDuration is number of milliseconds which
@@ -41,6 +41,7 @@ message Channel {
     uint64 channel_id = 2;
     uint64 user_balance = 3;
     uint64 router_balance = 4;
+    bool is_pending = 5;
 }
 
 // Payment represent the attempt of peer in the local lightning network to
