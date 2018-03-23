@@ -8,6 +8,7 @@ type Defer func(r Router) error
 // network state, desired one, and return set of actions which needed to apply
 // to router to get it to optimum state.
 type RouterStateStrategy interface {
+	// TODO(andrew.shvv) Remove that because we switched to the UpdateChannel
 	GenerateActions(oldState []*Channel,
 		newState []*Channel) []Defer
 }
