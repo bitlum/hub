@@ -25,26 +25,32 @@ func NewHub(r router.Router, s router.RouterStateStrategy) *Hub {
 // Runtime check that Hub implements the hubrpc.ManagerServer interface.
 var _ ManagerServer = (*Hub)(nil)
 
-// SetState is used to receive equilibrium state from third-party optimisation
-// subsystem and depending on optimisation strategy make changes in the
-// topology of the router.
-//
-// NOTE: Part of the ManagerServer interface.
-func (h *Hub) SetState(_ context.Context, req *SetStateRequest) (
-	*SetStateResponse, error) {
+// UpdateLink is used to update router link in accordance with givein
+// request. Link might just one channel, or might be the set of
+// channels between user and router. This hook is used by third-parties
+// to put new equilibrium state.
+func (h *Hub) UpdateLink(_ context.Context,
+	req *UpdateLinkRequest) (*UpdateLinkResponse, error) {
 
 	currentNetwork, err := h.router.Network()
 	if err != nil {
 		return nil, errors.Errorf("unable to get router topology: %v", err)
 	}
 
-	equilibriumNetwork := make([]*router.Channel, len(req.Channels))
-	for i, c := range req.Channels {
-		equilibriumNetwork[i] = &router.Channel{
-			ChannelID:     router.ChannelID(c.ChannelId),
-			UserID:        router.UserID(c.UserId),
-			RouterBalance: router.ChannelUnit(c.RouterBalance),
-			UserBalance:   0,
+	// TODO(andrew.shvv) Remove that because we switched to the UpdateChannel
+	equilibriumNetwork := make([]*router.Channel, len(currentNetwork))
+	for i, c := range currentNetwork {
+
+		// TODO(andrew.shvv) Add work with multiple channels
+		if c.UserID == router.UserID(req.UserId) {
+			equilibriumNetwork[i] = &router.Channel{
+				ChannelID:     router.ChannelID(c.ChannelID),
+				UserID:        router.UserID(req.UserId),
+				RouterBalance: router.ChannelUnit(c.RouterBalance),
+				UserBalance:   router.ChannelUnit(c.UserBalance),
+			}
+		} else {
+			equilibriumNetwork[i] = c
 		}
 	}
 
@@ -57,5 +63,5 @@ func (h *Hub) SetState(_ context.Context, req *SetStateRequest) (
 		}
 	}
 
-	return &SetStateResponse{}, nil
+	return &UpdateLinkResponse{}, nil
 }
