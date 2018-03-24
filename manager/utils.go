@@ -80,9 +80,8 @@ func updateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 
 	var needWriteState <-chan time.Time
 	triggerStateWrite := func() {
-		if needWriteState == nil {
-			needWriteState = time.After(10 * time.Second)
-		}
+		needWriteState = nil
+		needWriteState = time.After(3 * time.Second)
 	}
 
 	for {
