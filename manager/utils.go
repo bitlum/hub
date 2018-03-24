@@ -206,6 +206,8 @@ func updateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 					},
 				}
 
+			case *router.UpdateLinkAverageUpdateDuration:
+				// With this update we just trigger state update
 			case *router.UpdatePayment:
 				var status logger.PaymentStatus
 				switch u.Status {
