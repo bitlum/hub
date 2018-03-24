@@ -116,12 +116,12 @@ func updateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 			}
 
 			switch u := update.(type) {
-			case *router.UpdateChannelClosed:
+			case *router.UpdateChannelClosing:
 				logEntry = &logger.Log{
 					Time: time.Now().UnixNano(),
 					Data: &logger.Log_ChannelChange{
 						ChannelChange: &logger.ChannelChange{
-							Type:          logger.ChannelChangeType_close,
+							Type:          logger.ChannelChangeType_closing,
 							ChannelId:     uint64(u.ChannelID),
 							UserId:        uint64(u.UserID),
 							UserBalance:   0,
@@ -130,12 +130,43 @@ func updateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 						},
 					},
 				}
+
+			case *router.UpdateChannelClosed:
+				logEntry = &logger.Log{
+					Time: time.Now().UnixNano(),
+					Data: &logger.Log_ChannelChange{
+						ChannelChange: &logger.ChannelChange{
+							Type:          logger.ChannelChangeType_closed,
+							ChannelId:     uint64(u.ChannelID),
+							UserId:        uint64(u.UserID),
+							UserBalance:   0,
+							RouterBalance: 0,
+							Fee:           uint64(u.Fee),
+						},
+					},
+				}
+
+			case *router.UpdateChannelOpening:
+				logEntry = &logger.Log{
+					Time: time.Now().UnixNano(),
+					Data: &logger.Log_ChannelChange{
+						ChannelChange: &logger.ChannelChange{
+							Type:          logger.ChannelChangeType_openning,
+							ChannelId:     uint64(u.ChannelID),
+							UserId:        uint64(u.UserID),
+							UserBalance:   uint64(u.UserBalance),
+							RouterBalance: uint64(u.RouterBalance),
+							Fee:           uint64(u.Fee),
+						},
+					},
+				}
+
 			case *router.UpdateChannelOpened:
 				logEntry = &logger.Log{
 					Time: time.Now().UnixNano(),
 					Data: &logger.Log_ChannelChange{
 						ChannelChange: &logger.ChannelChange{
-							Type:          logger.ChannelChangeType_open,
+							Type:          logger.ChannelChangeType_opened,
 							ChannelId:     uint64(u.ChannelID),
 							UserId:        uint64(u.UserID),
 							UserBalance:   uint64(u.UserBalance),
@@ -144,12 +175,28 @@ func updateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 						},
 					},
 				}
+
+			case *router.UpdateChannelUpdating:
+				logEntry = &logger.Log{
+					Time: time.Now().UnixNano(),
+					Data: &logger.Log_ChannelChange{
+						ChannelChange: &logger.ChannelChange{
+							Type:          logger.ChannelChangeType_udpated,
+							ChannelId:     uint64(u.ChannelID),
+							UserId:        uint64(u.UserID),
+							UserBalance:   uint64(u.UserBalance),
+							RouterBalance: uint64(u.RouterBalance),
+							Fee:           uint64(u.Fee),
+						},
+					},
+				}
+
 			case *router.UpdateChannelUpdated:
 				logEntry = &logger.Log{
 					Time: time.Now().UnixNano(),
 					Data: &logger.Log_ChannelChange{
 						ChannelChange: &logger.ChannelChange{
-							Type:          logger.ChannelChangeType_udpate,
+							Type:          logger.ChannelChangeType_udpated,
 							ChannelId:     uint64(u.ChannelID),
 							UserId:        uint64(u.UserID),
 							UserBalance:   uint64(u.UserBalance),
@@ -158,6 +205,7 @@ func updateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 						},
 					},
 				}
+
 			case *router.UpdatePayment:
 				var status logger.PaymentStatus
 				switch u.Status {
