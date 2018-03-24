@@ -212,6 +212,16 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 	n.users[userID] = c
 	n.channels[chanID] = c
 
+	n.updates <- &router.UpdateChannelOpening{
+		UserID:        c.UserID,
+		ChannelID:     c.ChannelID,
+		UserBalance:   router.ChannelUnit(c.UserBalance),
+		RouterBalance: router.ChannelUnit(c.RouterBalance),
+
+		// TODO(andrew.shvv) Add work with fee
+		Fee: 0,
+	}
+
 	log.Tracef("User(%v) opened channel(%v) with router", userID, chanID)
 
 	// Subscribe on block notification and update channel when block is
@@ -226,6 +236,9 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 	go func() {
 		defer n.blockNotifier.RemoveSubscription(s)
 		<-s.C
+
+		n.Lock()
+		defer n.Unlock()
 
 		c.IsPending = false
 		n.updates <- &router.UpdateChannelOpened{
@@ -264,16 +277,12 @@ func (n *emulationNetwork) CloseChannel(_ context.Context, req *CloseChannelRequ
 			channel.ChannelID)
 	}
 
-	delete(n.channels, chanID)
-	delete(n.users, channel.UserID)
-
 	// Increase the pending balance till block is generated.
 	n.router.pendingBalance += channel.RouterBalance
-
-	n.updates <- &router.UpdateChannelClosed{
+	channel.IsPending = true
+	n.updates <- &router.UpdateChannelClosing{
 		UserID:    channel.UserID,
 		ChannelID: channel.ChannelID,
-
 
 		// TODO(andrew.shvv) Add work with fee
 		Fee: 0,
@@ -296,9 +305,21 @@ func (n *emulationNetwork) CloseChannel(_ context.Context, req *CloseChannelRequ
 		<-s.C
 
 		n.Lock()
+		defer n.Unlock()
+
+		n.updates <- &router.UpdateChannelClosed{
+			UserID:    channel.UserID,
+			ChannelID: channel.ChannelID,
+
+			// TODO(andrew.shvv) Add work with fee
+			Fee: 0,
+		}
+
+		delete(n.channels, chanID)
+		delete(n.users, channel.UserID)
+
 		n.router.pendingBalance -= channel.RouterBalance
 		n.router.freeBalance += channel.RouterBalance
-		n.Unlock()
 
 		log.Tracef("Router received %v money previously locked in"+
 			" channel(%v)", channel.RouterBalance, channel.ChannelID)

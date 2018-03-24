@@ -66,6 +66,16 @@ type Channel struct {
 	IsPending     bool
 }
 
+type UpdateChannelClosing struct {
+	UserID    UserID
+	ChannelID ChannelID
+
+	// Fee which was taken by blockchain decentralised computer / mainers or
+	// some other form of smart contract manager from initiator of the
+	// channel. By initiator we means the side which created the channel.
+	Fee ChannelUnit
+}
+
 type UpdateChannelClosed struct {
 	UserID    UserID
 	ChannelID ChannelID
@@ -76,8 +86,28 @@ type UpdateChannelClosed struct {
 	Fee ChannelUnit
 }
 
+// UpdateChannelUpdating is used to notify that one of the participants
+// decided to splice in or splice out some portion of their money from the
+// channel.
+//
+// NOTE: On 11.03.2018 this is not yet possible in the Bitcoin Lightning
+// Network, channel might be either opened or closed.
+type UpdateChannelUpdating struct {
+	UserID    UserID
+	ChannelID ChannelID
+
+	UserBalance   ChannelUnit
+	RouterBalance ChannelUnit
+
+	// Fee which was taken by blockchain decentralised computer / mainers or
+	// some other form of smart contract manager from initiator of the
+	// channel. By initiator we means the side which created the channel.
+	Fee ChannelUnit
+}
+
 // UpdateChannelUpdated is used to notify that one of the participants
-// decided to split off some portion of their money from the channel.
+// decided to splice in or splice out some portion of their money from the
+// channel.
 //
 // NOTE: On 11.03.2018 this is not yet possible in the Bitcoin Lightning
 // Network, channel might be either opened or closed.
@@ -94,10 +124,9 @@ type UpdateChannelUpdated struct {
 	Fee ChannelUnit
 }
 
-// UpdateChannelOpened is used as notifications from router or network that
-// channel has been opened. We believe that fee is already included in the
-// initiator balance for that reason structure not contains it.
-type UpdateChannelOpened struct {
+// UpdateChannelOpening is used as notifications from router or network that
+// channel started to opening, and wait for blockchain confirmation.
+type UpdateChannelOpening struct {
 	UserID        UserID
 	ChannelID     ChannelID
 	UserBalance   ChannelUnit
@@ -109,17 +138,19 @@ type UpdateChannelOpened struct {
 	Fee ChannelUnit
 }
 
-const (
-	Successful = "successful"
+// UpdateChannelOpened is used as notifications from router or network that
+// channel has been opened.
+type UpdateChannelOpened struct {
+	UserID        UserID
+	ChannelID     ChannelID
+	UserBalance   ChannelUnit
+	RouterBalance ChannelUnit
 
-	// InsufficientFunds means that router haven't posses/locked enough funds
-	// with receiver user to route through the payment.
-	InsufficientFunds = "insufficient_funds"
-
-	// ExternalFail means that receiver failed to receive payment because of
-	// the unknown to us reason.
-	ExternalFail = "external_fail"
-)
+	// Fee which was taken by blockchain decentralised computer / mainers or
+	// some other form of smart contract manager from initiator of the
+	// channel. By initiator we means the side which created the channel.
+	Fee ChannelUnit
+}
 
 type UpdatePayment struct {
 	Status    string

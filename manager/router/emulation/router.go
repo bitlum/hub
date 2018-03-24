@@ -86,6 +86,16 @@ func (r *RouterEmulation) OpenChannel(userID router.UserID,
 	r.network.users[userID] = c
 	r.network.channels[chanID] = c
 
+	r.network.updates <- &router.UpdateChannelOpening{
+		UserID:        c.UserID,
+		ChannelID:     c.ChannelID,
+		UserBalance:   router.ChannelUnit(c.UserBalance),
+		RouterBalance: router.ChannelUnit(c.RouterBalance),
+
+		// TODO(andrew.shvv) Add work with fee
+		Fee: 0,
+	}
+
 	log.Tracef("Router opened channel(%v) with user(%v)", chanID, userID)
 
 	// Subscribe on block notification and update channel when block is
@@ -136,12 +146,14 @@ func (r *RouterEmulation) CloseChannel(id router.ChannelID) error {
 	// TODO(andrew.shvv) add multiple channels support
 	for userID, channel := range r.network.users {
 		if channel.ChannelID == id {
-			delete(r.network.users, userID)
-			delete(r.network.channels, id)
 
 			r.pendingBalance += channel.RouterBalance
 
-			r.network.updates <- &router.UpdateChannelClosed{
+			// Lock the channel and send the closing notification.
+			// Wait for block to be generated and only after that remove it
+			// from router network.
+			channel.IsPending = true
+			r.network.updates <- &router.UpdateChannelClosing{
 				UserID:    userID,
 				ChannelID: id,
 
@@ -166,9 +178,21 @@ func (r *RouterEmulation) CloseChannel(id router.ChannelID) error {
 				<-s.C
 
 				r.network.Lock()
+				defer r.network.Unlock()
+
+				delete(r.network.users, userID)
+				delete(r.network.channels, id)
+
 				r.pendingBalance -= channel.RouterBalance
 				r.freeBalance += channel.RouterBalance
-				r.network.Unlock()
+
+				r.network.updates <- &router.UpdateChannelClosed{
+					UserID:    userID,
+					ChannelID: id,
+
+					// TODO(andrew.shvv) Add work with fee
+					Fee: 0,
+				}
 
 				log.Tracef("Router received %v money previously locked in"+
 					" channel(%v)", channel.RouterBalance, id)
@@ -230,6 +254,15 @@ func (r *RouterEmulation) UpdateChannel(id router.ChannelID,
 	// During channel update make it locked, so that it couldn't be used by
 	// both sides.
 	channel.IsPending = true
+	r.network.updates <- &router.UpdateChannelUpdating{
+		UserID:        channel.UserID,
+		ChannelID:     channel.ChannelID,
+		UserBalance:   channel.UserBalance,
+		RouterBalance: channel.RouterBalance,
+
+		// TODO(andrew.shvv) Add work with fee
+		Fee: 0,
+	}
 
 	// Subscribe on block notification and return funds when block is
 	// generated.

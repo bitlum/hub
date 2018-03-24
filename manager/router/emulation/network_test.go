@@ -38,6 +38,11 @@ func TestEmulationNetwork(t *testing.T) {
 		t.Fatalf("unable to emulate user openning channel: %v", err)
 	}
 
+	obj = &router.UpdateChannelOpening{}
+	if err := checkUpdate(t, r.network.updates, obj); err != nil {
+		t.Fatal(err)
+	}
+
 	// Manually trigger block generation and wait for block notification to be
 	// received.
 	r.network.blockNotifier.MineBlock()
@@ -57,6 +62,11 @@ func TestEmulationNetwork(t *testing.T) {
 		LockedByUser: 0,
 	}); err != nil {
 		t.Fatalf("unable to emulate user openning channel: %v", err)
+	}
+
+	obj = &router.UpdateChannelOpening{}
+	if err := checkUpdate(t, r.network.updates, obj); err != nil {
+		t.Fatal(err)
 	}
 
 	// Manually trigger block generation and wait for block notification to be
@@ -104,7 +114,6 @@ func TestEmulationNetwork(t *testing.T) {
 		t.Fatalf("unable to make a payment")
 	}
 
-	// Router error should be sent as a update info rather than error.
 	obj = &router.UpdatePayment{}
 	if err := checkUpdate(t, r.network.updates, obj); err != nil {
 		t.Fatal(err)
@@ -117,6 +126,11 @@ func TestEmulationNetwork(t *testing.T) {
 
 	if err := r.UpdateChannel(2, 10); err != nil {
 		t.Fatalf("unable to update channel: %v", err)
+	}
+
+	obj = &router.UpdateChannelUpdating{}
+	if err := checkUpdate(t, r.network.updates, obj); err != nil {
+		t.Fatal(err)
 	}
 
 	pendingBalance, err := r.PendingBalance()
@@ -139,12 +153,22 @@ func TestEmulationNetwork(t *testing.T) {
 		t.Fatalf("haven't received block notification")
 	}
 
+	obj = &router.UpdateChannelUpdated{}
+	if err := checkUpdate(t, r.network.updates, obj); err != nil {
+		t.Fatal(err)
+	}
+
 	if _, err := r.network.SendPayment(context.Background(), &SendPaymentRequest{
 		Sender:   1,
 		Receiver: 2,
 		Amount:   5,
 	}); err != nil {
 		t.Fatalf("unable to make a payment: %v", err)
+	}
+
+	obj = &router.UpdatePayment{}
+	if err := checkUpdate(t, r.network.updates, obj); err != nil {
+		t.Fatal(err)
 	}
 
 	if r.network.channels[router.ChannelID(1)].RouterBalance != 5 {
@@ -172,6 +196,11 @@ func TestEmulationNetwork(t *testing.T) {
 		t.Fatalf("unable to close the channel")
 	}
 
+	obj = &router.UpdateChannelClosing{}
+	if err := checkUpdate(t, r.network.updates, obj); err != nil {
+		t.Fatal(err)
+	}
+
 	// Manually trigger block generation and wait for block notification to be
 	// received.
 	r.network.blockNotifier.MineBlock()
@@ -181,6 +210,11 @@ func TestEmulationNetwork(t *testing.T) {
 		time.Sleep(100 * time.Millisecond)
 	case <-time.After(time.Second):
 		t.Fatalf("haven't received block notification")
+	}
+
+	obj = &router.UpdateChannelClosed{}
+	if err := checkUpdate(t, r.network.updates, obj); err != nil {
+		t.Fatal(err)
 	}
 
 	balance, err := r.FreeBalance()
@@ -198,6 +232,11 @@ func TestEmulationNetwork(t *testing.T) {
 		t.Fatalf("unable to close the channel")
 	}
 
+	obj = &router.UpdateChannelClosing{}
+	if err := checkUpdate(t, r.network.updates, obj); err != nil {
+		t.Fatal(err)
+	}
+
 	// Manually trigger block generation and wait for block notification to be
 	// received.
 	r.network.blockNotifier.MineBlock()
@@ -207,8 +246,10 @@ func TestEmulationNetwork(t *testing.T) {
 		t.Fatalf("haven't received block notification")
 	}
 
-	// Wait for balance to be updated after block is generated.
-	time.Sleep(100 * time.Millisecond)
+	obj = &router.UpdateChannelClosed{}
+	if err := checkUpdate(t, r.network.updates, obj); err != nil {
+		t.Fatal(err)
+	}
 
 	balance, err = r.FreeBalance()
 	if err != nil {
@@ -249,6 +290,7 @@ func TestSimpleStrategy(t *testing.T) {
 
 	// As far as update requires block generating we have to emulate it and
 	// wait for state update notification to be received.
+	<-r.ReceiveUpdates()
 	r.network.blockNotifier.MineBlock()
 	<-r.ReceiveUpdates()
 
@@ -270,6 +312,7 @@ func TestSimpleStrategy(t *testing.T) {
 		}
 	}
 
+	<-r.ReceiveUpdates()
 	r.network.blockNotifier.MineBlock()
 	<-r.ReceiveUpdates()
 
