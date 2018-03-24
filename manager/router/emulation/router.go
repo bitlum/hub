@@ -302,6 +302,7 @@ func (r *RouterEmulation) Network() ([]*router.Channel, error) {
 	var channels []*router.Channel
 	for _, channel := range r.network.channels {
 		channels = append(channels, &router.Channel{
+			IsPending:     channel.IsPending,
 			ChannelID:     channel.ChannelID,
 			UserID:        channel.UserID,
 			UserBalance:   channel.UserBalance,
