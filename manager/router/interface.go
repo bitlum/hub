@@ -165,6 +165,11 @@ type UpdatePayment struct {
 	Earned int64
 }
 
+// UpdateLinkAverageUpdateDuration is used when router wants to notify that
+// the average link update time has changed.
+type UpdateLinkAverageUpdateDuration struct {
+	AverageUpdateDuration time.Duration
+}
 
 const (
 	Successful = "successful"
