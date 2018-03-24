@@ -164,3 +164,26 @@ type UpdatePayment struct {
 	// number will be negative.
 	Earned int64
 }
+
+
+const (
+	Successful = "successful"
+
+	// InsufficientFunds means that router haven't posses/locked enough funds
+	// with receiver user to route through the payment.
+	InsufficientFunds = "insufficient_funds"
+
+	// ExternalFail means that receiver failed to receive payment because of
+	// the unknown to us reason.
+	ExternalFail = "external_fail"
+)
+
+const (
+	// UserInitiator is used when close or update or open was initiated from
+	// the user side.
+	UserInitiator = "user"
+
+	// RouterInitiator is used when channel close or update or open was
+	// initiated by the router side.
+	RouterInitiator = "router"
+)
