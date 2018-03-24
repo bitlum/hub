@@ -6,27 +6,21 @@ package hubrpc;
 // subsystem to send the equilibrium state.
 service Manager {
     //
-    // SetState is used to notify router about the fact that it should change
-    // his state in accordance with givein in request. This hook is used by
-    // third-parties to put new equilibritum state.
-    rpc SetState (SetStateRequest) returns (SetStateResponse);
+    // UpdateLink is used to update router link in accordance with givein
+    // request. Link might just one channel, or might be the set of
+    // channels betwwen user and router. This hook is used by third-parties
+    // to put new equilibritum state.
+    rpc UpdateLink (UpdateLinkRequest) returns (UpdateLinkResponse);
 }
 
-message SetStateRequest {
+message UpdateLinkRequest {
     // Time of the last sync with state of the router.
     uint64 time = 1;
-
-    // Channels is the set of channels of local router lightning network.
-    repeated Channel channels = 2;
+    uint64 user_id = 2;
+    uint64 router_balance = 4;
 }
 
-message SetStateResponse {
+message UpdateLinkResponse {
     // TODO(andrew.shvv) Do we have to return how much it would cost router
-    // to get to the desired state?
-}
-
-message Channel {
-    uint64 user_id = 1;
-    uint64 channel_id = 2;
-    uint64 router_balance = 3;
+    // to apply desired update?
 }

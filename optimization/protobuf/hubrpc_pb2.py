@@ -19,30 +19,37 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='hubrpc.proto',
   package='hubrpc',
   syntax='proto3',
-  serialized_pb=_b('\n\x0chubrpc.proto\x12\x06hubrpc\"B\n\x0fSetStateRequest\x12\x0c\n\x04time\x18\x01 \x01(\x04\x12!\n\x08\x63hannels\x18\x02 \x03(\x0b\x32\x0f.hubrpc.Channel\"\x12\n\x10SetStateResponse\"F\n\x07\x43hannel\x12\x0f\n\x07user_id\x18\x01 \x01(\x04\x12\x12\n\nchannel_id\x18\x02 \x01(\x04\x12\x16\n\x0erouter_balance\x18\x03 \x01(\x04\x32H\n\x07Manager\x12=\n\x08SetState\x12\x17.hubrpc.SetStateRequest\x1a\x18.hubrpc.SetStateResponseb\x06proto3')
+  serialized_pb=_b('\n\x0chubrpc.proto\x12\x06hubrpc\"J\n\x11UpdateLinkRequest\x12\x0c\n\x04time\x18\x01 \x01(\x04\x12\x0f\n\x07user_id\x18\x02 \x01(\x04\x12\x16\n\x0erouter_balance\x18\x04 \x01(\x04\"\x14\n\x12UpdateLinkResponse2N\n\x07Manager\x12\x43\n\nUpdateLink\x12\x19.hubrpc.UpdateLinkRequest\x1a\x1a.hubrpc.UpdateLinkResponseb\x06proto3')
 )
 
 
 
 
-_SETSTATEREQUEST = _descriptor.Descriptor(
-  name='SetStateRequest',
-  full_name='hubrpc.SetStateRequest',
+_UPDATELINKREQUEST = _descriptor.Descriptor(
+  name='UpdateLinkRequest',
+  full_name='hubrpc.UpdateLinkRequest',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='time', full_name='hubrpc.SetStateRequest.time', index=0,
+      name='time', full_name='hubrpc.UpdateLinkRequest.time', index=0,
       number=1, type=4, cpp_type=4, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='channels', full_name='hubrpc.SetStateRequest.channels', index=1,
-      number=2, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
+      name='user_id', full_name='hubrpc.UpdateLinkRequest.user_id', index=1,
+      number=2, type=4, cpp_type=4, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='router_balance', full_name='hubrpc.UpdateLinkRequest.router_balance', index=2,
+      number=4, type=4, cpp_type=4, label=1,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
@@ -59,13 +66,13 @@ _SETSTATEREQUEST = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=24,
-  serialized_end=90,
+  serialized_end=98,
 )
 
 
-_SETSTATERESPONSE = _descriptor.Descriptor(
-  name='SetStateResponse',
-  full_name='hubrpc.SetStateResponse',
+_UPDATELINKRESPONSE = _descriptor.Descriptor(
+  name='UpdateLinkResponse',
+  full_name='hubrpc.UpdateLinkResponse',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
@@ -82,81 +89,27 @@ _SETSTATERESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=92,
-  serialized_end=110,
+  serialized_start=100,
+  serialized_end=120,
 )
 
-
-_CHANNEL = _descriptor.Descriptor(
-  name='Channel',
-  full_name='hubrpc.Channel',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='user_id', full_name='hubrpc.Channel.user_id', index=0,
-      number=1, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='channel_id', full_name='hubrpc.Channel.channel_id', index=1,
-      number=2, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='router_balance', full_name='hubrpc.Channel.router_balance', index=2,
-      number=3, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=112,
-  serialized_end=182,
-)
-
-_SETSTATEREQUEST.fields_by_name['channels'].message_type = _CHANNEL
-DESCRIPTOR.message_types_by_name['SetStateRequest'] = _SETSTATEREQUEST
-DESCRIPTOR.message_types_by_name['SetStateResponse'] = _SETSTATERESPONSE
-DESCRIPTOR.message_types_by_name['Channel'] = _CHANNEL
+DESCRIPTOR.message_types_by_name['UpdateLinkRequest'] = _UPDATELINKREQUEST
+DESCRIPTOR.message_types_by_name['UpdateLinkResponse'] = _UPDATELINKRESPONSE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
-SetStateRequest = _reflection.GeneratedProtocolMessageType('SetStateRequest', (_message.Message,), dict(
-  DESCRIPTOR = _SETSTATEREQUEST,
+UpdateLinkRequest = _reflection.GeneratedProtocolMessageType('UpdateLinkRequest', (_message.Message,), dict(
+  DESCRIPTOR = _UPDATELINKREQUEST,
   __module__ = 'hubrpc_pb2'
-  # @@protoc_insertion_point(class_scope:hubrpc.SetStateRequest)
+  # @@protoc_insertion_point(class_scope:hubrpc.UpdateLinkRequest)
   ))
-_sym_db.RegisterMessage(SetStateRequest)
+_sym_db.RegisterMessage(UpdateLinkRequest)
 
-SetStateResponse = _reflection.GeneratedProtocolMessageType('SetStateResponse', (_message.Message,), dict(
-  DESCRIPTOR = _SETSTATERESPONSE,
+UpdateLinkResponse = _reflection.GeneratedProtocolMessageType('UpdateLinkResponse', (_message.Message,), dict(
+  DESCRIPTOR = _UPDATELINKRESPONSE,
   __module__ = 'hubrpc_pb2'
-  # @@protoc_insertion_point(class_scope:hubrpc.SetStateResponse)
+  # @@protoc_insertion_point(class_scope:hubrpc.UpdateLinkResponse)
   ))
-_sym_db.RegisterMessage(SetStateResponse)
-
-Channel = _reflection.GeneratedProtocolMessageType('Channel', (_message.Message,), dict(
-  DESCRIPTOR = _CHANNEL,
-  __module__ = 'hubrpc_pb2'
-  # @@protoc_insertion_point(class_scope:hubrpc.Channel)
-  ))
-_sym_db.RegisterMessage(Channel)
+_sym_db.RegisterMessage(UpdateLinkResponse)
 
 
 
@@ -166,16 +119,16 @@ _MANAGER = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   options=None,
-  serialized_start=184,
-  serialized_end=256,
+  serialized_start=122,
+  serialized_end=200,
   methods=[
   _descriptor.MethodDescriptor(
-    name='SetState',
-    full_name='hubrpc.Manager.SetState',
+    name='UpdateLink',
+    full_name='hubrpc.Manager.UpdateLink',
     index=0,
     containing_service=None,
-    input_type=_SETSTATEREQUEST,
-    output_type=_SETSTATERESPONSE,
+    input_type=_UPDATELINKREQUEST,
+    output_type=_UPDATELINKRESPONSE,
     options=None,
   ),
 ])

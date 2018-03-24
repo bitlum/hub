@@ -76,7 +76,7 @@ if __name__ == '__main__':
 
     stub = proto_rpc.EmulatorStub(channel)
 
-    # stub.OpenChannel(generator.set_block_gen_duration_request(duration=1))
+    stub.OpenChannel(generator.set_block_gen_duration_request(duration=100))
 
     for user_ind in range(users_num):
         time.sleep(sleep_time)

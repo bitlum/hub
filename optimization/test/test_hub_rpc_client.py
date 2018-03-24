@@ -1,5 +1,5 @@
 from __future__ import print_function
-
+import time
 import grpc
 
 import protobuf.hubrpc_pb2 as proto_hub
@@ -12,36 +12,20 @@ class OptimisationGenerator(ActivityGenerator):
 
     def __init__(self, users_number):
         super().__init__(users_number, 1, 2)
+        self.chans_id = [i + 1 for i in range(self.users_number)]
 
-        self.channels = [proto_hub.Channel() for _ in
-                         range(self.users_number)]
-
-        for i in range(self.users_number):
-            self.channels[i].user_id = self.users_id[i]
-            self.channels[i].channel_id = self.users_id[i]
-            self.channels[i].router_balance = 1
-
-    def set_router_balances(self, ind_user, router_balance):
-        self.channels[ind_user].router_balance = router_balance
-
-    def set_state_request(self):
-        proto_hub.Channel()
-        request = proto_hub.SetStateRequest()
-
+    def set_update_link_request(self, ind_user, router_balance):
+        request = proto_hub.UpdateLinkRequest()
         request.time = 1
-
-        for i in range(self.users_number):
-            channels = request.channels.add()
-            channels.user_id = self.channels[i].user_id
-            channels.channel_id = self.channels[i].channel_id
-            channels.router_balance = self.channels[i].router_balance
-
+        request.user_id = self.users_id[ind_user]
+        request.router_balance = router_balance
         print('state:', request, sep='\n')
         return request
 
 
 if __name__ == '__main__':
-    users_num = 3
+    users_num = 4
+    sleep_time = 1
 
     generator = OptimisationGenerator(users_num)
 
@@ -49,8 +33,8 @@ if __name__ == '__main__':
 
     stub = proto_rpc_hub.ManagerStub(channel)
 
-    generator.set_router_balances(ind_user=0, router_balance=1)
-    generator.set_router_balances(ind_user=1, router_balance=2)
-    generator.set_router_balances(ind_user=2, router_balance=3)
-
-    stub.SetState(generator.set_state_request())
+    for i in range(users_num):
+        time.sleep(sleep_time)
+        stub.UpdateLink(
+            generator.set_update_link_request(ind_user=i,
+                                              router_balance=i + 1))

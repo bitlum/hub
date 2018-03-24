@@ -15,10 +15,10 @@ class ManagerStub(object):
     Args:
       channel: A grpc.Channel.
     """
-    self.SetState = channel.unary_unary(
-        '/hubrpc.Manager/SetState',
-        request_serializer=hubrpc__pb2.SetStateRequest.SerializeToString,
-        response_deserializer=hubrpc__pb2.SetStateResponse.FromString,
+    self.UpdateLink = channel.unary_unary(
+        '/hubrpc.Manager/UpdateLink',
+        request_serializer=hubrpc__pb2.UpdateLinkRequest.SerializeToString,
+        response_deserializer=hubrpc__pb2.UpdateLinkResponse.FromString,
         )
 
 
@@ -27,11 +27,12 @@ class ManagerServicer(object):
   subsystem to send the equilibrium state.
   """
 
-  def SetState(self, request, context):
+  def UpdateLink(self, request, context):
     """
-    SetState is used to notify router about the fact that it should change
-    his state in accordance with givein in request. This hook is used by
-    third-parties to put new equilibritum state.
+    UpdateLink is used to update router link in accordance with givein
+    request. Link might just one channel, or might be the set of
+    channels betwwen user and router. This hook is used by third-parties
+    to put new equilibritum state.
     """
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
@@ -40,10 +41,10 @@ class ManagerServicer(object):
 
 def add_ManagerServicer_to_server(servicer, server):
   rpc_method_handlers = {
-      'SetState': grpc.unary_unary_rpc_method_handler(
-          servicer.SetState,
-          request_deserializer=hubrpc__pb2.SetStateRequest.FromString,
-          response_serializer=hubrpc__pb2.SetStateResponse.SerializeToString,
+      'UpdateLink': grpc.unary_unary_rpc_method_handler(
+          servicer.UpdateLink,
+          request_deserializer=hubrpc__pb2.UpdateLinkRequest.FromString,
+          response_serializer=hubrpc__pb2.UpdateLinkResponse.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(
