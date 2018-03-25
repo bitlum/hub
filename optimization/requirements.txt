@@ -1,0 +1,10 @@
+argh==0.26.2
+click==6.7
+grpcio==1.10.0
+grpcio-tools==1.10.0
+pathtools==0.1.2
+protobuf==3.5.1
+pystream-protobuf==1.4.4
+PyYAML==3.12
+six==1.11.0
+watchdog==0.8.3
