@@ -1,6 +1,10 @@
 import time
 import random
 
+import sys
+
+sys.path.append('../')
+
 import protobuf.test.test_pb2 as proto
 from datetime import datetime
 

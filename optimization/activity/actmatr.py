@@ -1,6 +1,10 @@
 import json
 import random
 
+import sys
+
+sys.path.append('../')
+
 
 def actmatr_gen(file_name_inlet):
     with open(file_name_inlet) as f:

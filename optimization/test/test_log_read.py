@@ -1,6 +1,10 @@
 import time
 from watchdog.observers import Observer
 
+import sys
+
+sys.path.append('../')
+
 from smartlog import *
 from test.test_watch_log_read import *
 

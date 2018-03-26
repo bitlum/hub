@@ -1,6 +1,10 @@
 import os
 from watchdog.events import PatternMatchingEventHandler
 
+import sys
+
+sys.path.append('../')
+
 import protobuf.test.test_pb2 as proto
 
 

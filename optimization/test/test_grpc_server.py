@@ -4,6 +4,10 @@ from datetime import datetime
 
 import grpc
 
+import sys
+
+sys.path.append('../')
+
 import protobuf.test.test_grpc_pb2 as proto
 import protobuf.test.test_grpc_pb2_grpc as proto_grpc
 

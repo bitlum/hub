@@ -1,6 +1,10 @@
 import json
 import random
 
+import sys
+
+sys.path.append('../')
+
 from samplegen import generate_sample
 
 

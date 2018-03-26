@@ -4,6 +4,10 @@ import random
 
 import grpc
 
+import sys
+
+sys.path.append('../')
+
 import protobuf.rpc_pb2 as proto
 import protobuf.rpc_pb2_grpc as proto_rpc
 

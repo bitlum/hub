@@ -1,3 +1,7 @@
+import sys
+
+sys.path.append('../')
+
 from samplegen import *
 from smartsample import *
 

@@ -2,6 +2,10 @@ from __future__ import print_function
 import time
 import grpc
 
+import sys
+
+sys.path.append('../')
+
 import protobuf.hubrpc_pb2 as proto_hub
 import protobuf.hubrpc_pb2_grpc as proto_rpc_hub
 

@@ -1,4 +1,0 @@
-grpcio==1.10.0
-watchdog==0.8.3
-grpc==0.3-19
-protobuf==3.5.2.post1
