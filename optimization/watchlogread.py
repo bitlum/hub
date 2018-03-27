@@ -1,8 +1,44 @@
 import os
 from watchdog.events import PatternMatchingEventHandler
-from datetime import datetime
+import datetime
+import time
+from sortedcontainers import SortedDict
 
 import protobuf.log_pb2 as proto
+
+from protobuf_to_dict import protobuf_to_dict
+
+
+def print_massege(massege, nesting=-4):
+    if type(massege) == dict:
+        print('')
+        nesting += 4
+        for key in SortedDict(massege):
+            print(nesting * ' ', end='')
+            print(key, end=': ')
+            if key == 'type':
+                if massege[key] == 0:
+                    massege[key] = 'openning'
+                elif massege[key] == 1:
+                    massege[key] = 'opened'
+                elif massege[key] == 2:
+                    massege[key] = 'closing'
+                elif massege[key] == 3:
+                    massege[key] = 'closed'
+                elif massege[key] == 4:
+                    massege[key] = 'udpating'
+                elif massege[key] == 5:
+                    massege[key] = 'udpated'
+            print_massege(massege[key], nesting)
+    elif type(massege) == list:
+        print('')
+        nesting += 4
+        for ind in range(len(massege)):
+            print(nesting * ' ', end='')
+            print(ind, end=': ')
+            print_massege(massege[ind], nesting)
+    else:
+        print(massege)
 
 
 class WatchLogRead(PatternMatchingEventHandler):
@@ -18,7 +54,10 @@ class WatchLogRead(PatternMatchingEventHandler):
         self.file = None
 
     def process(self, event):
-        print(event.event_type, datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        # print(event.event_type, datetime.datetime.now())
+        # print(event.event_type,
+        #       datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        # print(event.event_type, time.time())
         if (event.event_type == 'modified') and (
                 event.src_path == self.file_name):
             self.read_new_messages()
@@ -54,7 +93,12 @@ class WatchLogRead(PatternMatchingEventHandler):
                 self.pos_cur += 2
                 self.smart_log.append(self.read_message())
                 self.pos_cur += self.size_message_cur
-                print(self.smart_log.messages[-1])
+                dict_massege = protobuf_to_dict(
+                    self.smart_log.messages[-1],
+                    including_default_value_fields=True)
+                dict_massege['time'] = datetime.datetime.fromtimestamp(
+                    self.smart_log.messages[-1].time * 1e-9).__str__()
+                print_massege(dict_massege)
 
 
 def split_path_name(file_name):

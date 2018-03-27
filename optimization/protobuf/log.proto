@@ -88,15 +88,24 @@ message ChannelChange {
 // ChannelChangeType represent the type of action which were attempted to
 // apply to the channel.
 enum ChannelChangeType {
-    // Open is used when this channel was just created, and haven't been in
-    // local network before
-    open = 0;
+    // ...
+    openning = 0;
 
-    // Close is used when number locked funds / balances of both channel
+    // Opened is used when this channel was just created, and haven't been in
+    // local network before.
+    opened = 1;
+
+    // ...
+    closing = 2;
+
+    // Closed is used when number locked funds / balances of both channel
     // participant equal to zero.
-    close = 1;
+    closed = 3;
 
-    // Udpate is used when one of the participants decides to update its
+    // ...
+    udpating = 4;
+
+    // Udpated is used when one of the participants decides to update its
     // channel balance.
-    udpate = 2;
+    udpated = 5;
 }
