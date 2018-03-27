@@ -96,7 +96,7 @@ class WatchLogRead(PatternMatchingEventHandler):
                 dict_massege = protobuf_to_dict(
                     self.smart_log.messages[-1],
                     including_default_value_fields=True)
-                dict_massege['time'] = datetime.datetime.fromtimestamp(
+                dict_massege['date'] = datetime.datetime.fromtimestamp(
                     self.smart_log.messages[-1].time * 1e-9).__str__()
                 print_massege(dict_massege)
 
