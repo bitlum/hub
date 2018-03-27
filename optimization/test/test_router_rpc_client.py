@@ -62,7 +62,7 @@ class ActivityGenerator:
     def set_block_gen_duration_request(duration):
         request = proto.SetBlockGenDurationRequest()
         request.duration = duration
-        print('duration:', request, sep='\n')
+        print('SetBlockGenDurationRequest:', request, sep='\n')
         return request
 
 
@@ -80,12 +80,12 @@ if __name__ == '__main__':
 
     stub = proto_rpc.EmulatorStub(channel)
 
-    # stub.OpenChannel(generator.set_block_gen_duration_request(duration=100))
+    stub.OpenChannel(generator.set_block_gen_duration_request(duration=100))
 
-    for user_ind in range(users_num):
-        time.sleep(sleep_time)
-        response = stub.OpenChannel(generator.open_channel_request(user_ind))
-        generator.set_channel_id(user_ind, response)
+    # for user_ind in range(users_num):
+    #     time.sleep(sleep_time)
+    #     response = stub.OpenChannel(generator.open_channel_request(user_ind))
+    #     generator.set_channel_id(user_ind, response)
 
     # for _ in range(trans_num):
     #     time.sleep(sleep_time)
