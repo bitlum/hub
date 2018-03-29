@@ -1,0 +1,9 @@
+{
+    "mean_mean_period": 3,
+    "stdev_mean_period": 0.6,
+    "mean_stdev_period": 0.6,
+    "stdev_stdev_period": 0.6,
+    "flowmatr_file_name": "outlet/flowmatr.json",
+    "periodmatr_mean_file_name": "outlet/periodmatr_mean.json",
+    "periodmatr_stdev_file_name": "outlet/periodmatr_stdev.json"
+}

@@ -1,9 +1,9 @@
 {
-    "time_period": 3,
+    "time_period": 30,
     "timematr_file_name": "outlet/timematr.json",
     "transmatr_file_name": "outlet/transmatr.json",
-    "freqmatr_mean_file_name": "outlet/freqmatr_mean.json",
-    "freqmatr_stdev_file_name": "outlet/freqmatr_stdev.json",
+    "periodmatr_mean_file_name": "outlet/periodmatr_mean.json",
+    "periodmatr_stdev_file_name": "outlet/periodmatr_stdev.json",
     "sizematr_mean_file_name": "outlet/sizematr_mean.json",
     "sizematr_stdev_file_name": "outlet/sizematr_stdev.json"
 }

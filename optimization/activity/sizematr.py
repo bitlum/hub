@@ -14,8 +14,8 @@ def sizematr_gen(file_name_inlet):
     with open(inlet['flowmatr_file_name']) as f:
         flowmatr = json.load(f)['flowmatr']
 
-    with open(inlet['freqmatr_mean_file_name']) as f:
-        freqmatr_mean = json.load(f)['freqmatr_mean']
+    with open(inlet['periodmatr_mean_file_name']) as f:
+        periodmatr_mean = json.load(f)['periodmatr_mean']
 
     sizematr_mean = copy.deepcopy(flowmatr)
     sizematr_stdev = copy.deepcopy(flowmatr)
@@ -24,7 +24,7 @@ def sizematr_gen(file_name_inlet):
         for j in range(len(flowmatr[i])):
             if flowmatr[i][j] != 0:
 
-                sizematr_mean[i][j] = flowmatr[i][j] * freqmatr_mean[i][j]
+                sizematr_mean[i][j] = flowmatr[i][j] * periodmatr_mean[i][j]
 
                 sizematr_stdev[i][j] = random.gauss(inlet['mean_stdev_size'],
                                                     inlet['mean_stdev_size'] *

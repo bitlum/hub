@@ -1,9 +1,0 @@
-{
-    "mean_mean_freq": 4,
-    "stdev_mean_freq": 0.6,
-    "mean_stdev_freq": 0.6,
-    "stdev_stdev_freq": 0.6,
-    "flowmatr_file_name": "outlet/flowmatr.json",
-    "freqmatr_mean_file_name": "outlet/freqmatr_mean.json",
-    "freqmatr_stdev_file_name": "outlet/freqmatr_stdev.json"
-}
