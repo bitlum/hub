@@ -34,4 +34,4 @@ def flowmatr_gen(file_name_inlet):
 
 
 if __name__ == '__main__':
-    flowmatr_gen(file_name_inlet='flowmatr_inlet.json')
+    flowmatr_gen(file_name_inlet='inlet/flowmatr_inlet.json')

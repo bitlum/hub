@@ -3,5 +3,5 @@
     "flow_mean": 100,
     "flow_stdev": 0.6,
     "receivers_frac": 0.5,
-    "flowvect_file_name": "flowvect.json"
+    "flowvect_file_name": "outlet/flowvect.json"
 }

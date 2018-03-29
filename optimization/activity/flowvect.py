@@ -36,4 +36,4 @@ def flowvect_gen(file_name_inlet):
 
 
 if __name__ == '__main__':
-    flowvect_gen(file_name_inlet='flowvect_inlet.json')
+    flowvect_gen(file_name_inlet='inlet/flowvect_inlet.json')

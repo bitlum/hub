@@ -42,4 +42,4 @@ def sizematr_gen(file_name_inlet):
 
 
 if __name__ == '__main__':
-    sizematr_gen(file_name_inlet='sizematr_inlet.json')
+    sizematr_gen(file_name_inlet='inlet/sizematr_inlet.json')

@@ -57,4 +57,4 @@ def actmatr_gen(file_name_inlet):
 
 
 if __name__ == '__main__':
-    actmatr_gen(file_name_inlet='actmatr_inlet.json')
+    actmatr_gen(file_name_inlet='inlet/actmatr_inlet.json')

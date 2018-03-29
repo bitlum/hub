@@ -43,4 +43,4 @@ def freqmatr_gen(file_name_inlet):
 
 
 if __name__ == '__main__':
-    freqmatr_gen(file_name_inlet='freqmatr_inlet.json')
+    freqmatr_gen(file_name_inlet='inlet/freqmatr_inlet.json')
