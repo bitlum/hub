@@ -2,6 +2,9 @@
     "users_number": 10,
     "flow_mean": 100,
     "flow_stdev": 0.6,
-    "receivers_frac": 0.5,
+    "receivers_frac": 0.8,
+    "gates_frac": 0.1,
+    "gates_min_mult": 5,
+    "gates_max_mult": 10,
     "flowvect_file_name": "outlet/flowvect.json"
 }

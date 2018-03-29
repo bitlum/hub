@@ -25,13 +25,13 @@ def freqmatr_gen(file_name_inlet):
                                                    inlet['mean_mean_freq'] *
                                                    inlet['stdev_mean_freq'])
                 if freqmatr_mean[i][j] < 0:
-                    freqmatr_mean[i][j] = 0.
+                    freqmatr_mean[i][j] = inlet['mean_mean_freq']
 
                 freqmatr_stdev[i][j] = random.gauss(inlet['mean_stdev_freq'],
                                                     inlet['mean_stdev_freq'] *
                                                     inlet['stdev_stdev_freq'])
                 if freqmatr_stdev[i][j] < 0:
-                    freqmatr_stdev[i][j] = 0.
+                    freqmatr_stdev[i][j] = inlet['mean_stdev_freq']
 
     with open(inlet['freqmatr_mean_file_name'], 'w') as f:
         json.dump({'freqmatr_mean': freqmatr_mean}, f, sort_keys=True,

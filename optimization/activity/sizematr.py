@@ -30,7 +30,7 @@ def sizematr_gen(file_name_inlet):
                                                     inlet['mean_stdev_size'] *
                                                     inlet['stdev_stdev_size'])
                 if sizematr_stdev[i][j] < 0:
-                    sizematr_stdev[i][j] = 0.
+                    sizematr_stdev[i][j] = inlet['mean_stdev_size']
 
     with open(inlet['sizematr_mean_file_name'], 'w') as f:
         json.dump({'sizematr_mean': sizematr_mean}, f, sort_keys=True,

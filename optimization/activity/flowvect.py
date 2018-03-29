@@ -19,6 +19,18 @@ def flowvect_gen(file_name_inlet):
         if flowvect[i] < 0:
             flowvect[i] = 0.
 
+    gates_number = int(inlet['users_number'] * inlet['gates_frac'])
+
+    gates_ind = [i for i in range(inlet['users_number'])]
+
+    gates_ind = random.sample(range(len(gates_ind)), gates_number)
+
+    print(gates_ind, 'gates_ind')
+
+    for i in range(len(gates_ind)):
+        flowvect[gates_ind[i]] *= random.uniform(inlet['gates_min_mult'],
+                                                 inlet['gates_max_mult'])
+
     receivers = [0 for _ in range(inlet['users_number'])]
 
     receivers_number = int(inlet['users_number'] * inlet['receivers_frac'])

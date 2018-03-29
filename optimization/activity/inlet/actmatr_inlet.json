@@ -1,5 +1,5 @@
 {
-    "time_period": 100,
+    "time_period": 3,
     "timematr_file_name": "outlet/timematr.json",
     "transmatr_file_name": "outlet/transmatr.json",
     "freqmatr_mean_file_name": "outlet/freqmatr_mean.json",
