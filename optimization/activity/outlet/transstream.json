@@ -1,0 +1,5134 @@
+{
+    "transstream": [
+        {
+            "receiver_ind": 0,
+            "sender_ind": 3,
+            "time": 0.01961932646153068,
+            "trans": 2585.8359937041396
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 8,
+            "time": 0.04188030244809657,
+            "trans": 479.3011789074231
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 8,
+            "time": 0.04610716182582547,
+            "trans": 20.497554422711687
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 1,
+            "time": 0.06605852091579306,
+            "trans": 1143.6115916279746
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 1,
+            "time": 0.07466117322904328,
+            "trans": 11.548465243036649
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 3,
+            "time": 0.08203552571086856,
+            "trans": 1105.7672615236356
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 6,
+            "time": 0.0913317179717067,
+            "trans": 1591.3869252237487
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 2,
+            "time": 0.0962553567086088,
+            "trans": 421.75436551550047
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 8,
+            "time": 0.12621840784522703,
+            "trans": 110.052809273832
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 0,
+            "time": 0.13175156617635111,
+            "trans": 35.8098159036551
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 2,
+            "time": 0.13426453315040607,
+            "trans": 1933.7028960578036
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 8,
+            "time": 0.1410707384556555,
+            "trans": 1821.061655295516
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 2,
+            "time": 0.1423728560252761,
+            "trans": 977.7199930984048
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 0,
+            "time": 0.1472024265723217,
+            "trans": 654.4253940806574
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 4,
+            "time": 0.14881205097975442,
+            "trans": 1484.1601599352946
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 0,
+            "time": 0.14994810027580874,
+            "trans": 1893.8237731681186
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 9,
+            "time": 0.16008892007566417,
+            "trans": 151.32861882453108
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 2,
+            "time": 0.1647486364151869,
+            "trans": 760.0319666465068
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 0,
+            "time": 0.16542512728214978,
+            "trans": 65.20073365625835
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 9,
+            "time": 0.16995733517637202,
+            "trans": 1090.9880275019339
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 8,
+            "time": 0.17844533184770298,
+            "trans": 1127.2544770928157
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 6,
+            "time": 0.19600691274107324,
+            "trans": 3130.2057687327006
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 4,
+            "time": 0.19678255325995292,
+            "trans": 15.171564995781793
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 1,
+            "time": 0.198687568136403,
+            "trans": 1418.710998171191
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 9,
+            "time": 0.19894582068222363,
+            "trans": 10.825569057429146
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 1,
+            "time": 0.20454174536030806,
+            "trans": 2905.729761815784
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 7,
+            "time": 0.2138972744561093,
+            "trans": 638.792646009303
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 1,
+            "time": 0.21599461191476932,
+            "trans": 1505.7030103194672
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 5,
+            "time": 0.22168843741065403,
+            "trans": 47.00176287318804
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 8,
+            "time": 0.22554136661827567,
+            "trans": 3016.3318909367786
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 0,
+            "time": 0.23159312166250634,
+            "trans": 1260.9248388078622
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 6,
+            "time": 0.23427999316637935,
+            "trans": 1390.0779592299598
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 1,
+            "time": 0.23897459535012822,
+            "trans": 37.230157993719125
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 6,
+            "time": 0.24838105246204406,
+            "trans": 3290.710126624603
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 4,
+            "time": 0.25209352956412223,
+            "trans": 365.6236565336495
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 2,
+            "time": 0.25728267720397235,
+            "trans": 1455.3721585118167
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 3,
+            "time": 0.26302342275812496,
+            "trans": 36.40708576974047
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 2,
+            "time": 0.2682560560592872,
+            "trans": 964.4688881993253
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 5,
+            "time": 0.2726600164749523,
+            "trans": 7025.435112525774
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 5,
+            "time": 0.2743625749255117,
+            "trans": 67.78305659511511
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 0,
+            "time": 0.275141598914931,
+            "trans": 58.407186872545275
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 6,
+            "time": 0.27998571779813525,
+            "trans": 24.372396737236926
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 7,
+            "time": 0.2836326588383242,
+            "trans": 1734.067850143974
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 2,
+            "time": 0.2849985498348998,
+            "trans": 76.40361611505861
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 6,
+            "time": 0.28645120125062146,
+            "trans": 158.87537365653307
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 0,
+            "time": 0.2866871866700569,
+            "trans": 2517.7930905857093
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 1,
+            "time": 0.28942530056795834,
+            "trans": 528.3517536709567
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 9,
+            "time": 0.29148655684647057,
+            "trans": 1441.9490073018565
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 1,
+            "time": 0.3047161238300704,
+            "trans": 649.2099360981108
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 7,
+            "time": 0.3093597155053074,
+            "trans": 43.42131479891617
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 3,
+            "time": 0.31706339685295126,
+            "trans": 21.824042696492576
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 4,
+            "time": 0.3189918302399685,
+            "trans": 1803.359714138552
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 7,
+            "time": 0.32201601402944485,
+            "trans": 871.9463440266424
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 4,
+            "time": 0.32906635137084767,
+            "trans": 2029.1367523857225
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 8,
+            "time": 0.3335721208634138,
+            "trans": 527.524185459372
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 9,
+            "time": 0.33678186322846904,
+            "trans": 707.0827092580432
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 1,
+            "time": 0.34354869972451946,
+            "trans": 1677.4749473872644
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 1,
+            "time": 0.3525996388977224,
+            "trans": 2291.887728929802
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 8,
+            "time": 0.3570221042477477,
+            "trans": 3792.4731645323172
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 0,
+            "time": 0.35948734394877635,
+            "trans": 1849.397101883193
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 8,
+            "time": 0.36139358062804144,
+            "trans": 55.51945601439344
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 3,
+            "time": 0.36157015238051277,
+            "trans": 18.8245256717961
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 0,
+            "time": 0.3740736348115692,
+            "trans": 633.3725987208647
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 1,
+            "time": 0.3741070125140973,
+            "trans": 1168.2427094246048
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 7,
+            "time": 0.37691861849347363,
+            "trans": 449.77269281382735
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 8,
+            "time": 0.3775634246824615,
+            "trans": 1332.737252624413
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 6,
+            "time": 0.3782801109572038,
+            "trans": 2525.1144994353135
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 0,
+            "time": 0.3824132518407465,
+            "trans": 2456.7656360226656
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 7,
+            "time": 0.391978253364159,
+            "trans": 959.7264367934454
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 3,
+            "time": 0.39615118287808226,
+            "trans": 597.2156637541941
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 9,
+            "time": 0.39639691851606385,
+            "trans": 64.78472833109376
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 9,
+            "time": 0.40038430586719553,
+            "trans": 495.37579878279513
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 9,
+            "time": 0.4005559067622353,
+            "trans": 16316.667608078653
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 0,
+            "time": 0.4035677426616916,
+            "trans": 62.50527565453203
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 7,
+            "time": 0.40706339448367923,
+            "trans": 1465.4734412293565
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 8,
+            "time": 0.4139942361437627,
+            "trans": 3980.4258284883053
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 2,
+            "time": 0.4140908626783785,
+            "trans": 624.41842193477
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 3,
+            "time": 0.4160790414439879,
+            "trans": 661.5086008301756
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 5,
+            "time": 0.41804519514125305,
+            "trans": 121.47312770055282
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 9,
+            "time": 0.43720007051874543,
+            "trans": 119.73321509846033
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 0,
+            "time": 0.4394216102535022,
+            "trans": 1640.994741509704
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 6,
+            "time": 0.44329436853304915,
+            "trans": 94.02649070875879
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 4,
+            "time": 0.44348273225357127,
+            "trans": 285.9910999252263
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 6,
+            "time": 0.45225176268865896,
+            "trans": 3499.0485038112174
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 0,
+            "time": 0.45313504090847834,
+            "trans": 48.47354117723446
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 4,
+            "time": 0.45766715128065016,
+            "trans": 1114.6711741028562
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 2,
+            "time": 0.45767440480043653,
+            "trans": 186.86029135106423
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 1,
+            "time": 0.48085352850788854,
+            "trans": 1137.8029947462387
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 9,
+            "time": 0.4891678092464585,
+            "trans": 5.331674990720948
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 8,
+            "time": 0.49569571854750527,
+            "trans": 75.6416312575755
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 1,
+            "time": 0.4970794570021042,
+            "trans": 2.848112580587257
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 8,
+            "time": 0.5281915212033105,
+            "trans": 3134.487306864991
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 6,
+            "time": 0.5331368732728294,
+            "trans": 2744.9466491953976
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 6,
+            "time": 0.5353574311056758,
+            "trans": 314.91232664181223
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 0,
+            "time": 0.5377629277648412,
+            "trans": 1789.663571651611
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 7,
+            "time": 0.5384444815703928,
+            "trans": 11.387657758749295
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 8,
+            "time": 0.5580060266273554,
+            "trans": 40.58803334184877
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 3,
+            "time": 0.5621341732378557,
+            "trans": 31.593842283011888
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 0,
+            "time": 0.56221952299271,
+            "trans": 58.40741274663669
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 2,
+            "time": 0.5680616305461955,
+            "trans": 1258.5039529880191
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 7,
+            "time": 0.5690531825822316,
+            "trans": 442.7859856048806
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 2,
+            "time": 0.5695380044244565,
+            "trans": 2290.4659544387355
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 5,
+            "time": 0.5714070528921184,
+            "trans": 1177.9077833969886
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 6,
+            "time": 0.5764928235273524,
+            "trans": 235.4533770937028
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 1,
+            "time": 0.5793195471945489,
+            "trans": 849.9134376990851
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 6,
+            "time": 0.5803331924138899,
+            "trans": 20.771676554920226
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 6,
+            "time": 0.5830672431045859,
+            "trans": 906.2785096085099
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 2,
+            "time": 0.5859972250206271,
+            "trans": 569.5208634337482
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 3,
+            "time": 0.5876411489437063,
+            "trans": 105.36374117431299
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 1,
+            "time": 0.5878139298724052,
+            "trans": 1967.194104519327
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 4,
+            "time": 0.5958601766810372,
+            "trans": 1211.946081073483
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 1,
+            "time": 0.6100730822983105,
+            "trans": 529.8319677393971
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 1,
+            "time": 0.6100873807851089,
+            "trans": 776.6647834543352
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 8,
+            "time": 0.6106424769131769,
+            "trans": 1135.623088959303
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 0,
+            "time": 0.6136461846984148,
+            "trans": 163.08871459882397
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 8,
+            "time": 0.6166269509608053,
+            "trans": 1317.2306318235464
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 5,
+            "time": 0.6203012052482083,
+            "trans": 2107.7168222645146
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 9,
+            "time": 0.6242774399115705,
+            "trans": 893.9317949506158
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 3,
+            "time": 0.6311079025750947,
+            "trans": 567.4912877691127
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 2,
+            "time": 0.6353921580736561,
+            "trans": 286.9094894345036
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 9,
+            "time": 0.6369093552642819,
+            "trans": 419.25658766046297
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 8,
+            "time": 0.6438117080916407,
+            "trans": 361.25893536112414
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 8,
+            "time": 0.6447052484133506,
+            "trans": 152.19350867624553
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 8,
+            "time": 0.6574426600906798,
+            "trans": 1510.2324903468748
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 5,
+            "time": 0.6591299053598186,
+            "trans": 57.26646389130996
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 0,
+            "time": 0.6637883561576929,
+            "trans": 282.4488072951719
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 6,
+            "time": 0.6711995325943838,
+            "trans": 2964.3182775745418
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 9,
+            "time": 0.678587697382674,
+            "trans": 45.284333099214344
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 2,
+            "time": 0.6786278129991029,
+            "trans": 1577.9102737772753
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 3,
+            "time": 0.6908138817752851,
+            "trans": 586.7194374340494
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 9,
+            "time": 0.7075396174739234,
+            "trans": 179.50080151773545
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 0,
+            "time": 0.7093059927110679,
+            "trans": 745.8379291617941
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 9,
+            "time": 0.7101112974007264,
+            "trans": 12718.242340325112
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 8,
+            "time": 0.7147763861771892,
+            "trans": 2663.0828695720393
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 7,
+            "time": 0.7164531297864387,
+            "trans": 1002.330932304865
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 4,
+            "time": 0.7249683272944105,
+            "trans": 2620.505342418845
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 6,
+            "time": 0.7316978221735833,
+            "trans": 21.486998754954396
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 4,
+            "time": 0.7490553567169258,
+            "trans": 1270.9189584182102
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 1,
+            "time": 0.7498747840646172,
+            "trans": 552.0306210274563
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 1,
+            "time": 0.7507024373445048,
+            "trans": 20.734399620130176
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 8,
+            "time": 0.7534547839841768,
+            "trans": 57.970168615938746
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 1,
+            "time": 0.768628035647962,
+            "trans": 2323.471968683967
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 1,
+            "time": 0.769334315888047,
+            "trans": 1186.7016677507906
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 8,
+            "time": 0.771091473562623,
+            "trans": 661.7233217817451
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 6,
+            "time": 0.776454370133769,
+            "trans": 1386.3675821456045
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 7,
+            "time": 0.7795835555421282,
+            "trans": 525.4085925593772
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 0,
+            "time": 0.7900985169134911,
+            "trans": 2628.787415324566
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 4,
+            "time": 0.7906554989868297,
+            "trans": 861.8068861277208
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 2,
+            "time": 0.7964575656562352,
+            "trans": 2029.713755827713
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 7,
+            "time": 0.8006441331223855,
+            "trans": 31.267655501466265
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 7,
+            "time": 0.8256102248802705,
+            "trans": 720.7356584540826
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 9,
+            "time": 0.8263623624163798,
+            "trans": 746.7587076644861
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 4,
+            "time": 0.8284087286471984,
+            "trans": 196.12185606358054
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 6,
+            "time": 0.8291529576833625,
+            "trans": 95.12481290581039
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 0,
+            "time": 0.8377137418986682,
+            "trans": 428.0241679963309
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 5,
+            "time": 0.8442511001217938,
+            "trans": 659.5460501355091
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 2,
+            "time": 0.8451235814839035,
+            "trans": 172.2237849686864
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 6,
+            "time": 0.8504299446043821,
+            "trans": 1741.8793651710603
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 1,
+            "time": 0.8506155340165928,
+            "trans": 530.9387784935109
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 9,
+            "time": 0.8581554764050535,
+            "trans": 295.0232719374968
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 8,
+            "time": 0.8582272243658422,
+            "trans": 2333.3487822432517
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 7,
+            "time": 0.8605514523289254,
+            "trans": 648.796817583168
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 4,
+            "time": 0.862151906414287,
+            "trans": 2227.3648200912658
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 9,
+            "time": 0.878422756280998,
+            "trans": 30.581135393656165
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 0,
+            "time": 0.8866386360268083,
+            "trans": 42.1213187335607
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 1,
+            "time": 0.9014353604430205,
+            "trans": 723.0793554824891
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 9,
+            "time": 0.9233181930387186,
+            "trans": 110.30226153451113
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 2,
+            "time": 0.9268711272365937,
+            "trans": 961.2851300146472
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 3,
+            "time": 0.9350759457758017,
+            "trans": 1393.752391134577
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 1,
+            "time": 0.9387265169335778,
+            "trans": 1781.7728744721308
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 8,
+            "time": 0.9421523283140185,
+            "trans": 345.26496409725837
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 4,
+            "time": 0.9471289746746714,
+            "trans": 1764.180800011833
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 2,
+            "time": 0.9475046235440516,
+            "trans": 311.1836766060581
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 5,
+            "time": 0.949256192203626,
+            "trans": 312.0730299003145
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 1,
+            "time": 0.9496146358587602,
+            "trans": 810.6967343984637
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 0,
+            "time": 0.9630130378146853,
+            "trans": 1198.2245005717014
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 6,
+            "time": 0.9659094155304122,
+            "trans": 8.140590026880028
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 9,
+            "time": 0.9711463710889887,
+            "trans": 42.43011069106015
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 0,
+            "time": 0.9947974054482583,
+            "trans": 2405.3060376472467
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 8,
+            "time": 0.9978074620154999,
+            "trans": 72.02998437520077
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 5,
+            "time": 1.0017359267438128,
+            "trans": 73.28090229704188
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 6,
+            "time": 1.0171561898482637,
+            "trans": 189.0953179703361
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 1,
+            "time": 1.0311217444293779,
+            "trans": 30.200269057417536
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 7,
+            "time": 1.0330629132999842,
+            "trans": 601.0597414536202
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 7,
+            "time": 1.0333265381689667,
+            "trans": 34.87731914949575
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 6,
+            "time": 1.0445434020833648,
+            "trans": 1623.8606003889845
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 5,
+            "time": 1.0464477078135381,
+            "trans": 904.9597309294546
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 5,
+            "time": 1.047005085732315,
+            "trans": 3134.7135259799934
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 8,
+            "time": 1.0569103545145966,
+            "trans": 2952.3674489673726
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 9,
+            "time": 1.0582588690339265,
+            "trans": 140.6082871661185
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 2,
+            "time": 1.071112716237293,
+            "trans": 452.06319733501846
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 1,
+            "time": 1.0714652723112845,
+            "trans": 1891.621604128405
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 3,
+            "time": 1.0716768918693518,
+            "trans": 266.9173738114682
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 8,
+            "time": 1.0736221499226115,
+            "trans": 1437.239420895684
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 9,
+            "time": 1.0923870680931844,
+            "trans": 631.4357517110844
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 4,
+            "time": 1.0930599452433862,
+            "trans": 941.7827552941877
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 7,
+            "time": 1.098993828261615,
+            "trans": 1123.6651820629538
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 8,
+            "time": 1.1015826254077836,
+            "trans": 454.2775750964786
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 1,
+            "time": 1.1046476826957876,
+            "trans": 368.9422252916527
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 0,
+            "time": 1.1072909823185397,
+            "trans": 808.6066576854239
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 1,
+            "time": 1.109375281815616,
+            "trans": 792.4715293800343
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 0,
+            "time": 1.1128003505129909,
+            "trans": 29.02212727689803
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 2,
+            "time": 1.1140452085491717,
+            "trans": 648.2666596344454
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 9,
+            "time": 1.131612482792929,
+            "trans": 282.04809211157794
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 6,
+            "time": 1.1382678241169266,
+            "trans": 203.98561286004212
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 2,
+            "time": 1.1393129383337943,
+            "trans": 1160.806825554184
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 1,
+            "time": 1.139697743180042,
+            "trans": 2069.2049662420286
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 6,
+            "time": 1.1540155622574964,
+            "trans": 1740.864668394653
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 7,
+            "time": 1.159803807510772,
+            "trans": 628.3564623991647
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 9,
+            "time": 1.1719078256190567,
+            "trans": 11468.59934307211
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 6,
+            "time": 1.1720010839044679,
+            "trans": 2074.933777355733
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 2,
+            "time": 1.1865298084864264,
+            "trans": 56.054140650963774
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 5,
+            "time": 1.1888259682148352,
+            "trans": 78.60993873383569
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 9,
+            "time": 1.2010401411781693,
+            "trans": 47.80390430453512
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 1,
+            "time": 1.2036120734227957,
+            "trans": 21.637267682873183
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 5,
+            "time": 1.2085560886546447,
+            "trans": 3742.2180414338827
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 8,
+            "time": 1.2130417305326575,
+            "trans": 1489.322603677576
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 7,
+            "time": 1.2188415583297658,
+            "trans": 37.319021371432825
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 7,
+            "time": 1.223773614416071,
+            "trans": 394.61611936871117
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 0,
+            "time": 1.2251730995853949,
+            "trans": 1274.1148419096044
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 1,
+            "time": 1.2274434432018309,
+            "trans": 666.3177081928346
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 2,
+            "time": 1.231846545495483,
+            "trans": 1946.1020482080628
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 8,
+            "time": 1.2341250829441872,
+            "trans": 5172.672428089843
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 0,
+            "time": 1.240572397729224,
+            "trans": 260.17995788270673
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 7,
+            "time": 1.245052048641394,
+            "trans": 633.4572003993935
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 4,
+            "time": 1.2513454162630255,
+            "trans": 1604.4903278338572
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 2,
+            "time": 1.2564812492696928,
+            "trans": 214.6099932115415
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 0,
+            "time": 1.2581461035817698,
+            "trans": 2509.841629736672
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 6,
+            "time": 1.2600737155625796,
+            "trans": 1046.411854850175
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 6,
+            "time": 1.2617354845496607,
+            "trans": 12.460680655885524
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 4,
+            "time": 1.275346597595718,
+            "trans": 19.805553476357932
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 8,
+            "time": 1.2793771255472168,
+            "trans": 55.03576529480992
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 7,
+            "time": 1.2806753439090897,
+            "trans": 659.9684322536683
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 9,
+            "time": 1.2836344773187476,
+            "trans": 65.05196039042073
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 8,
+            "time": 1.2836453836666362,
+            "trans": 37.53860208359726
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 1,
+            "time": 1.2852248915112563,
+            "trans": 850.5570496597628
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 9,
+            "time": 1.2954002277945742,
+            "trans": 8743.001368814492
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 1,
+            "time": 1.2995754804799282,
+            "trans": 510.52374769040307
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 4,
+            "time": 1.3077856687063614,
+            "trans": 1297.7611572723608
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 5,
+            "time": 1.314541476443546,
+            "trans": 110.66732520918278
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 0,
+            "time": 1.3194639258362784,
+            "trans": 37.03834032878939
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 3,
+            "time": 1.3359818759846938,
+            "trans": 357.51761144632945
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 6,
+            "time": 1.3366889649461513,
+            "trans": 1282.1325285649596
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 7,
+            "time": 1.3371332314183824,
+            "trans": 1.3647812757513975
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 8,
+            "time": 1.3412628060275709,
+            "trans": 23.69993654633749
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 3,
+            "time": 1.3504390738698244,
+            "trans": 499.1532389742659
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 1,
+            "time": 1.3522830625479385,
+            "trans": 1298.3012547872333
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 9,
+            "time": 1.352707160416117,
+            "trans": 277.9284587587008
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 5,
+            "time": 1.353500042624076,
+            "trans": 6178.332239743896
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 1,
+            "time": 1.3599584642264426,
+            "trans": 2809.946181828821
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 6,
+            "time": 1.3693513764884442,
+            "trans": 157.16562750481978
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 4,
+            "time": 1.3696659379636373,
+            "trans": 1324.0702361631493
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 0,
+            "time": 1.3720466285156825,
+            "trans": 744.2076987877739
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 2,
+            "time": 1.3744904588977955,
+            "trans": 1066.962919047212
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 8,
+            "time": 1.3749970689371604,
+            "trans": 36.75825949183716
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 8,
+            "time": 1.3780226596954614,
+            "trans": 912.9355427913575
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 0,
+            "time": 1.3883618147589427,
+            "trans": 1969.2644154667958
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 9,
+            "time": 1.389659848958607,
+            "trans": 131.85710670545342
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 1,
+            "time": 1.4025585062024937,
+            "trans": 741.6662715169928
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 7,
+            "time": 1.4102811189975213,
+            "trans": 37.15334790949238
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 8,
+            "time": 1.4104125936005256,
+            "trans": 2111.654198687437
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 5,
+            "time": 1.4252686647042476,
+            "trans": 1010.6746118198408
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 9,
+            "time": 1.4260605474771462,
+            "trans": 48.480162732929365
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 1,
+            "time": 1.428181752814514,
+            "trans": 424.06481846409474
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 2,
+            "time": 1.4284388608720184,
+            "trans": 60.885501165082786
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 6,
+            "time": 1.431317469136306,
+            "trans": 17.43373633838337
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 4,
+            "time": 1.4324009871540446,
+            "trans": 123.97725205353345
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 7,
+            "time": 1.440428263540017,
+            "trans": 445.6866734688723
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 2,
+            "time": 1.4502940765607948,
+            "trans": 985.636183393221
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 1,
+            "time": 1.4502950212928978,
+            "trans": 1248.7984035873646
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 7,
+            "time": 1.4717617969541217,
+            "trans": 1403.7919504770207
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 6,
+            "time": 1.472395572769634,
+            "trans": 62.39165098007879
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 9,
+            "time": 1.4778912214056703,
+            "trans": 120.07973735686156
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 2,
+            "time": 1.4972305602318299,
+            "trans": 407.10221904624325
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 6,
+            "time": 1.5019341626027756,
+            "trans": 173.19256357419647
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 8,
+            "time": 1.5028435550325763,
+            "trans": 569.3277965064365
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 0,
+            "time": 1.5051637059817455,
+            "trans": 2191.544907899004
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 0,
+            "time": 1.5091871859868378,
+            "trans": 988.2601389464323
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 7,
+            "time": 1.5136901676305263,
+            "trans": 542.2115067259642
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 4,
+            "time": 1.522649685782874,
+            "trans": 1790.5138873483459
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 9,
+            "time": 1.5258711387379222,
+            "trans": 659.5971262720119
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 6,
+            "time": 1.5309620493364096,
+            "trans": 1752.290761912452
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 8,
+            "time": 1.5510538889508105,
+            "trans": 3782.319004170648
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 7,
+            "time": 1.558474488964108,
+            "trans": 17.38230734174545
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 1,
+            "time": 1.5588671238695422,
+            "trans": 1809.9383950759889
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 9,
+            "time": 1.5591080205342343,
+            "trans": 23.805936242979413
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 4,
+            "time": 1.5599245007030058,
+            "trans": 521.0259115236126
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 0,
+            "time": 1.5772870180239273,
+            "trans": 21.888458031518606
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 5,
+            "time": 1.5939469249748037,
+            "trans": 6016.485419974961
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 1,
+            "time": 1.5998887069421537,
+            "trans": 359.400151677226
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 3,
+            "time": 1.6006831303784714,
+            "trans": 227.5078152022073
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 9,
+            "time": 1.631095536302954,
+            "trans": 27.78118434225458
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 5,
+            "time": 1.6328099114389742,
+            "trans": 46.72648748449253
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 2,
+            "time": 1.6329432225466498,
+            "trans": 911.186191200018
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 1,
+            "time": 1.64042168414302,
+            "trans": 447.9876779908799
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 7,
+            "time": 1.6451288802911646,
+            "trans": 726.6081425672337
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 4,
+            "time": 1.6472432480839774,
+            "trans": 1279.0769727573459
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 6,
+            "time": 1.6499138702720613,
+            "trans": 14.94078400039187
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 0,
+            "time": 1.6503278262841226,
+            "trans": 2344.390956447175
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 2,
+            "time": 1.6541574718068148,
+            "trans": 442.89424608449565
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 0,
+            "time": 1.6562069041667853,
+            "trans": 2635.529536799795
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 5,
+            "time": 1.661700414673617,
+            "trans": 171.93154788335085
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 4,
+            "time": 1.6701529731220381,
+            "trans": 1464.2149542308975
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 8,
+            "time": 1.6860578956802912,
+            "trans": 2541.8400655620867
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 7,
+            "time": 1.703773505157554,
+            "trans": 499.7679186019528
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 8,
+            "time": 1.7090015738794153,
+            "trans": 1364.602998491769
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 9,
+            "time": 1.7107066666641821,
+            "trans": 477.2284744541466
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 0,
+            "time": 1.7133470526571992,
+            "trans": 732.1580387205593
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 2,
+            "time": 1.7267471235787917,
+            "trans": 1054.489799709673
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 1,
+            "time": 1.7362205371716601,
+            "trans": 1131.7066337876706
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 1,
+            "time": 1.7371452586246479,
+            "trans": 720.1513066571939
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 6,
+            "time": 1.7397272848393104,
+            "trans": 1470.4201606771621
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 8,
+            "time": 1.7452135795495052,
+            "trans": 422.1558116529126
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 7,
+            "time": 1.7592806509845953,
+            "trans": 474.3767006899691
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 9,
+            "time": 1.766063073799101,
+            "trans": 140.22626839930143
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 4,
+            "time": 1.7756950348214144,
+            "trans": 999.912803070139
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 2,
+            "time": 1.7930155103022285,
+            "trans": 2551.4314621000576
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 6,
+            "time": 1.7950652116813919,
+            "trans": 202.03030339879456
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 0,
+            "time": 1.8028867061676872,
+            "trans": 310.9378352052853
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 6,
+            "time": 1.8162043741069374,
+            "trans": 45.73555854477229
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 6,
+            "time": 1.8219098331956771,
+            "trans": 30.047894523271825
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 5,
+            "time": 1.8291074756943524,
+            "trans": 4341.249542769169
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 1,
+            "time": 1.8333081729618388,
+            "trans": 409.85170252638994
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 1,
+            "time": 1.8352274262275885,
+            "trans": 3324.0686349535645
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 5,
+            "time": 1.836863531228368,
+            "trans": 165.97722685503967
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 2,
+            "time": 1.839221118526203,
+            "trans": 314.3404957125825
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 3,
+            "time": 1.8400199326090152,
+            "trans": 345.2608965927252
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 8,
+            "time": 1.841346069290304,
+            "trans": 578.7780781504919
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 5,
+            "time": 1.8468996104195807,
+            "trans": 732.8788705119539
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 8,
+            "time": 1.8505695570220442,
+            "trans": 1364.0740860553337
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 1,
+            "time": 1.8603602519567544,
+            "trans": 397.8725151806086
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 9,
+            "time": 1.8650166891955324,
+            "trans": 411.9028706574119
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 1,
+            "time": 1.8702178153371067,
+            "trans": 529.3107882278529
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 0,
+            "time": 1.8715923696546013,
+            "trans": 1729.9757136780804
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 0,
+            "time": 1.8723342069130213,
+            "trans": 32.267163808493464
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 9,
+            "time": 1.8760843841279564,
+            "trans": 19.9538237352306
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 8,
+            "time": 1.8906867317294545,
+            "trans": 67.55024348336477
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 6,
+            "time": 1.8920142415230574,
+            "trans": 2804.425196900009
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 4,
+            "time": 1.8975244353743204,
+            "trans": 1650.8463720866564
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 0,
+            "time": 1.9029010247242444,
+            "trans": 675.0294653174193
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 0,
+            "time": 1.9094477742332128,
+            "trans": 290.9760830960686
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 9,
+            "time": 1.9136494096491545,
+            "trans": 185.73422778582986
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 1,
+            "time": 1.9272534534697303,
+            "trans": 493.47183847593647
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 7,
+            "time": 1.9301761424220716,
+            "trans": 502.7420791590722
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 7,
+            "time": 1.9420951323648792,
+            "trans": 39.63300456134801
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 1,
+            "time": 1.9437943187563884,
+            "trans": 304.4543488997126
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 9,
+            "time": 1.9498644929681974,
+            "trans": 965.3972360873271
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 7,
+            "time": 1.951305679272678,
+            "trans": 886.1083280359653
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 2,
+            "time": 1.9591004572493107,
+            "trans": 1339.7490923533574
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 0,
+            "time": 1.9623499391164019,
+            "trans": 81.84417897057043
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 8,
+            "time": 1.9697577834085016,
+            "trans": 2446.2347329943586
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 2,
+            "time": 1.994958675011973,
+            "trans": 341.69398347948925
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 5,
+            "time": 1.9955006886062598,
+            "trans": 3343.48228538823
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 8,
+            "time": 1.9964032057758356,
+            "trans": 3381.3712059367745
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 4,
+            "time": 1.997951749642246,
+            "trans": 149.34407835712503
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 0,
+            "time": 2.002883797613746,
+            "trans": 3506.4721434856256
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 0,
+            "time": 2.0060120296089363,
+            "trans": 8185.377472305212
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 7,
+            "time": 2.010445900655525,
+            "trans": 1629.1271009097827
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 7,
+            "time": 2.011147834696213,
+            "trans": 8.76392403189223
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 9,
+            "time": 2.0140265574517455,
+            "trans": 43.945365447351236
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 4,
+            "time": 2.0165181214345886,
+            "trans": 1222.680550999433
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 9,
+            "time": 2.0259073225802244,
+            "trans": 974.3594039741267
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 3,
+            "time": 2.0309223975678803,
+            "trans": 579.4327178987339
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 6,
+            "time": 2.0331879292494133,
+            "trans": 23.18613495002514
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 6,
+            "time": 2.0350633568559537,
+            "trans": 14.691264320173893
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 4,
+            "time": 2.036046404774281,
+            "trans": 280.41488688062424
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 8,
+            "time": 2.0463041932796213,
+            "trans": 2901.1509762817145
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 4,
+            "time": 2.05336470524644,
+            "trans": 157.35221840813955
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 1,
+            "time": 2.0544845321075584,
+            "trans": 654.3125994793182
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 1,
+            "time": 2.0584958797395556,
+            "trans": 522.6537250373636
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 8,
+            "time": 2.070177973001962,
+            "trans": 1118.2499850231668
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 5,
+            "time": 2.071829624561535,
+            "trans": 48.41489752036675
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 2,
+            "time": 2.073932452937633,
+            "trans": 1339.653947231519
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 6,
+            "time": 2.0764337721503843,
+            "trans": 198.99993367422528
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 5,
+            "time": 2.0804494679745265,
+            "trans": 25.007317558714618
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 1,
+            "time": 2.081758409914909,
+            "trans": 880.064199218409
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 7,
+            "time": 2.0939761271600417,
+            "trans": 545.3391854155187
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 4,
+            "time": 2.10741248450712,
+            "trans": 1465.7249709755
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 5,
+            "time": 2.1126254276073038,
+            "trans": 894.5850928386707
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 0,
+            "time": 2.1193814693622555,
+            "trans": 71.42061407125209
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 1,
+            "time": 2.119577426464626,
+            "trans": 4337.851681957158
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 6,
+            "time": 2.1308019923736294,
+            "trans": 1001.4626968442175
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 7,
+            "time": 2.1317796292690034,
+            "trans": 53.2090717272625
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 3,
+            "time": 2.135086690773784,
+            "trans": 1212.7333844893246
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 9,
+            "time": 2.136018873503823,
+            "trans": 83.76555237055157
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 9,
+            "time": 2.1509465966695354,
+            "trans": 42.90192991773101
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 0,
+            "time": 2.1609272153590378,
+            "trans": 634.2119697308401
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 6,
+            "time": 2.175106776537286,
+            "trans": 2969.7005898808848
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 2,
+            "time": 2.1935125942694667,
+            "trans": 428.59494106282636
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 1,
+            "time": 2.19446060792625,
+            "trans": 727.319480153712
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 2,
+            "time": 2.198689592751274,
+            "trans": 908.6663886939104
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 8,
+            "time": 2.2027142550857763,
+            "trans": 1393.2743318819735
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 1,
+            "time": 2.2354112689331758,
+            "trans": 996.1463706945125
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 4,
+            "time": 2.2357243699318734,
+            "trans": 16.64788034338459
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 4,
+            "time": 2.236260666691827,
+            "trans": 374.5049904462113
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 7,
+            "time": 2.246639788297239,
+            "trans": 676.0915218417784
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 8,
+            "time": 2.2599015220103205,
+            "trans": 192.14221173980914
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 7,
+            "time": 2.2606812622117056,
+            "trans": 862.7945072203983
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 5,
+            "time": 2.2638656513059185,
+            "trans": 165.97722685503967
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 4,
+            "time": 2.2655072869850974,
+            "trans": 3201.038848835591
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 1,
+            "time": 2.2765496612757046,
+            "trans": 321.10494472135656
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 9,
+            "time": 2.2845664727708463,
+            "trans": 748.5331586532395
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 1,
+            "time": 2.2899035309753573,
+            "trans": 1981.4681261823018
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 8,
+            "time": 2.3078408944707514,
+            "trans": 498.2125110976017
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 6,
+            "time": 2.3176614084611256,
+            "trans": 66.73093445571861
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 6,
+            "time": 2.3192110845540803,
+            "trans": 9.912397561256475
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 9,
+            "time": 2.3281469929930285,
+            "trans": 21.942528691353466
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 1,
+            "time": 2.329191420720903,
+            "trans": 1908.8625989353966
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 2,
+            "time": 2.336564693154519,
+            "trans": 1462.0593643269674
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 0,
+            "time": 2.348994382369748,
+            "trans": 4911.602317317617
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 0,
+            "time": 2.3492401662092823,
+            "trans": 237.14164538928327
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 7,
+            "time": 2.351235963259168,
+            "trans": 832.7864036312724
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 4,
+            "time": 2.355605225863405,
+            "trans": 180.2863702489367
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 0,
+            "time": 2.3693827469734137,
+            "trans": 65.07823399599977
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 9,
+            "time": 2.3771206763938713,
+            "trans": 17.684256893913975
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 3,
+            "time": 2.378921024523936,
+            "trans": 659.8061461598716
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 4,
+            "time": 2.3842749509533867,
+            "trans": 1809.596217487217
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 1,
+            "time": 2.3866903308698024,
+            "trans": 492.97612289125595
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 6,
+            "time": 2.388765473250664,
+            "trans": 1608.9133107011921
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 8,
+            "time": 2.3960509214909247,
+            "trans": 46.13122585711096
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 2,
+            "time": 2.399544557019663,
+            "trans": 137.4635605429249
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 0,
+            "time": 2.407352675226296,
+            "trans": 300.2453901501339
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 5,
+            "time": 2.4105849080634525,
+            "trans": 608.8152641640268
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 5,
+            "time": 2.4130187339532267,
+            "trans": 3404.9847386295824
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 6,
+            "time": 2.4179856397812864,
+            "trans": 27.38161717816979
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 5,
+            "time": 2.4185344857365467,
+            "trans": 73.8132535024336
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 0,
+            "time": 2.4186244871435263,
+            "trans": 2228.5771032840457
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 1,
+            "time": 2.421952762514223,
+            "trans": 856.1536335558147
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 7,
+            "time": 2.426376224612615,
+            "trans": 31.47323659553969
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 8,
+            "time": 2.427125139693727,
+            "trans": 1310.2922232873477
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 7,
+            "time": 2.427892779252157,
+            "trans": 436.62796357905984
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 7,
+            "time": 2.42893696082608,
+            "trans": 1415.9926111229393
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 8,
+            "time": 2.431675468908507,
+            "trans": 646.4929181017142
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 2,
+            "time": 2.4486807190541735,
+            "trans": 1742.9551038256884
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 4,
+            "time": 2.4708651416705,
+            "trans": 2305.486766916024
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 5,
+            "time": 2.471905906020856,
+            "trans": 50.568571387018594
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 2,
+            "time": 2.483691677321223,
+            "trans": 67.05564544405816
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 7,
+            "time": 2.4837531649274096,
+            "trans": 692.9192072968266
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 9,
+            "time": 2.4995104014489455,
+            "trans": 18.982996316167785
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 8,
+            "time": 2.5017943693648026,
+            "trans": 1364.1870443310447
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 8,
+            "time": 2.505092816577259,
+            "trans": 5270.9379881837785
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 6,
+            "time": 2.5086861593202254,
+            "trans": 239.1430969798014
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 0,
+            "time": 2.5104238341429705,
+            "trans": 352.17463707110363
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 1,
+            "time": 2.5112515093761916,
+            "trans": 1649.3308653003778
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 2,
+            "time": 2.5215904722866385,
+            "trans": 245.65607504934698
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 9,
+            "time": 2.523940970016886,
+            "trans": 544.2998774268125
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 0,
+            "time": 2.5402700608617748,
+            "trans": 53.74445819086688
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 1,
+            "time": 2.545589829874469,
+            "trans": 361.34690783004106
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 1,
+            "time": 2.547480347248975,
+            "trans": 1086.9607609719596
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 3,
+            "time": 2.5514891603595684,
+            "trans": 614.015512181294
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 1,
+            "time": 2.55221376508688,
+            "trans": 3245.7621174082183
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 6,
+            "time": 2.5607097559978715,
+            "trans": 1651.0786851698936
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 6,
+            "time": 2.564640326762629,
+            "trans": 12.779241213540306
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 4,
+            "time": 2.5710345309787566,
+            "trans": 897.9269288933399
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 0,
+            "time": 2.57358363377251,
+            "trans": 2117.094791949882
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 2,
+            "time": 2.5829853596659125,
+            "trans": 1475.4107220228072
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 2,
+            "time": 2.5844125238695246,
+            "trans": 668.2610091404325
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 7,
+            "time": 2.58679583647777,
+            "trans": 301.76243889524903
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 0,
+            "time": 2.5902308635020823,
+            "trans": 1163.5623840178537
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 2,
+            "time": 2.6046690313533087,
+            "trans": 263.29660351370705
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 8,
+            "time": 2.6059839068340787,
+            "trans": 2663.616747328777
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 5,
+            "time": 2.6086180384485314,
+            "trans": 6302.000811904663
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 4,
+            "time": 2.617450042448983,
+            "trans": 2086.3908231576347
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 4,
+            "time": 2.627201052039815,
+            "trans": 589.8439836145913
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 8,
+            "time": 2.641498556712302,
+            "trans": 332.97315402278116
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 5,
+            "time": 2.6514253847572156,
+            "trans": 76.70777610775099
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 0,
+            "time": 2.6554012228402337,
+            "trans": 232.0966419245775
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 1,
+            "time": 2.660534193585116,
+            "trans": 918.1340921006561
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 7,
+            "time": 2.6915043904610014,
+            "trans": 25.875455279417523
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 1,
+            "time": 2.6954480175232423,
+            "trans": 2691.4855428705987
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 4,
+            "time": 2.7032352080256654,
+            "trans": 1701.576013410217
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 8,
+            "time": 2.7135179471623574,
+            "trans": 4679.448413807617
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 2,
+            "time": 2.7148972097759145,
+            "trans": 606.272531200231
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 9,
+            "time": 2.7173095791872512,
+            "trans": 34.59613305195265
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 7,
+            "time": 2.7189005287654773,
+            "trans": 679.7265412368704
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 6,
+            "time": 2.735897420086529,
+            "trans": 113.67449805693224
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 1,
+            "time": 2.7390155173420005,
+            "trans": 347.4630955974909
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 9,
+            "time": 2.7477486929470496,
+            "trans": 631.2614919445687
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 2,
+            "time": 2.7563691692243015,
+            "trans": 130.4016607018291
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 0,
+            "time": 2.76533790208238,
+            "trans": 55.06457785931831
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 8,
+            "time": 2.772071301599002,
+            "trans": 2051.3410123633894
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 0,
+            "time": 2.774870710149497,
+            "trans": 701.2898087351314
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 0,
+            "time": 2.781982170008173,
+            "trans": 1493.8569523103492
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 9,
+            "time": 2.7905179364712605,
+            "trans": 53.7649778571748
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 4,
+            "time": 2.7936172283210583,
+            "trans": 1883.570629595356
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 5,
+            "time": 2.8008292221792686,
+            "trans": 50.617750675630816
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 1,
+            "time": 2.806929262799868,
+            "trans": 812.1310926511043
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 0,
+            "time": 2.8171064878593817,
+            "trans": 810.0620640630372
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 6,
+            "time": 2.827821399514486,
+            "trans": 13.144598049094418
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 5,
+            "time": 2.8352217290568666,
+            "trans": 2321.72168530904
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 1,
+            "time": 2.8462788499678346,
+            "trans": 1311.145774927264
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 2,
+            "time": 2.8483671447163377,
+            "trans": 245.65607504934698
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 9,
+            "time": 2.85170318811451,
+            "trans": 543.2255173086528
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 2,
+            "time": 2.865639916356734,
+            "trans": 1818.987671538338
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 9,
+            "time": 2.907753676746696,
+            "trans": 150.066466552608
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 4,
+            "time": 2.908412641159615,
+            "trans": 83.33119854995931
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 0,
+            "time": 2.9230085576139575,
+            "trans": 3153.154310536647
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 2,
+            "time": 2.928032672100367,
+            "trans": 245.65607504934698
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 4,
+            "time": 2.9354300824335424,
+            "trans": 1312.9227069977621
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 6,
+            "time": 2.94265607597358,
+            "trans": 1381.2495805472445
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 6,
+            "time": 2.95549955591873,
+            "trans": 161.910170843512
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 1,
+            "time": 2.960296445917256,
+            "trans": 1024.1991719215764
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 8,
+            "time": 2.9690135598509304,
+            "trans": 375.22505808600994
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 2,
+            "time": 2.9746973549416587,
+            "trans": 1123.0594253149745
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 8,
+            "time": 2.9756997450886913,
+            "trans": 1437.356705296176
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 7,
+            "time": 2.976037395233231,
+            "trans": 19.913676561994826
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 8,
+            "time": 2.9877977809580587,
+            "trans": 596.6938187696495
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 1,
+            "time": 2.997736792539763,
+            "trans": 1713.6341863417301
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 9,
+            "time": 3.009923943401873,
+            "trans": 43.95328234369154
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 8,
+            "time": 3.0393804752221127,
+            "trans": 55.41847622276311
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 5,
+            "time": 3.049081744768586,
+            "trans": 7368.6544168184155
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 3,
+            "time": 3.0501638016342048,
+            "trans": 16.354255831565865
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 5,
+            "time": 3.056291586125794,
+            "trans": 159.99334667043055
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 0,
+            "time": 3.07042964589678,
+            "trans": 3324.9449648995314
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 7,
+            "time": 3.0775982977186533,
+            "trans": 1490.7951711290816
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 0,
+            "time": 3.0827765085147982,
+            "trans": 35.56182774226966
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 6,
+            "time": 3.0934331315224606,
+            "trans": 26.643996790646874
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 6,
+            "time": 3.1121422517794253,
+            "trans": 1583.0390307228122
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 4,
+            "time": 3.1183596622485816,
+            "trans": 1173.5365854329273
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 9,
+            "time": 3.1235923821078706,
+            "trans": 48.76441855059487
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 9,
+            "time": 3.1285671576506555,
+            "trans": 24.49649177975592
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 1,
+            "time": 3.130466979096568,
+            "trans": 2480.7958721898663
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 8,
+            "time": 3.1444178597246712,
+            "trans": 749.2160337534481
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 8,
+            "time": 3.150581606468175,
+            "trans": 379.2409310831499
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 5,
+            "time": 3.1550870159236504,
+            "trans": 63.736585644239725
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 0,
+            "time": 3.1653080778205407,
+            "trans": 319.4417209966191
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 6,
+            "time": 3.1741682789452788,
+            "trans": 173.13965074477068
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 0,
+            "time": 3.18602085017847,
+            "trans": 211.56864068246801
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 3,
+            "time": 3.1911534466249396,
+            "trans": 633.951230102317
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 6,
+            "time": 3.1983655694851785,
+            "trans": 346.6167866457074
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 6,
+            "time": 3.2141962246255873,
+            "trans": 1267.66759003446
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 0,
+            "time": 3.251006968893676,
+            "trans": 1448.354733038139
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 4,
+            "time": 3.2709928568358277,
+            "trans": 81.3167696578735
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 4,
+            "time": 3.2888196449898577,
+            "trans": 1177.1744278596298
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 1,
+            "time": 3.3181441062577193,
+            "trans": 23.794266757554155
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 6,
+            "time": 3.3459980226931907,
+            "trans": 9.055851899297483
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 4,
+            "time": 3.3711798284893844,
+            "trans": 1763.1920855415913
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 8,
+            "time": 3.398515709113817,
+            "trans": 499.8071198431516
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 6,
+            "time": 3.425217011276447,
+            "trans": 146.4777486436937
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 3,
+            "time": 3.431785932758187,
+            "trans": 223.0825467691148
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 6,
+            "time": 3.4913643286470113,
+            "trans": 156.79508475322638
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 1,
+            "time": 3.5145295787263144,
+            "trans": 1839.0883234970106
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 5,
+            "time": 3.5199851229843495,
+            "trans": 1140.1152996505173
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 5,
+            "time": 3.5300209951271153,
+            "trans": 231.3942184429924
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 3,
+            "time": 3.5617325260577544,
+            "trans": 284.9950968695108
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 0,
+            "time": 3.5879689765954796,
+            "trans": 27.85298835655886
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 4,
+            "time": 3.664735137726525,
+            "trans": 20.670639481518986
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 1,
+            "time": 3.815233096460137,
+            "trans": 47.93101075355112
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 3,
+            "time": 3.8722079559699605,
+            "trans": 164.03187859168028
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 4,
+            "time": 4.069374087820978,
+            "trans": 18.8078142775871
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 2,
+            "time": 4.070029695021528,
+            "trans": 1074.8749002828033
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 5,
+            "time": 4.14199016056511,
+            "trans": 1161.8594027559514
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 2,
+            "time": 4.2216704742758875,
+            "trans": 644.0768125803216
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 3,
+            "time": 4.26878527548105,
+            "trans": 29.658162101608745
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 7,
+            "time": 4.364711666508729,
+            "trans": 2602.3280358418233
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 2,
+            "time": 4.417977946352384,
+            "trans": 1487.4421865015074
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 3,
+            "time": 4.469474941015727,
+            "trans": 223.48572651414844
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 5,
+            "time": 4.504636264729351,
+            "trans": 1316.930347264523
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 3,
+            "time": 4.576518592653952,
+            "trans": 45.13884903385253
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 1,
+            "time": 4.590761519346444,
+            "trans": 55.39424042593729
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 5,
+            "time": 4.637333950427099,
+            "trans": 1395.832831694014
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 5,
+            "time": 4.78573350426691,
+            "trans": 1306.086758388723
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 2,
+            "time": 4.794900447627529,
+            "trans": 7499.18727210167
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 3,
+            "time": 4.834466090332265,
+            "trans": 39.6419236800866
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 2,
+            "time": 4.861177670918427,
+            "trans": 2229.5333154597197
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 2,
+            "time": 4.86317520392924,
+            "trans": 15291.599841658517
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 5,
+            "time": 4.869189227677547,
+            "trans": 1157.9458055103376
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 2,
+            "time": 4.904390182360872,
+            "trans": 5029.206636376023
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 3,
+            "time": 4.9506213182563075,
+            "trans": 23.229756853013058
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 3,
+            "time": 4.961985937484586,
+            "trans": 39.1904097474139
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 6,
+            "time": 4.968722553823444,
+            "trans": 524.2493610118829
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 9,
+            "time": 5.022250047912051,
+            "trans": 1262.089732588187
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 1,
+            "time": 5.06221775995178,
+            "trans": 8.881770572113428
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 6,
+            "time": 5.100354934122516,
+            "trans": 41.45394358541387
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 4,
+            "time": 5.122612654521078,
+            "trans": 672.5643201207661
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 1,
+            "time": 5.158807178785845,
+            "trans": 17.976656771956435
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 4,
+            "time": 5.164100535681685,
+            "trans": 491.67648924529317
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 7,
+            "time": 5.185660178873889,
+            "trans": 2420.4665504087884
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 6,
+            "time": 5.20121828503183,
+            "trans": 1199.6191647053442
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 3,
+            "time": 5.213875686142293,
+            "trans": 5.2933691092631925
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 3,
+            "time": 5.234856274743688,
+            "trans": 30.128187087810765
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 6,
+            "time": 5.252151731731523,
+            "trans": 39.1780422530295
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 2,
+            "time": 5.2719124613386565,
+            "trans": 7943.006034568258
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 8,
+            "time": 5.302980775579839,
+            "trans": 910.9268873886488
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 2,
+            "time": 5.32293487844249,
+            "trans": 1195.6077931225045
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 2,
+            "time": 5.332013702071073,
+            "trans": 51.25803959535256
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 1,
+            "time": 5.340304375002245,
+            "trans": 22.76421606104281
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 2,
+            "time": 5.343409624884743,
+            "trans": 17214.873079265337
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 5,
+            "time": 5.348426839153872,
+            "trans": 1053.8654690773296
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 3,
+            "time": 5.359490732934398,
+            "trans": 39.41058877217764
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 1,
+            "time": 5.385519416371348,
+            "trans": 28.355080988011405
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 9,
+            "time": 5.405430131509496,
+            "trans": 143.2837470739148
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 4,
+            "time": 5.422046288250847,
+            "trans": 506.68271072247103
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 8,
+            "time": 5.426792655718494,
+            "trans": 44.59285933724964
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 8,
+            "time": 5.470902017533264,
+            "trans": 478.99227744002087
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 6,
+            "time": 5.488126372212177,
+            "trans": 789.7096742166372
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 3,
+            "time": 5.506136595246154,
+            "trans": 2.6064039292331422
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 2,
+            "time": 5.528109336641347,
+            "trans": 7578.862341349893
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 3,
+            "time": 5.605628607966833,
+            "trans": 15.542541671544544
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 8,
+            "time": 5.615172034378144,
+            "trans": 826.1030955615349
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 2,
+            "time": 5.65648706213014,
+            "trans": 1281.4382884807892
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 1,
+            "time": 5.669657471103797,
+            "trans": 13.582424110595909
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 9,
+            "time": 5.70644097923602,
+            "trans": 3998.422166147583
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 9,
+            "time": 5.715078095090842,
+            "trans": 730.3605522068382
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 4,
+            "time": 5.717247664664847,
+            "trans": 513.7038150390982
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 2,
+            "time": 5.718271559747923,
+            "trans": 3599.5898300995086
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 9,
+            "time": 5.734315467098376,
+            "trans": 15062.978220951642
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 2,
+            "time": 5.734735611353253,
+            "trans": 6253.054703853564
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 2,
+            "time": 5.752506277077098,
+            "trans": 1438.8819414389282
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 6,
+            "time": 5.783664247885167,
+            "trans": 671.0958750935031
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 2,
+            "time": 5.797111006526151,
+            "trans": 1544.1569321730808
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 8,
+            "time": 5.823171417032962,
+            "trans": 38.32281311097783
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 9,
+            "time": 5.871050094648158,
+            "trans": 1396.5500606963546
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 3,
+            "time": 5.884426020954251,
+            "trans": 31.61025691271499
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 1,
+            "time": 5.893057585160018,
+            "trans": 34.75113539760612
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 9,
+            "time": 5.9666864232138295,
+            "trans": 8737.460832888646
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 1,
+            "time": 5.977941376917006,
+            "trans": 18.049104550989867
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 2,
+            "time": 6.010943566677931,
+            "trans": 8722.915500181953
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 3,
+            "time": 6.014270434764109,
+            "trans": 4.646346251490954
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 3,
+            "time": 6.017412395936665,
+            "trans": 84.39719165227602
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 4,
+            "time": 6.019136154423998,
+            "trans": 501.641536467825
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 2,
+            "time": 6.096471688819742,
+            "trans": 1015.5624843605268
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 6,
+            "time": 6.097094338211556,
+            "trans": 282.47842963325525
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 3,
+            "time": 6.149304809961012,
+            "trans": 26.20996644222996
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 9,
+            "time": 6.1995855134790006,
+            "trans": 14929.614919279053
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 9,
+            "time": 6.204652070345194,
+            "trans": 409.1586096196092
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 4,
+            "time": 6.214966060403237,
+            "trans": 456.9192167265942
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 3,
+            "time": 6.21730545559266,
+            "trans": 928.0767254067367
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 1,
+            "time": 6.237099689486028,
+            "trans": 21.03497091959185
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 4,
+            "time": 6.27740339766835,
+            "trans": 312.30691383225997
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 2,
+            "time": 6.298672701855212,
+            "trans": 12442.288126525122
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 2,
+            "time": 6.301110807106764,
+            "trans": 337.71512011272364
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 8,
+            "time": 6.301142936726594,
+            "trans": 62.54837548968294
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 4,
+            "time": 6.319978514024048,
+            "trans": 473.42205099966634
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 9,
+            "time": 6.353430518742872,
+            "trans": 6728.097052634867
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 1,
+            "time": 6.364260066423394,
+            "trans": 5.800966859703907
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 9,
+            "time": 6.379903334001151,
+            "trans": 10362.756942254204
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 2,
+            "time": 6.407258836216956,
+            "trans": 14883.003263102353
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 2,
+            "time": 6.416501330180537,
+            "trans": 970.8461405397958
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 3,
+            "time": 6.419882891502495,
+            "trans": 776.1259976287471
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 4,
+            "time": 6.452067584860687,
+            "trans": 583.1406516829111
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 8,
+            "time": 6.490311907673485,
+            "trans": 42.11172698366991
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 2,
+            "time": 6.517318894144537,
+            "trans": 1371.1140806357848
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 4,
+            "time": 6.651041816922776,
+            "trans": 519.3174310910426
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 3,
+            "time": 6.6564516031221,
+            "trans": 16.024659172330594
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 9,
+            "time": 6.6627741951289785,
+            "trans": 475.24284940873883
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 1,
+            "time": 6.668181747283243,
+            "trans": 21.159626995634106
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 6,
+            "time": 6.677052897967872,
+            "trans": 871.2377770577253
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 3,
+            "time": 6.701728528170668,
+            "trans": 539.786769700436
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 0,
+            "time": 6.731118000600203,
+            "trans": 37.75139211101792
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 8,
+            "time": 6.752376814288877,
+            "trans": 23.251506185402235
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 2,
+            "time": 6.805174751564255,
+            "trans": 984.9174600546905
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 2,
+            "time": 6.8421657602949075,
+            "trans": 1082.5897271870979
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 6,
+            "time": 6.851950818373068,
+            "trans": 131.16480591398033
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 9,
+            "time": 6.867072777087951,
+            "trans": 9648.989279204201
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 4,
+            "time": 6.8677729363917415,
+            "trans": 529.4126242602548
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 9,
+            "time": 6.885250253705663,
+            "trans": 339.70339040183995
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 2,
+            "time": 6.933020214284197,
+            "trans": 8722.92851055609
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 6,
+            "time": 7.028304740493,
+            "trans": 649.2566288512799
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 9,
+            "time": 7.0325698651483455,
+            "trans": 240.7461801062957
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 8,
+            "time": 7.035250021746145,
+            "trans": 44.52006488567115
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 4,
+            "time": 7.04340592676606,
+            "trans": 685.7125380363079
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 3,
+            "time": 7.058935399436203,
+            "trans": 46.7623866837316
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 3,
+            "time": 7.102945463899128,
+            "trans": 21.970928405271984
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 2,
+            "time": 7.134972696361072,
+            "trans": 13927.84216963973
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 8,
+            "time": 7.170859658197308,
+            "trans": 27.062372831196125
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 9,
+            "time": 7.17257360898078,
+            "trans": 16289.298024903814
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 2,
+            "time": 7.226799171925081,
+            "trans": 4279.360175842485
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 0,
+            "time": 7.261733068060416,
+            "trans": 1870.2707351115896
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 0,
+            "time": 7.280364403799979,
+            "trans": 55.923432394950304
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 0,
+            "time": 7.285161039132787,
+            "trans": 2471.974663795616
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 9,
+            "time": 7.286355669426736,
+            "trans": 5489.968837662927
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 4,
+            "time": 7.290709955760584,
+            "trans": 720.8526467031191
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 6,
+            "time": 7.346228078274984,
+            "trans": 2468.897577781163
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 3,
+            "time": 7.3605550278912135,
+            "trans": 30.362327442663947
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 6,
+            "time": 7.376619573482937,
+            "trans": 3018.342409469966
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 6,
+            "time": 7.377595519808996,
+            "trans": 638.8745883888284
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 2,
+            "time": 7.386898651479365,
+            "trans": 7966.805141538048
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 6,
+            "time": 7.401458542886539,
+            "trans": 2627.551987186799
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 8,
+            "time": 7.415698142267615,
+            "trans": 55.64140925110422
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 6,
+            "time": 7.493348193228804,
+            "trans": 183.8703360210206
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 8,
+            "time": 7.500287045541047,
+            "trans": 88.26369144910399
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 2,
+            "time": 7.523237516251612,
+            "trans": 1276.7105451361297
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 0,
+            "time": 7.535056677919563,
+            "trans": 3286.06132803807
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 0,
+            "time": 7.559164291589019,
+            "trans": 52.022793290709735
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 0,
+            "time": 7.594467541421926,
+            "trans": 2764.8700881465365
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 2,
+            "time": 7.67301899063729,
+            "trans": 596.8496247087907
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 6,
+            "time": 7.6827943806841725,
+            "trans": 869.766814826912
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 6,
+            "time": 7.735283051606331,
+            "trans": 523.8373990307869
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 0,
+            "time": 7.81519765885967,
+            "trans": 2200.055491000638
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 5,
+            "time": 7.9122514173744785,
+            "trans": 46.23941374578021
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 7,
+            "time": 7.93589973107243,
+            "trans": 3038.2143554332592
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 0,
+            "time": 8.005609645813479,
+            "trans": 2330.4934161442966
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 6,
+            "time": 8.138942736468085,
+            "trans": 394.0478357439787
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 0,
+            "time": 8.153531263742861,
+            "trans": 1857.020992561104
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 9,
+            "time": 8.15441657519058,
+            "trans": 95.8021631003141
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 3,
+            "time": 8.15649222598837,
+            "trans": 1189.6926122828665
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 3,
+            "time": 8.166727087948914,
+            "trans": 2131.1095533729376
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 0,
+            "time": 8.200368288303878,
+            "trans": 2579.694816840516
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 1,
+            "time": 8.228409522651061,
+            "trans": 823.8193967273803
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 1,
+            "time": 8.284474706647897,
+            "trans": 339.08279713094015
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 8,
+            "time": 8.292174651830656,
+            "trans": 660.6055533732422
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 0,
+            "time": 8.292376253437139,
+            "trans": 1829.758558630023
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 0,
+            "time": 8.333382745751791,
+            "trans": 2672.3522170698398
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 1,
+            "time": 8.36087921086289,
+            "trans": 418.239734263611
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 0,
+            "time": 8.3710512347444,
+            "trans": 1927.2050304850925
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 3,
+            "time": 8.378358293072287,
+            "trans": 1581.0744064331723
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 2,
+            "time": 8.411092808480642,
+            "trans": 822.4707675355879
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 3,
+            "time": 8.421157892225247,
+            "trans": 168.75252061482
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 0,
+            "time": 8.460222895909698,
+            "trans": 1789.5176186608956
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 9,
+            "time": 8.479755030984052,
+            "trans": 120.77221359053073
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 1,
+            "time": 8.507065257763777,
+            "trans": 366.268478470166
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 0,
+            "time": 8.512722894491501,
+            "trans": 1857.0226431274464
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 1,
+            "time": 8.521383690291236,
+            "trans": 425.72870020514085
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 1,
+            "time": 8.522911195002772,
+            "trans": 480.0486311288722
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 3,
+            "time": 8.55904786238534,
+            "trans": 3086.836950750867
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 8,
+            "time": 8.588177062865391,
+            "trans": 522.4322095021358
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 3,
+            "time": 8.597015424966175,
+            "trans": 415.97261067289753
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 0,
+            "time": 8.607605999763926,
+            "trans": 1347.4609638214035
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 1,
+            "time": 8.60793201787905,
+            "trans": 1432.7523000084877
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 3,
+            "time": 8.668198925788246,
+            "trans": 794.8011282451384
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 8,
+            "time": 8.688173764332845,
+            "trans": 602.3957892898253
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 0,
+            "time": 8.741868511748672,
+            "trans": 1925.8439479012518
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 3,
+            "time": 8.742026301418944,
+            "trans": 1238.0584917447245
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 9,
+            "time": 8.746526486627083,
+            "trans": 176.74898000962142
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 8,
+            "time": 8.774646441889194,
+            "trans": 595.9061120597432
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 8,
+            "time": 8.783369832429843,
+            "trans": 507.1417668136985
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 1,
+            "time": 8.8011956924911,
+            "trans": 802.6043429396461
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 1,
+            "time": 8.80357370160018,
+            "trans": 314.39350692771535
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 5,
+            "time": 8.81674971535428,
+            "trans": 1203.3848649685513
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 0,
+            "time": 8.846683350902845,
+            "trans": 2591.7086442975674
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 6,
+            "time": 8.930199502866312,
+            "trans": 987.6101059342132
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 0,
+            "time": 8.934753937269342,
+            "trans": 1064.0649492377997
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 1,
+            "time": 8.939718768365704,
+            "trans": 1236.7713657557965
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 6,
+            "time": 8.94887195532733,
+            "trans": 1731.5210109082054
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 9,
+            "time": 8.977346851712396,
+            "trans": 100.75493726570149
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 8,
+            "time": 9.064609148029419,
+            "trans": 851.2991409883493
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 1,
+            "time": 9.066410206285472,
+            "trans": 1040.5939510307553
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 9,
+            "time": 9.11225459684883,
+            "trans": 74.41295227531191
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 1,
+            "time": 9.135306604406074,
+            "trans": 360.5203374624298
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 5,
+            "time": 9.13604640295247,
+            "trans": 1236.5949462982555
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 6,
+            "time": 9.229920917992041,
+            "trans": 767.7323878910163
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 1,
+            "time": 9.256638819171778,
+            "trans": 517.9039661128324
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 1,
+            "time": 9.323694355068895,
+            "trans": 1181.7919773981998
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 1,
+            "time": 9.443055295608461,
+            "trans": 1118.3230507962296
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 1,
+            "time": 9.63072185721359,
+            "trans": 1576.0156158624775
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 1,
+            "time": 9.665497598056287,
+            "trans": 20.865169194889404
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 1,
+            "time": 9.786800074423962,
+            "trans": 39.662118327488315
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 2,
+            "time": 9.894938748709496,
+            "trans": 1650.30697441711
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 2,
+            "time": 9.913591093821443,
+            "trans": 1625.482027798041
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 1,
+            "time": 9.927881434898998,
+            "trans": 1067.6093903658175
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 1,
+            "time": 9.94264316811051,
+            "trans": 13.799328238332528
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 2,
+            "time": 9.963292084257134,
+            "trans": 2627.402471261178
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 1,
+            "time": 10.02848058994238,
+            "trans": 404.5849918124755
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 1,
+            "time": 10.163438120921587,
+            "trans": 1118.3737001021514
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 1,
+            "time": 10.224415604756734,
+            "trans": 237.40630083700466
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 3,
+            "time": 10.330248843421815,
+            "trans": 33.64281266660111
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 2,
+            "time": 10.38284232252784,
+            "trans": 1397.1051296629103
+        },
+        {
+            "receiver_ind": 2,
+            "sender_ind": 3,
+            "time": 10.655307912564743,
+            "trans": 40.75849499360493
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 0,
+            "time": 10.70945638422834,
+            "trans": 48.64715664298055
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 8,
+            "time": 10.742823942544662,
+            "trans": 1201.2156566586027
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 2,
+            "time": 10.863501966633178,
+            "trans": 2889.648156492904
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 8,
+            "time": 11.006192070439678,
+            "trans": 144.8827776406032
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 2,
+            "time": 11.055871220124754,
+            "trans": 2438.2866360196144
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 0,
+            "time": 11.086172562337087,
+            "trans": 46.03806261363614
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 7,
+            "time": 11.182508219555796,
+            "trans": 2299.8260056082804
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 0,
+            "time": 11.328395427074986,
+            "trans": 48.70468244603296
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 2,
+            "time": 11.378601021107993,
+            "trans": 1585.0791690186134
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 3,
+            "time": 11.379620037714325,
+            "trans": 27.43619552024687
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 2,
+            "time": 11.514212349787929,
+            "trans": 1056.3008821488795
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 7,
+            "time": 11.80631368370247,
+            "trans": 4464.54986778214
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 3,
+            "time": 12.293966608344672,
+            "trans": 839.6961683154445
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 3,
+            "time": 12.454559618846739,
+            "trans": 625.9923990992276
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 7,
+            "time": 12.484146749763635,
+            "trans": 3086.162543107859
+        },
+        {
+            "receiver_ind": 7,
+            "sender_ind": 5,
+            "time": 12.629753175427757,
+            "trans": 1268.5985986793546
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 3,
+            "time": 12.712024689126165,
+            "trans": 528.619327140836
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 3,
+            "time": 12.918249771376948,
+            "trans": 629.2395895702168
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 5,
+            "time": 12.941589547102236,
+            "trans": 63.38637583526079
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 5,
+            "time": 12.949033421498568,
+            "trans": 54.68641272852942
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 2,
+            "time": 12.99394310092385,
+            "trans": 947.2180702512504
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 2,
+            "time": 13.424519104742522,
+            "trans": 1237.4242405796206
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 2,
+            "time": 13.739370305529173,
+            "trans": 820.0372723028871
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 6,
+            "time": 14.094785885917267,
+            "trans": 2557.816849555434
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 6,
+            "time": 14.282051923695324,
+            "trans": 2822.7081391542506
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 6,
+            "time": 14.283863990605875,
+            "trans": 2480.414253055851
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 6,
+            "time": 14.477296811670637,
+            "trans": 2597.030749151123
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 6,
+            "time": 14.505180610153863,
+            "trans": 3070.157319330481
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 1,
+            "time": 14.584124274307985,
+            "trans": 548.5694725920371
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 1,
+            "time": 14.677358748551885,
+            "trans": 445.77863303519393
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 6,
+            "time": 14.898522553924485,
+            "trans": 932.379572005592
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 9,
+            "time": 15.122156419024018,
+            "trans": 127.55358469099987
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 2,
+            "time": 15.637335441986522,
+            "trans": 1144.7382681676145
+        },
+        {
+            "receiver_ind": 6,
+            "sender_ind": 7,
+            "time": 15.64044563341781,
+            "trans": 2326.9046690412524
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 8,
+            "time": 16.175522619639885,
+            "trans": 761.9328990439378
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 8,
+            "time": 16.666627075784184,
+            "trans": 467.65581640074436
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 8,
+            "time": 16.800151077485026,
+            "trans": 507.01482065089726
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 3,
+            "time": 16.930416350135218,
+            "trans": 1471.665266553071
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 5,
+            "time": 17.933970727763928,
+            "trans": 85.3258027548463
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 1,
+            "time": 18.376158764539092,
+            "trans": 1271.1377809465555
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 3,
+            "time": 18.439352167943518,
+            "trans": 671.1826326911969
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 1,
+            "time": 18.49027140469291,
+            "trans": 557.777809475073
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 3,
+            "time": 18.59088476806133,
+            "trans": 302.5896407266142
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 1,
+            "time": 18.670614856945647,
+            "trans": 962.8833593399492
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 1,
+            "time": 18.779662440996823,
+            "trans": 929.3466321775679
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 3,
+            "time": 18.906055397361435,
+            "trans": 495.713933598149
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 3,
+            "time": 18.943728593830812,
+            "trans": 536.6507965037885
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 1,
+            "time": 19.062949184289355,
+            "trans": 283.9641043136436
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 1,
+            "time": 19.243877535683158,
+            "trans": 1029.4279616894642
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 3,
+            "time": 19.475809464383392,
+            "trans": 712.5668558658998
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 3,
+            "time": 19.89558672375867,
+            "trans": 768.1624296959345
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 3,
+            "time": 20.17552463044786,
+            "trans": 604.5436894514331
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 9,
+            "time": 20.98511767721267,
+            "trans": 141.83745303113255
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 6,
+            "time": 21.225166793341753,
+            "trans": 2626.81167333516
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 6,
+            "time": 21.261228768429646,
+            "trans": 2466.742195737184
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 8,
+            "time": 21.288540310421958,
+            "trans": 1929.6269731291443
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 6,
+            "time": 21.465303562725286,
+            "trans": 3012.7886086579447
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 8,
+            "time": 21.584008241114095,
+            "trans": 692.8294581147127
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 6,
+            "time": 21.692584884331932,
+            "trans": 2688.39927739587
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 8,
+            "time": 21.8276645081734,
+            "trans": 569.2653328325041
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 8,
+            "time": 21.82796804666124,
+            "trans": 1129.0909206311044
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 6,
+            "time": 21.840329813706195,
+            "trans": 2699.043649794916
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 8,
+            "time": 21.93950988380059,
+            "trans": 1589.940122748899
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 8,
+            "time": 22.083612486060364,
+            "trans": 1300.8757685538376
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 8,
+            "time": 22.0993266118934,
+            "trans": 1499.4254311233758
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 6,
+            "time": 22.18129561919538,
+            "trans": 3021.7587227784925
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 6,
+            "time": 22.323554249236775,
+            "trans": 2654.23258307444
+        },
+        {
+            "receiver_ind": 5,
+            "sender_ind": 8,
+            "time": 22.350130299900353,
+            "trans": 1427.6499763066283
+        },
+        {
+            "receiver_ind": 3,
+            "sender_ind": 6,
+            "time": 22.56183595895056,
+            "trans": 2998.797328325773
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 5,
+            "time": 23.05306170573537,
+            "trans": 60.50500712285222
+        },
+        {
+            "receiver_ind": 4,
+            "sender_ind": 5,
+            "time": 23.110031649284466,
+            "trans": 70.44381510541425
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 8,
+            "time": 24.458676561826852,
+            "trans": 1006.4834356253801
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 8,
+            "time": 24.549079518791856,
+            "trans": 990.5673513830516
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 8,
+            "time": 24.81233586467425,
+            "trans": 714.2840378560402
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 8,
+            "time": 24.983993598410176,
+            "trans": 233.02946878465235
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 8,
+            "time": 25.054162321226,
+            "trans": 1120.597615842406
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 3,
+            "time": 25.062593580572802,
+            "trans": 374.52957384903834
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 3,
+            "time": 25.101083383652025,
+            "trans": 1485.674645231802
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 8,
+            "time": 25.122794256441956,
+            "trans": 693.7973226056832
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 3,
+            "time": 25.22518953139353,
+            "trans": 271.48375931382134
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 3,
+            "time": 25.453424958735006,
+            "trans": 559.3540637372914
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 3,
+            "time": 25.623094976390895,
+            "trans": 549.1874563956887
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 3,
+            "time": 25.665894720355357,
+            "trans": 2228.0565877714193
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 3,
+            "time": 25.697552608399487,
+            "trans": 3565.5623565482624
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 8,
+            "time": 32.7896259709952,
+            "trans": 455.4810879400304
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 8,
+            "time": 32.80936983257599,
+            "trans": 771.0102391591666
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 8,
+            "time": 33.011546655952735,
+            "trans": 623.3593763437221
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 8,
+            "time": 33.138280683649484,
+            "trans": 406.8401149959767
+        },
+        {
+            "receiver_ind": 9,
+            "sender_ind": 8,
+            "time": 33.26600663053833,
+            "trans": 597.6976445929943
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 3,
+            "time": 33.856054912703414,
+            "trans": 1428.0336663502912
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 3,
+            "time": 33.96736802383765,
+            "trans": 1925.658637815549
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 3,
+            "time": 34.13830750057523,
+            "trans": 2774.9716846978918
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 3,
+            "time": 34.255254488895744,
+            "trans": 1082.8556485475833
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 3,
+            "time": 34.421728527841594,
+            "trans": 1102.2031694076843
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 3,
+            "time": 34.5743851971303,
+            "trans": 1706.9824814141953
+        },
+        {
+            "receiver_ind": 0,
+            "sender_ind": 3,
+            "time": 34.81227426963041,
+            "trans": 1476.3181477304743
+        }
+    ]
+}
