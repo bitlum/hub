@@ -1,5 +1,9 @@
 import statistics
-import erfcut
+import samples.erfcut as erfcut
+
+import sys
+
+sys.path.append('../')
 
 
 class SmartSample:

@@ -5,7 +5,7 @@ import sys
 
 sys.path.append('../')
 
-from samplegen import generate_sample
+from samples.samplegen import generate_sample
 
 
 def flowvect_gen(file_name_inlet):

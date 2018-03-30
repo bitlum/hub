@@ -1,3 +1,8 @@
+import sys
+
+sys.path.append('../')
+
+
 class SmartLog:
 
     def __init__(self):

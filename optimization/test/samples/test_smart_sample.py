@@ -1,9 +1,9 @@
 import sys
 
-sys.path.append('../')
+sys.path.append('../../')
 
-from samplegen import *
-from smartsample import *
+from samples.samplegen import *
+from samples.smartsample import *
 
 value = generate_sample(number=1000, mean=10, stdev=2)
 

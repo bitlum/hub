@@ -7,10 +7,14 @@ import sys
 
 sys.path.append('../')
 
-import protobuf.hubrpc_pb2 as proto_hub
-import protobuf.hubrpc_pb2_grpc as proto_rpc_hub
+import protobuffer.hubrpc_pb2 as proto_hub
+import protobuffer.hubrpc_pb2_grpc as proto_rpc_hub
 
-from test.test_router_rpc_client import ActivityGenerator
+import sys
+
+sys.path.append('../../')
+
+from test.rpc.test_router_rpc_client import ActivityGenerator
 
 
 class OptimisationGenerator(ActivityGenerator):

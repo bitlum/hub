@@ -3,9 +3,9 @@ from watchdog.events import PatternMatchingEventHandler
 
 import sys
 
-sys.path.append('../')
+sys.path.append('../../')
 
-import protobuf.test.test_pb2 as proto
+import protobuffer.test.test_pb2 as proto
 
 
 class WatchLogRead(PatternMatchingEventHandler):

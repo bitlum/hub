@@ -1,5 +1,9 @@
 import random
 
+import sys
+
+sys.path.append('../')
+
 
 def generate_sample(number, mean, stdev):
     value = []

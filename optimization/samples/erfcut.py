@@ -1,6 +1,10 @@
 import math
 from enum import Enum
 
+import sys
+
+sys.path.append('../')
+
 
 def gaussian(x, mean, stdev):
     return math.exp(

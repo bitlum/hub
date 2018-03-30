@@ -1,8 +1,13 @@
 import time
 from watchdog.observers import Observer
 
-from smartlog import *
-from watchlogread import *
+import sys
+
+sys.path.append('../')
+
+
+from samples.smartlog import *
+from watcher.watchlogread import *
 
 log = SmartLog()
 

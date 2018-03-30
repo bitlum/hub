@@ -3,8 +3,12 @@ import time
 
 import grpc
 
-import protobuf.rpc_pb2 as proto
-import protobuf.rpc_pb2_grpc as proto_rpc
+import sys
+
+sys.path.append('../../')
+
+import protobuffer.rpc_pb2 as proto
+import protobuffer.rpc_pb2_grpc as proto_rpc
 
 _ONE_DAY_IN_SECONDS = 60 * 60 * 24
 

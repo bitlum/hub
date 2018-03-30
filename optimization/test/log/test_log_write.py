@@ -3,9 +3,9 @@ import random
 
 import sys
 
-sys.path.append('../')
+sys.path.append('../../')
 
-import protobuf.test.test_pb2 as proto
+import protobuffer.test.test_pb2 as proto
 from datetime import datetime
 
 

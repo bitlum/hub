@@ -4,9 +4,14 @@ import datetime
 import time
 from sortedcontainers import SortedDict
 
-import protobuf.log_pb2 as proto
+import protobuffer.log_pb2 as proto
 
 from protobuf_to_dict import protobuf_to_dict
+
+
+import sys
+
+sys.path.append('../')
 
 
 def print_massege(massege, nesting=-4):

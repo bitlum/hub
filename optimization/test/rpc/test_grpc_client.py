@@ -5,10 +5,10 @@ import grpc
 
 import sys
 
-sys.path.append('../')
+sys.path.append('../../')
 
-import protobuf.test.test_grpc_pb2 as proto
-import protobuf.test.test_grpc_pb2_grpc as proto_grpc
+import protobuffer.test.test_grpc_pb2 as proto
+import protobuffer.test.test_grpc_pb2_grpc as proto_grpc
 
 
 def run():
