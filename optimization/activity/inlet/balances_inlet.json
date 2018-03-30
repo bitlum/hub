@@ -1,4 +1,6 @@
 {
     "balances_file_name": "outlet/balances.json",
-    "transmatr_file_name": "outlet/transmatr.json"
+    "transmatr_file_name": "outlet/transmatr.json",
+    "users_id_file_name": "outlet/users_id.json",
+    "channels_id_file_name": "outlet/channels_id.json"
 }

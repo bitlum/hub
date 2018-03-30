@@ -1,5 +1,5 @@
 {
-    "users_ind_calc_file_name": "outlet/users_ind_calc.json",
+    "users_id_calc_file_name": "outlet/users_id_calc.json",
     "timematr_calc_file_name": "outlet/timematr_calc.json",
     "transmatr_calc_file_name": "outlet/transmatr_calc.json",
     "transstream_file_name": "../activity/outlet/transstream.json"
