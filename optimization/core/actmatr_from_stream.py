@@ -22,6 +22,8 @@ def actmatr_calc(file_name_inlet):
 
     timematr_calc = [[[0.] for _ in range(len(users_id_calc))] for _ in
                      range(len(users_id_calc))]
+    periodmatr_calc = [[[0.] for _ in range(len(users_id_calc))] for _ in
+                       range(len(users_id_calc))]
     transmatr_calc = [[[0.] for _ in range(len(users_id_calc))] for _ in
                       range(len(users_id_calc))]
 
@@ -29,6 +31,9 @@ def actmatr_calc(file_name_inlet):
         timematr_calc[users_ind_calc[transstream[i]['sender_id']]][
             users_ind_calc[transstream[i]['receiver_id']]].append(
             transstream[i]['time'])
+        periodmatr_calc[users_ind_calc[transstream[i]['sender_id']]][
+            users_ind_calc[transstream[i]['receiver_id']]].append(
+            transstream[i]['time'] - transstream[i - 1]['time'])
         transmatr_calc[users_ind_calc[transstream[i]['sender_id']]][
             users_ind_calc[transstream[i]['receiver_id']]].append(
             transstream[i]['trans'])
@@ -41,11 +46,13 @@ def actmatr_calc(file_name_inlet):
         json.dump({'timematr_calc': timematr_calc}, f, sort_keys=True,
                   indent=4 * ' ')
 
+    with open(inlet['periodmatr_calc_file_name'], 'w') as f:
+        json.dump({'periodmatr_calc': periodmatr_calc}, f, sort_keys=True,
+                  indent=4 * ' ')
+
     with open(inlet['transmatr_calc_file_name'], 'w') as f:
         json.dump({'transmatr_calc': transmatr_calc}, f, sort_keys=True,
                   indent=4 * ' ')
-
-    print(transmatr_calc)
 
 
 if __name__ == '__main__':
