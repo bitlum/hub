@@ -10,6 +10,7 @@ sys.path.append('../')
 import protobuffer.hubrpc_pb2 as proto_hub
 import protobuffer.hubrpc_pb2_grpc as proto_rpc_hub
 
+import grpc
 import sys
 
 sys.path.append('../../')
@@ -49,5 +50,11 @@ if __name__ == '__main__':
     #         generator.set_update_link_request(ind_user=i,
     #                                         router_balance=i + 1))
 
-    stub.UpdateLink(generator.set_update_link_request(ind_user=0,
-                                                      router_balance=1))
+    for i in range(users_num):
+        try:
+            stub.UpdateLink(
+                generator.set_update_link_request(ind_user=i,
+                                                  router_balance=i + 1))
+        except grpc._channel._Rendezvous:
+            print('↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑')
+            print('grpc._channel._Rendezvous, but fuck it\n')
