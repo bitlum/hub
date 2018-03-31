@@ -20,13 +20,12 @@ def flowmatr_gen(file_name_inlet):
     flowmatr = [copy.deepcopy(flowvect) for _ in range(len(flowvect))]
 
     for i in range(len(flowmatr)):
-        flowmatr[i][i] = 0.
-
-    for i in range(len(flowmatr)):
         for j in range(len(flowmatr[i])):
-            flowmatr[i][j] *= random.uniform(
-                inlet['min_mult'], inlet['max_mult'])
-            flowmatr[i][j] *= receivers[j]
+            if receivers[j]:
+                flowmatr[i][j] *= random.uniform(inlet['min_mult'],
+                                                 inlet['max_mult'])
+            elif i == j or not receivers[j]:
+                flowmatr[i][j] = None
 
     with open(inlet['flowmatr_file_name'], 'w') as f:
         json.dump({'flowmatr': flowmatr}, f, sort_keys=True,

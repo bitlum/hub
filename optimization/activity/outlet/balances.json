@@ -1,37 +1,37 @@
 {
     "balances": [
         {
-            "balance": 15005.854839173031,
+            "balance": 35035.702314797774,
             "channel_id": 1,
             "user_id": 1
         },
         {
-            "balance": 24549.7103056732,
+            "balance": 100217.71889992281,
             "channel_id": 2,
             "user_id": 2
         },
         {
-            "balance": 24176.6725097426,
+            "balance": 41493.83810461561,
             "channel_id": 3,
             "user_id": 3
         },
         {
-            "balance": 23200.71803775101,
+            "balance": 98095.27615915259,
             "channel_id": 4,
             "user_id": 4
         },
         {
-            "balance": 11466.016571607845,
+            "balance": 93724.92114454429,
             "channel_id": 5,
             "user_id": 5
         },
         {
-            "balance": 9594.013225069239,
+            "balance": 25225.347903062895,
             "channel_id": 6,
             "user_id": 6
         },
         {
-            "balance": 21918.221240257757,
+            "balance": 69581.27239847473,
             "channel_id": 7,
             "user_id": 7
         }

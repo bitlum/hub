@@ -22,32 +22,31 @@ def actmatr_gen(file_name_inlet):
     with open(inlet['sizematr_stdev_file_name']) as f:
         sizematr_stdev = json.load(f)['sizematr_stdev']
 
-    timematr = [[[0.] for _ in range(len(periodmatr_mean))] for _ in
+    timematr = [[[] for _ in range(len(periodmatr_mean))] for _ in
                 range(len(periodmatr_mean))]
-    transmatr = [[[0.] for _ in range(len(periodmatr_mean))] for _ in
+    transmatr = [[[] for _ in range(len(periodmatr_mean))] for _ in
                  range(len(periodmatr_mean))]
 
     for i in range(len(periodmatr_mean)):
         for j in range(len(periodmatr_mean[i])):
-            if periodmatr_mean[i][j] != 0:
+            if periodmatr_mean[i][j] is not None:
+
                 for _ in range(
                         int(inlet['time_period'] / periodmatr_mean[i][j])):
-                    timematr[i][j].append(timematr[i][j][-1] +
-                                          random.gauss(
-                                              periodmatr_mean[i][j],
-                                              periodmatr_mean[i][j] *
-                                              periodmatr_stdev[i][j]))
+                    timematr[i][j].append(random.gauss(periodmatr_mean[i][j],
+                                                       periodmatr_stdev[i][j]))
 
-                    if timematr[i][j][-1] <= timematr[i][j][-2]:
-                        timematr[i][j][-1] = timematr[i][j][-2] + \
-                                             periodmatr_mean[i][j]
+                    if timematr[i][j][-1] <= 0:
+                        timematr[i][j][-1] = periodmatr_mean[i][j]
 
                     transmatr[i][j].append(random.gauss(sizematr_mean[i][j],
-                                                        sizematr_mean[i][j] *
                                                         sizematr_stdev[i][j]))
 
                     if transmatr[i][j][-1] <= 0:
                         transmatr[i][j][-1] = sizematr_mean[i][j]
+
+                for k in range(1, len(timematr[i][j])):
+                    timematr[i][j][k] += timematr[i][j][k - 1]
 
     with open(inlet['timematr_file_name'], 'w') as f:
         json.dump({'timematr': timematr}, f, sort_keys=True, indent=4 * ' ')

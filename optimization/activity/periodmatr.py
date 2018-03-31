@@ -19,7 +19,7 @@ def periodmatr_gen(file_name_inlet):
 
     for i in range(len(flowmatr)):
         for j in range(len(flowmatr[i])):
-            if flowmatr[i][j] != 0:
+            if flowmatr[i][j] is not None:
 
                 periodmatr_mean[i][j] = random.gauss(
                     inlet['mean_mean_period'],
@@ -31,8 +31,13 @@ def periodmatr_gen(file_name_inlet):
                 periodmatr_stdev[i][j] = random.gauss(
                     inlet['mean_stdev_period'],
                     inlet['mean_stdev_period'] * inlet['stdev_stdev_period'])
+
                 if periodmatr_stdev[i][j] < 0:
                     periodmatr_stdev[i][j] = inlet['mean_stdev_period']
+
+            else:
+                periodmatr_mean[i][j] = None
+                periodmatr_stdev[i][j] = None
 
     with open(inlet['periodmatr_mean_file_name'], 'w') as f:
         json.dump({'periodmatr_mean': periodmatr_mean}, f, sort_keys=True,

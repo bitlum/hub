@@ -12,9 +12,9 @@ def flowvect_gen(file_name_inlet):
     with open(file_name_inlet) as f:
         inlet = json.load(f)
 
-    users_id = [i + 1 for i in range(inlet['users_number'])]
+    users_id = {i: i + 1 for i in range(inlet['users_number'])}
 
-    channels_id = [i + 1 for i in range(inlet['users_number'])]
+    channels_id = {i: i + 1 for i in range(inlet['users_number'])}
 
     flowvect = generate_sample(inlet['users_number'], inlet['flow_mean'],
                                inlet['flow_mean'] * inlet['flow_stdev'])
@@ -33,7 +33,7 @@ def flowvect_gen(file_name_inlet):
         flowvect[gates_ind[i]] *= random.uniform(inlet['gates_min_mult'],
                                                  inlet['gates_max_mult'])
 
-    receivers = [0 for _ in range(inlet['users_number'])]
+    receivers = [False for _ in range(inlet['users_number'])]
 
     receivers_number = int(inlet['users_number'] * inlet['receivers_frac'])
 
@@ -42,7 +42,7 @@ def flowvect_gen(file_name_inlet):
     receivers_ind = random.sample(range(len(receivers_ind)), receivers_number)
 
     for i in range(len(receivers_ind)):
-        receivers[receivers_ind[i]] = 1
+        receivers[receivers_ind[i]] = True
 
     with open(inlet['users_id_file_name'], 'w') as f:
         json.dump({'users_id': users_id}, f,

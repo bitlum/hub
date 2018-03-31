@@ -21,11 +21,12 @@ def transstream_gen(file_name_inlet):
     transstream_unsort = []
     for i in range(len(timematr)):
         for j in range(len(timematr[i])):
-            if len(timematr[i][j]) > 1:
-                for k in range(1, len(timematr[i][j])):
+            if len(timematr[i][j]) > 0:
+                for k in range(len(timematr[i][j])):
                     transstream_unsort.append(
-                        dict(time=timematr[i][j][k], sender_id=users_id[i],
-                             receiver_id=users_id[j],
+                        dict(time=timematr[i][j][k],
+                             sender_id=users_id[str(i)],
+                             receiver_id=users_id[str(j)],
                              trans=transmatr[i][j][k]))
 
     def take_time(trans):

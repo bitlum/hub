@@ -12,14 +12,14 @@ import sys
 sys.path.append('../')
 
 # flowvect_gen(file_name_inlet='inlet/flowvect_inlet.json')
-#
+
 # flowmatr_gen(file_name_inlet='inlet/flowmatr_inlet.json')
 #
 # periodmatr_gen(file_name_inlet='inlet/periodmatr_inlet.json')
 #
 # sizematr_gen(file_name_inlet='inlet/sizematr_inlet.json')
 #
-# actmatr_gen(file_name_inlet='inlet/actmatr_inlet.json')
+actmatr_gen(file_name_inlet='inlet/actmatr_inlet.json')
 
 balances_gen(file_name_inlet='inlet/balances_inlet.json')
 
