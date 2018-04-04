@@ -5,17 +5,12 @@ import datetime
 
 import sys
 
-sys.path.append('../')
+sys.path.append('../../')
 
 import protobuffer.hubrpc_pb2 as proto_hub
 import protobuffer.hubrpc_pb2_grpc as proto_rpc_hub
 
-import grpc
-import sys
-
-sys.path.append('../../')
-
-from test.rpc.test_router_rpc_client import ActivityGenerator
+from test_router_rpc_client import ActivityGenerator
 
 
 class OptimisationGenerator(ActivityGenerator):
@@ -55,6 +50,5 @@ if __name__ == '__main__':
             stub.UpdateLink(
                 generator.set_update_link_request(ind_user=i,
                                                   router_balance=i + 1))
-        except grpc._channel._Rendezvous:
-            print('↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑')
-            print('grpc._channel._Rendezvous, but fuck it\n')
+        except grpc._channel._Rendezvous as er:
+            print(er, ' is skiped\n')
