@@ -1,5 +1,9 @@
 package router
 
+import (
+	"sync"
+)
+
 // Broadcast is an element which contains the link on next
 // broadcast element. This structure implements the broadcast queue.
 // This structure contains the writen in the broadcaster value, and has a link
@@ -50,8 +54,9 @@ func NewBroadcaster() Broadcaster {
 
 			case cmd := <-brodcaster.commands:
 				// Init receiver with the last element in the queue.
-				cmd.resp <- Receiver{
+				cmd.resp <- &Receiver{
 					broadcasts: lastElem,
+					quit:       make(chan struct{}),
 				}
 			}
 		}
@@ -62,13 +67,13 @@ func NewBroadcaster() Broadcaster {
 
 // cmdInitReceiver is used to initialise the new receiver in thread safe manner.
 type cmdInitReceiver struct {
-	resp chan Receiver
+	resp chan *Receiver
 }
 
 // Listen start listening to the broadcasts.
-func (b Broadcaster) Listen() Receiver {
+func (b Broadcaster) Listen() *Receiver {
 	cmd := &cmdInitReceiver{
-		resp: make(chan Receiver, 0),
+		resp: make(chan *Receiver, 0),
 	}
 
 	b.commands <- cmd
@@ -76,12 +81,16 @@ func (b Broadcaster) Listen() Receiver {
 }
 
 // Write broadcast a value to all listeners/receivers.
-func (b Broadcaster) Write(v interface{}) { b.sendChan <- v }
+func (b Broadcaster) Write(v interface{}) {
+	b.sendChan <- v
+}
 
 // Receiver is an entity which is receiving messages,
 // broadcast by the broadcaster.
 type Receiver struct {
 	broadcasts chan Broadcast
+	quit       chan struct{}
+	sync.Mutex
 }
 
 // Read a value that has been broadcast, waiting until one is available if
@@ -93,6 +102,9 @@ func (r *Receiver) Read() chan interface{} {
 	c := make(chan interface{})
 
 	go func() {
+		r.Lock()
+		defer r.Unlock()
+
 		// Take the broadcast element for the channel, such action services as the
 		// mutex, because other receivers on this stage are waiting for the element
 		// to be in channel.
@@ -110,7 +122,10 @@ func (r *Receiver) Read() chan interface{} {
 			// Update channel with the next, if this channel contains the broadcast
 			// element than it will be taken on the next read.
 			r.broadcasts = b.next
+		case <-r.quit:
+			close(c)
 		default:
+			close(c)
 		}
 	}()
 
@@ -120,4 +135,5 @@ func (r *Receiver) Read() chan interface{} {
 // Stop ensures that reader not holds the outdated broadcasts elements.
 func (r *Receiver) Stop() {
 	r.broadcasts = nil
+	close(r.quit)
 }

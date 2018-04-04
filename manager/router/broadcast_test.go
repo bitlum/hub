@@ -2,27 +2,48 @@ package router
 
 import (
 	"testing"
-	"fmt"
 	"time"
-	"strconv"
 )
 
-func TestBroadcaster(t *testing.T) {
+func TestBroadcasterOrder(t *testing.T) {
 	broadcaster := NewBroadcaster()
 
-	firstReceiver := broadcaster.Listen()
+	receiver := broadcaster.Listen()
+	defer receiver.Stop()
 
-	go func() {
-		for i := 1; i < 101; i++ {
-			broadcaster.Write(strconv.Itoa(i))
+	for i := 0; i < 20000; i++ {
+		broadcaster.Write(i)
+
+		v, ok := <-receiver.Read()
+		if !ok {
+			t.Fatalf("kek")
 		}
-	}()
 
-	go func() {
-		for {
-			fmt.Println("first:", <-firstReceiver.Read())
+		j := v.(int)
+
+		if i != j {
+			t.Fatalf("wrong order, expected: %v, received: %v", i, j)
 		}
-	}()
+	}
+}
 
-	time.Sleep(time.Second * 10)
+func TestBroadcasterDoubleRead(t *testing.T) {
+	broadcaster := NewBroadcaster()
+
+	receiver := broadcaster.Listen()
+	defer receiver.Stop()
+
+	broadcaster.Write(&struct{}{})
+
+	select {
+	case <-receiver.Read():
+	case <-time.After(time.Millisecond * 50):
+		t.Fatalf("haven't received writen data")
+	}
+
+	select {
+	case <-receiver.Read():
+		t.Fatalf("received unxpected data")
+	case <-time.After(time.Millisecond * 50):
+	}
 }
