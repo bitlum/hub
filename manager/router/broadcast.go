@@ -90,7 +90,7 @@ type Receiver struct {
 // NOTE: Value of the broadcast element might be accessed only by one of the
 // receivers, so this operation is thread-safe.
 func (r *Receiver) Read() chan interface{} {
-	c := make(chan interface{}, 1)
+	c := make(chan interface{})
 
 	go func() {
 		// Take the broadcast element for the channel, such action services as the
@@ -103,12 +103,21 @@ func (r *Receiver) Read() chan interface{} {
 		// if they want.
 		r.broadcasts <- b
 
-		// Update channel with the next, if this channel contains the broadcast
-		// element than it will be taken on the next read.
-		r.broadcasts = b.next
-
-		c <- v
+		// Move to the next object only if receiver has received it,
+		// otherwise we believe that read was abandoned for some reason.
+		select {
+		case c <- v:
+			// Update channel with the next, if this channel contains the broadcast
+			// element than it will be taken on the next read.
+			r.broadcasts = b.next
+		default:
+		}
 	}()
 
 	return c
+}
+
+// Stop ensures that reader not holds the outdated broadcasts elements.
+func (r *Receiver) Stop() {
+	r.broadcasts = nil
 }

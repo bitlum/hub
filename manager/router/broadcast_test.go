@@ -3,18 +3,17 @@ package router
 import (
 	"testing"
 	"fmt"
-	"strconv"
 	"time"
+	"strconv"
 )
 
 func TestBroadcaster(t *testing.T) {
 	broadcaster := NewBroadcaster()
 
 	firstReceiver := broadcaster.Listen()
-	secondReceiver := broadcaster.Listen()
 
 	go func() {
-		for i := 1; i < 10001; i++ {
+		for i := 1; i < 101; i++ {
 			broadcaster.Write(strconv.Itoa(i))
 		}
 	}()
@@ -22,12 +21,6 @@ func TestBroadcaster(t *testing.T) {
 	go func() {
 		for {
 			fmt.Println("first:", <-firstReceiver.Read())
-		}
-	}()
-
-	go func() {
-		for {
-			fmt.Println("second:", <-secondReceiver.Read())
 		}
 	}()
 
