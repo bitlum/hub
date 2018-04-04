@@ -49,11 +49,11 @@ message OpenChannelRequest {
 }
 
 message OpenChannelResponse {
-    uint64 chan_id = 3;
+    string channel_id = 3;
 }
 
 message CloseChannelRequest {
-    uint64 chan_id = 3;
+    string channel_id = 3;
 }
 
 message CloseChannelResponse {
