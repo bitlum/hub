@@ -84,6 +84,9 @@ func updateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 		needWriteState = time.After(3 * time.Second)
 	}
 
+	receiver := r.RegisterOnUpdates()
+	defer receiver.Stop()
+
 	for {
 		// NOTE: If move open/close of the file out of this cycle than this
 		// would lead to optimisation third-party program unable to get and
@@ -108,7 +111,7 @@ func updateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 		}
 
 		select {
-		case update, ok := <-r.ReceiveUpdates():
+		case update, ok := <-receiver.Read():
 			if !ok {
 				mainLog.Info("Router update channel close, " +
 					"exiting log update goroutine")
