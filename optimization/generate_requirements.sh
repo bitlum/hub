@@ -1,2 +1,3 @@
 #!/usr/bin/env bash
-pipreqs .
+pipreqs --force .
+python3 reqsedit.py
