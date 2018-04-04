@@ -49,7 +49,7 @@ type Router interface {
 }
 
 // ChannelID uniquely identifies the channel in the lightning network.
-type ChannelID uint64
+type ChannelID string
 
 // UserID uniquely identifies the user in the local lightning network.
 type UserID string

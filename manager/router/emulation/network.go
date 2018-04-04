@@ -9,6 +9,7 @@ import (
 	"github.com/go-errors/errors"
 	"sync"
 	"time"
+	"strconv"
 )
 
 // emulationNetwork is used to emulate activity of users in router local
@@ -255,7 +256,7 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 	}()
 
 	return &OpenChannelResponse{
-		ChanId: n.channelIndex,
+		ChannelId: strconv.FormatUint(n.channelIndex, 10),
 	}, nil
 }
 
@@ -268,7 +269,7 @@ func (n *emulationNetwork) CloseChannel(_ context.Context, req *CloseChannelRequ
 	n.Lock()
 	defer n.Unlock()
 
-	chanID := router.ChannelID(req.ChanId)
+	chanID := router.ChannelID(req.ChannelId)
 	channel, ok := n.channels[chanID]
 	if !ok {
 		return nil, errors.Errorf("unable to find the channel with %v id", chanID)

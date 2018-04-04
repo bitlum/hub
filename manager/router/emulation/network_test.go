@@ -42,7 +42,7 @@ func TestEmulationNetwork(t *testing.T) {
 	}
 
 	obj = &router.UpdateChannelOpening{}
-	if err := checkUpdate(t, updates, obj); err != nil {
+	if err := checkUpdate(updates, obj); err != nil {
 		t.Fatal(err)
 	}
 
@@ -56,7 +56,7 @@ func TestEmulationNetwork(t *testing.T) {
 	}
 
 	obj = &router.UpdateChannelOpened{}
-	if err := checkUpdate(t, updates, obj); err != nil {
+	if err := checkUpdate(updates, obj); err != nil {
 		t.Fatal(err)
 	}
 
@@ -68,7 +68,7 @@ func TestEmulationNetwork(t *testing.T) {
 	}
 
 	obj = &router.UpdateChannelOpening{}
-	if err := checkUpdate(t, updates, obj); err != nil {
+	if err := checkUpdate(updates, obj); err != nil {
 		t.Fatal(err)
 	}
 
@@ -82,7 +82,7 @@ func TestEmulationNetwork(t *testing.T) {
 	}
 
 	obj = &router.UpdateChannelOpened{}
-	if err := checkUpdate(t, updates, obj); err != nil {
+	if err := checkUpdate(updates, obj); err != nil {
 		t.Fatal(err)
 	}
 
@@ -118,21 +118,21 @@ func TestEmulationNetwork(t *testing.T) {
 	}
 
 	obj = &router.UpdatePayment{}
-	if err := checkUpdate(t, updates, obj); err != nil {
+	if err := checkUpdate(updates, obj); err != nil {
 		t.Fatal(err)
 	}
 
 	// Check that we couldn't lock more that we have
-	if err := r.UpdateChannel(2, 1000); err == nil {
+	if err := r.UpdateChannel("2", 1000); err == nil {
 		t.Fatalf("error haven't been received")
 	}
 
-	if err := r.UpdateChannel(2, 10); err != nil {
+	if err := r.UpdateChannel("2", 10); err != nil {
 		t.Fatalf("unable to update channel: %v", err)
 	}
 
 	obj = &router.UpdateChannelUpdating{}
-	if err := checkUpdate(t, updates, obj); err != nil {
+	if err := checkUpdate(updates, obj); err != nil {
 		t.Fatal(err)
 	}
 
@@ -157,7 +157,7 @@ func TestEmulationNetwork(t *testing.T) {
 	}
 
 	obj = &router.UpdateChannelUpdated{}
-	if err := checkUpdate(t, updates, obj); err != nil {
+	if err := checkUpdate(updates, obj); err != nil {
 		t.Fatal(err)
 	}
 
@@ -170,7 +170,7 @@ func TestEmulationNetwork(t *testing.T) {
 	}
 
 	obj = &router.UpdatePayment{}
-	if err := checkUpdate(t, updates, obj); err != nil {
+	if err := checkUpdate(updates, obj); err != nil {
 		t.Fatal(err)
 	}
 
@@ -195,12 +195,12 @@ func TestEmulationNetwork(t *testing.T) {
 	}
 
 	// Close channel from side of router
-	if err := r.CloseChannel(2); err != nil {
+	if err := r.CloseChannel("2"); err != nil {
 		t.Fatalf("unable to close the channel")
 	}
 
 	obj = &router.UpdateChannelClosing{}
-	if err := checkUpdate(t, updates, obj); err != nil {
+	if err := checkUpdate(updates, obj); err != nil {
 		t.Fatal(err)
 	}
 
@@ -216,7 +216,7 @@ func TestEmulationNetwork(t *testing.T) {
 	}
 
 	obj = &router.UpdateChannelClosed{}
-	if err := checkUpdate(t, updates, obj); err != nil {
+	if err := checkUpdate(updates, obj); err != nil {
 		t.Fatal(err)
 	}
 
@@ -231,12 +231,12 @@ func TestEmulationNetwork(t *testing.T) {
 
 	// Close channel from side of user
 	if _, err := r.network.CloseChannel(context.Background(),
-		&CloseChannelRequest{ChanId: 1}); err != nil {
+		&CloseChannelRequest{ChannelId: "1"}); err != nil {
 		t.Fatalf("unable to close the channel")
 	}
 
 	obj = &router.UpdateChannelClosing{}
-	if err := checkUpdate(t, updates, obj); err != nil {
+	if err := checkUpdate(updates, obj); err != nil {
 		t.Fatal(err)
 	}
 
@@ -250,7 +250,7 @@ func TestEmulationNetwork(t *testing.T) {
 	}
 
 	obj = &router.UpdateChannelClosed{}
-	if err := checkUpdate(t, updates, obj); err != nil {
+	if err := checkUpdate(updates, obj); err != nil {
 		t.Fatal(err)
 	}
 
@@ -333,7 +333,7 @@ func TestSimpleStrategy(t *testing.T) {
 
 }
 
-func checkUpdate(t *testing.T, receiver *router.Receiver, obj interface{}) error {
+func checkUpdate(receiver *router.Receiver, obj interface{}) error {
 	desiredType := reflect.TypeOf(obj)
 
 	select {
