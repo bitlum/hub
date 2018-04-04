@@ -45,7 +45,7 @@ func getState(r router.Router) (*logger.Log, error) {
 	for i, c := range routerChannels {
 		channels[i] = &logger.Channel{
 			ChannelId:     uint64(c.ChannelID),
-			UserId:        uint64(c.UserID),
+			UserId:        string(c.UserID),
 			UserBalance:   uint64(c.UserBalance),
 			RouterBalance: uint64(c.RouterBalance),
 			IsPending:     c.IsPending,
@@ -123,7 +123,7 @@ func updateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 						ChannelChange: &logger.ChannelChange{
 							Type:          logger.ChannelChangeType_closing,
 							ChannelId:     uint64(u.ChannelID),
-							UserId:        uint64(u.UserID),
+							UserId:        string(u.UserID),
 							UserBalance:   0,
 							RouterBalance: 0,
 							Fee:           uint64(u.Fee),
@@ -138,7 +138,7 @@ func updateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 						ChannelChange: &logger.ChannelChange{
 							Type:          logger.ChannelChangeType_closed,
 							ChannelId:     uint64(u.ChannelID),
-							UserId:        uint64(u.UserID),
+							UserId:        string(u.UserID),
 							UserBalance:   0,
 							RouterBalance: 0,
 							Fee:           uint64(u.Fee),
@@ -153,7 +153,7 @@ func updateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 						ChannelChange: &logger.ChannelChange{
 							Type:          logger.ChannelChangeType_openning,
 							ChannelId:     uint64(u.ChannelID),
-							UserId:        uint64(u.UserID),
+							UserId:        string(u.UserID),
 							UserBalance:   uint64(u.UserBalance),
 							RouterBalance: uint64(u.RouterBalance),
 							Fee:           uint64(u.Fee),
@@ -168,7 +168,7 @@ func updateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 						ChannelChange: &logger.ChannelChange{
 							Type:          logger.ChannelChangeType_opened,
 							ChannelId:     uint64(u.ChannelID),
-							UserId:        uint64(u.UserID),
+							UserId:        string(u.UserID),
 							UserBalance:   uint64(u.UserBalance),
 							RouterBalance: uint64(u.RouterBalance),
 							Fee:           uint64(u.Fee),
@@ -183,7 +183,7 @@ func updateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 						ChannelChange: &logger.ChannelChange{
 							Type:          logger.ChannelChangeType_udpated,
 							ChannelId:     uint64(u.ChannelID),
-							UserId:        uint64(u.UserID),
+							UserId:        string(u.UserID),
 							UserBalance:   uint64(u.UserBalance),
 							RouterBalance: uint64(u.RouterBalance),
 							Fee:           uint64(u.Fee),
@@ -198,7 +198,7 @@ func updateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 						ChannelChange: &logger.ChannelChange{
 							Type:          logger.ChannelChangeType_udpated,
 							ChannelId:     uint64(u.ChannelID),
-							UserId:        uint64(u.UserID),
+							UserId:        string(u.UserID),
 							UserBalance:   uint64(u.UserBalance),
 							RouterBalance: uint64(u.RouterBalance),
 							Fee:           uint64(u.Fee),
@@ -227,8 +227,8 @@ func updateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 					Data: &logger.Log_Payment{
 						Payment: &logger.Payment{
 							Status:   status,
-							Sender:   u.Sender,
-							Receiver: u.Receiver,
+							Sender:   string(u.Sender),
+							Receiver: string(u.Receiver),
 							Amount:   u.Amount,
 							Earned:   u.Earned,
 						},
