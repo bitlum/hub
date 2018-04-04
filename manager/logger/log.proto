@@ -38,7 +38,7 @@ message RouterState {
 // network topology.
 message Channel {
     string user_id = 1;
-    uint64 channel_id = 2;
+    string channel_id = 2;
     uint64 user_balance = 3;
     uint64 router_balance = 4;
     bool is_pending = 5;
@@ -75,7 +75,7 @@ message ChannelChange {
     ChannelChangeType type = 1;
 
     string user_id = 2;
-    uint64 channel_id = 3;
+    string channel_id = 3;
 
     uint64 user_balance = 4;
     uint64 router_balance = 5;
