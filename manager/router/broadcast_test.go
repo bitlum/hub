@@ -16,7 +16,7 @@ func TestBroadcasterOrder(t *testing.T) {
 
 		v, ok := <-receiver.Read()
 		if !ok {
-			t.Fatalf("kek")
+			t.Fatalf("receiver was closed")
 		}
 
 		j := v.(int)
