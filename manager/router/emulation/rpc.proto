@@ -31,11 +31,11 @@ service Emulator {
 message SendPaymentRequest {
     // Sender is the id of user which sends the payment. If equals zero than we
     // believe that router is the sender.
-    uint64 sender = 1;
+    string sender = 1;
 
     // Receiver is the id of user who receive the payment. If equals zero than we
     // believe that router is the receiver.
-    uint64 receiver = 2;
+    string receiver = 2;
 
     uint64 amount = 4;
 }
@@ -44,7 +44,7 @@ message SendPaymentResponse {
 }
 
 message OpenChannelRequest {
-    uint64 user_id = 1;
+    string user_id = 1;
     uint64 locked_by_user = 2;
 }
 
