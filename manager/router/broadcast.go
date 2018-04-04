@@ -89,20 +89,26 @@ type Receiver struct {
 //
 // NOTE: Value of the broadcast element might be accessed only by one of the
 // receivers, so this operation is thread-safe.
-func (r *Receiver) Read() interface{} {
-	// Take the broadcast element for the channel, such action services as the
-	// mutex, because other receivers on this stage are waiting for the element
-	// to be in channel.
-	b := <-r.broadcasts
-	v := b.value
+func (r *Receiver) Read() chan interface{} {
+	c := make(chan interface{}, 1)
 
-	// Put element again in the channel, so that other receiver could take it,
-	// if they want.
-	r.broadcasts <- b
+	go func() {
+		// Take the broadcast element for the channel, such action services as the
+		// mutex, because other receivers on this stage are waiting for the element
+		// to be in channel.
+		b := <-r.broadcasts
+		v := b.value
 
-	// Update channel with the next, if this channel contains the broadcast
-	// element than it will be taken on the next read.
-	r.broadcasts = b.next
+		// Put element again in the channel, so that other receiver could take it,
+		// if they want.
+		r.broadcasts <- b
 
-	return v
+		// Update channel with the next, if this channel contains the broadcast
+		// element than it will be taken on the next read.
+		r.broadcasts = b.next
+
+		c <- v
+	}()
+
+	return c
 }

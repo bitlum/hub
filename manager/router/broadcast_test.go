@@ -21,13 +21,13 @@ func TestBroadcaster(t *testing.T) {
 
 	go func() {
 		for {
-			fmt.Println("first:", firstReceiver.Read())
+			fmt.Println("first:", <-firstReceiver.Read())
 		}
 	}()
 
 	go func() {
 		for {
-			fmt.Println("second:", secondReceiver.Read())
+			fmt.Println("second:", <-secondReceiver.Read())
 		}
 	}()
 
