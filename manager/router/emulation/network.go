@@ -97,11 +97,11 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 
 	var paymentFailed bool
 
-	if req.Receiver == 0 && req.Sender == 0 {
+	if req.Receiver == "" && req.Sender == "" {
 		return nil, errors.Errorf("both receiver and sender are zero")
 	}
 
-	if req.Sender != 0 {
+	if req.Sender != "" {
 		// TODO(andrew.shvv) add multiple channels support
 		channel, ok := n.users[router.UserID(req.Sender)]
 		if !ok {
@@ -132,7 +132,7 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 		}
 	}
 
-	if req.Receiver != 0 {
+	if req.Receiver != "" {
 		// TODO(andrew.shvv) add multiple channels support
 		channel, ok := n.users[router.UserID(req.Receiver)]
 		if !ok {
@@ -160,8 +160,8 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 			// so that it might be written in log for example an later examined.
 			n.updates <- &router.UpdatePayment{
 				Status:   router.InsufficientFunds,
-				Sender:   req.Sender,
-				Receiver: req.Receiver,
+				Sender:   router.UserID(req.Sender),
+				Receiver: router.UserID(req.Receiver),
 				Amount:   req.Amount,
 			}
 
@@ -171,8 +171,8 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 
 	n.updates <- &router.UpdatePayment{
 		Status:   router.Successful,
-		Sender:   req.Sender,
-		Receiver: req.Receiver,
+		Sender:   router.UserID(req.Sender),
+		Receiver: router.UserID(req.Receiver),
 		Amount:   req.Amount,
 
 		// TODO(andrew.shvv) Add earned

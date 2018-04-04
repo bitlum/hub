@@ -52,7 +52,7 @@ type Router interface {
 type ChannelID uint64
 
 // UserID uniquely identifies the user in the local lightning network.
-type UserID uint64
+type UserID string
 
 // ChannelUnit represent the number of funds locked by the participant.
 type ChannelUnit int64
@@ -154,8 +154,8 @@ type UpdateChannelOpened struct {
 
 type UpdatePayment struct {
 	Status    string
-	Sender    uint64
-	Receiver  uint64
+	Sender    UserID
+	Receiver  UserID
 	ChannelID uint64
 	Amount    uint64
 

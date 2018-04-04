@@ -5,9 +5,9 @@ import (
 	"context"
 	"github.com/bitlum/hub/manager/router"
 	"reflect"
-	"errors"
 	"time"
 	"google.golang.org/grpc"
+	"github.com/go-errors/errors"
 )
 
 func TestStartNetwork(t *testing.T) {
@@ -32,7 +32,7 @@ func TestEmulationNetwork(t *testing.T) {
 	s, _ := r.network.blockNotifier.Subscribe()
 
 	if _, err := r.network.OpenChannel(context.Background(), &OpenChannelRequest{
-		UserId:       1,
+		UserId:       "1",
 		LockedByUser: 10,
 	}); err != nil {
 		t.Fatalf("unable to emulate user openning channel: %v", err)
@@ -58,7 +58,7 @@ func TestEmulationNetwork(t *testing.T) {
 	}
 
 	if _, err := r.network.OpenChannel(context.Background(), &OpenChannelRequest{
-		UserId:       2,
+		UserId:       "2",
 		LockedByUser: 0,
 	}); err != nil {
 		t.Fatalf("unable to emulate user openning channel: %v", err)
@@ -85,30 +85,30 @@ func TestEmulationNetwork(t *testing.T) {
 
 	// Check uninitialised sender and receiver
 	if _, err := r.network.SendPayment(context.Background(), &SendPaymentRequest{
-		Sender:   0,
-		Receiver: 0,
+		Sender:   "",
+		Receiver: "",
 	}); err == nil {
 		t.Fatalf("error haven't been recevied")
 	}
 
 	// Check unknown sender
 	if _, err := r.network.SendPayment(context.Background(), &SendPaymentRequest{
-		Sender: 5,
+		Sender: "5",
 	}); err == nil {
 		t.Fatalf("error haven't been recevied")
 	}
 
 	// Check unknown receiver
 	if _, err := r.network.SendPayment(context.Background(), &SendPaymentRequest{
-		Receiver: 5,
+		Receiver: "5",
 	}); err == nil {
 		t.Fatalf("error haven't been recevied")
 	}
 
 	// Check insufficient funds
 	if _, err := r.network.SendPayment(context.Background(), &SendPaymentRequest{
-		Sender:   1,
-		Receiver: 2,
+		Sender:   "1",
+		Receiver: "2",
 		Amount:   5,
 	}); err != nil {
 		t.Fatalf("unable to make a payment")
@@ -159,8 +159,8 @@ func TestEmulationNetwork(t *testing.T) {
 	}
 
 	if _, err := r.network.SendPayment(context.Background(), &SendPaymentRequest{
-		Sender:   1,
-		Receiver: 2,
+		Sender:   "1",
+		Receiver: "2",
 		Amount:   5,
 	}); err != nil {
 		t.Fatalf("unable to make a payment: %v", err)
@@ -282,7 +282,7 @@ func TestSimpleStrategy(t *testing.T) {
 
 	// Send request for opening channel from user side.
 	if _, err := c.OpenChannel(context.Background(), &OpenChannelRequest{
-		UserId:       1,
+		UserId:       "1",
 		LockedByUser: 1000,
 	}); err != nil {
 		t.Fatalf("user unable to open channel: %v", err)
