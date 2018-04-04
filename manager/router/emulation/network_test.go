@@ -27,6 +27,9 @@ func TestEmulationNetwork(t *testing.T) {
 	go r.network.blockNotifier.Start()
 	defer r.network.blockNotifier.Stop()
 
+	updates := r.RegisterOnUpdates()
+	defer updates.Stop()
+
 	// This subscription is used to understand when new block has been
 	// generated.
 	s, _ := r.network.blockNotifier.Subscribe()
@@ -39,7 +42,7 @@ func TestEmulationNetwork(t *testing.T) {
 	}
 
 	obj = &router.UpdateChannelOpening{}
-	if err := checkUpdate(t, r.network.updates, obj); err != nil {
+	if err := checkUpdate(t, updates, obj); err != nil {
 		t.Fatal(err)
 	}
 
@@ -53,7 +56,7 @@ func TestEmulationNetwork(t *testing.T) {
 	}
 
 	obj = &router.UpdateChannelOpened{}
-	if err := checkUpdate(t, r.network.updates, obj); err != nil {
+	if err := checkUpdate(t, updates, obj); err != nil {
 		t.Fatal(err)
 	}
 
@@ -65,7 +68,7 @@ func TestEmulationNetwork(t *testing.T) {
 	}
 
 	obj = &router.UpdateChannelOpening{}
-	if err := checkUpdate(t, r.network.updates, obj); err != nil {
+	if err := checkUpdate(t, updates, obj); err != nil {
 		t.Fatal(err)
 	}
 
@@ -79,7 +82,7 @@ func TestEmulationNetwork(t *testing.T) {
 	}
 
 	obj = &router.UpdateChannelOpened{}
-	if err := checkUpdate(t, r.network.updates, obj); err != nil {
+	if err := checkUpdate(t, updates, obj); err != nil {
 		t.Fatal(err)
 	}
 
@@ -111,11 +114,11 @@ func TestEmulationNetwork(t *testing.T) {
 		Receiver: "2",
 		Amount:   5,
 	}); err != nil {
-		t.Fatalf("unable to make a payment")
+		t.Fatalf("unable to make a payment: %v", err)
 	}
 
 	obj = &router.UpdatePayment{}
-	if err := checkUpdate(t, r.network.updates, obj); err != nil {
+	if err := checkUpdate(t, updates, obj); err != nil {
 		t.Fatal(err)
 	}
 
@@ -129,7 +132,7 @@ func TestEmulationNetwork(t *testing.T) {
 	}
 
 	obj = &router.UpdateChannelUpdating{}
-	if err := checkUpdate(t, r.network.updates, obj); err != nil {
+	if err := checkUpdate(t, updates, obj); err != nil {
 		t.Fatal(err)
 	}
 
@@ -154,7 +157,7 @@ func TestEmulationNetwork(t *testing.T) {
 	}
 
 	obj = &router.UpdateChannelUpdated{}
-	if err := checkUpdate(t, r.network.updates, obj); err != nil {
+	if err := checkUpdate(t, updates, obj); err != nil {
 		t.Fatal(err)
 	}
 
@@ -167,7 +170,7 @@ func TestEmulationNetwork(t *testing.T) {
 	}
 
 	obj = &router.UpdatePayment{}
-	if err := checkUpdate(t, r.network.updates, obj); err != nil {
+	if err := checkUpdate(t, updates, obj); err != nil {
 		t.Fatal(err)
 	}
 
@@ -197,7 +200,7 @@ func TestEmulationNetwork(t *testing.T) {
 	}
 
 	obj = &router.UpdateChannelClosing{}
-	if err := checkUpdate(t, r.network.updates, obj); err != nil {
+	if err := checkUpdate(t, updates, obj); err != nil {
 		t.Fatal(err)
 	}
 
@@ -213,7 +216,7 @@ func TestEmulationNetwork(t *testing.T) {
 	}
 
 	obj = &router.UpdateChannelClosed{}
-	if err := checkUpdate(t, r.network.updates, obj); err != nil {
+	if err := checkUpdate(t, updates, obj); err != nil {
 		t.Fatal(err)
 	}
 
@@ -233,7 +236,7 @@ func TestEmulationNetwork(t *testing.T) {
 	}
 
 	obj = &router.UpdateChannelClosing{}
-	if err := checkUpdate(t, r.network.updates, obj); err != nil {
+	if err := checkUpdate(t, updates, obj); err != nil {
 		t.Fatal(err)
 	}
 
@@ -247,7 +250,7 @@ func TestEmulationNetwork(t *testing.T) {
 	}
 
 	obj = &router.UpdateChannelClosed{}
-	if err := checkUpdate(t, r.network.updates, obj); err != nil {
+	if err := checkUpdate(t, updates, obj); err != nil {
 		t.Fatal(err)
 	}
 
@@ -264,6 +267,9 @@ func TestEmulationNetwork(t *testing.T) {
 func TestSimpleStrategy(t *testing.T) {
 	strategy := router.NewChannelUpdateStrategy()
 	r := NewRouter(100, time.Hour)
+
+	updates := r.RegisterOnUpdates()
+	defer updates.Stop()
 
 	// Start emulation router serving on port, and connect to it over gRPC
 	// client.
@@ -290,9 +296,9 @@ func TestSimpleStrategy(t *testing.T) {
 
 	// As far as update requires block generating we have to emulate it and
 	// wait for state update notification to be received.
-	<-r.ReceiveUpdates()
+	<-updates.Read()
 	r.network.blockNotifier.MineBlock()
-	<-r.ReceiveUpdates()
+	<-updates.Read()
 
 	// Change the network and lock
 	currentNetwork, err := r.Network()
@@ -312,9 +318,9 @@ func TestSimpleStrategy(t *testing.T) {
 		}
 	}
 
-	<-r.ReceiveUpdates()
+	<-updates.Read()
 	r.network.blockNotifier.MineBlock()
-	<-r.ReceiveUpdates()
+	<-updates.Read()
 
 	currentNetwork, err = r.Network()
 	if err != nil {
@@ -327,15 +333,16 @@ func TestSimpleStrategy(t *testing.T) {
 
 }
 
-func checkUpdate(t *testing.T, updatesChan chan interface{}, obj interface{}) error {
+func checkUpdate(t *testing.T, receiver *router.Receiver, obj interface{}) error {
 	desiredType := reflect.TypeOf(obj)
 
 	select {
-	case update := <-updatesChan:
+	case update := <-receiver.Read():
 		if desiredType != reflect.TypeOf(update) {
-			return errors.New("wrong update type")
+			return errors.Errorf("wrong update type, expected: %v, "+
+				"received: %v", desiredType, reflect.TypeOf(update))
 		}
-	case <-time.After(time.Second):
+	case <-time.After(time.Second * 2):
 		return errors.New("haven't received update")
 	}
 

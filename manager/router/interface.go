@@ -27,10 +27,10 @@ type Router interface {
 	// payments.
 	SetFee(fee uint64) error
 
-	// ReceiveUpdates returns updates about router local network topology
-	// changes, about attempts of propagating the payment through the
-	// router, about fee changes etc.
-	ReceiveUpdates() <-chan interface{}
+	// RegisterOnUpdates returns register which returns updates about router
+	// local network topology changes, about attempts of propagating the payment
+	// through the router, about fee changes etc.
+	RegisterOnUpdates() *Receiver
 
 	// Network returns the information about the current local network router
 	// topology.

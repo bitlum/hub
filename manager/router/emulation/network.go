@@ -19,7 +19,7 @@ type emulationNetwork struct {
 
 	channels     map[router.ChannelID]*router.Channel
 	users        map[router.UserID]*router.Channel
-	updates      chan interface{}
+	broadcaster  router.Broadcaster
 	channelIndex uint64
 	grpcServer   *grpc.Server
 	errChan      chan error
@@ -34,7 +34,7 @@ func newEmulationNetwork(blockGeneration time.Duration) *emulationNetwork {
 	network := &emulationNetwork{
 		channels:        make(map[router.ChannelID]*router.Channel),
 		users:           make(map[router.UserID]*router.Channel),
-		updates:         make(chan interface{}, 5),
+		broadcaster:     router.NewBroadcaster(),
 		errChan:         make(chan error),
 		grpcServer:      grpcServer,
 		blockNotifier:   newBlockNotifier(blockGeneration),
@@ -158,18 +158,18 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 			// As far as this is emulation we shouldn't return error,
 			// but instead notify another subsystem about error,
 			// so that it might be written in log for example an later examined.
-			n.updates <- &router.UpdatePayment{
+			n.broadcaster.Write(&router.UpdatePayment{
 				Status:   router.InsufficientFunds,
 				Sender:   router.UserID(req.Sender),
 				Receiver: router.UserID(req.Receiver),
 				Amount:   req.Amount,
-			}
+			})
 
 			return &SendPaymentResponse{}, nil
 		}
 	}
 
-	n.updates <- &router.UpdatePayment{
+	n.broadcaster.Write(&router.UpdatePayment{
 		Status:   router.Successful,
 		Sender:   router.UserID(req.Sender),
 		Receiver: router.UserID(req.Receiver),
@@ -177,7 +177,7 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 
 		// TODO(andrew.shvv) Add earned
 		Earned: 0,
-	}
+	})
 
 	return &SendPaymentResponse{}, nil
 }
@@ -212,7 +212,7 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 	n.users[userID] = c
 	n.channels[chanID] = c
 
-	n.updates <- &router.UpdateChannelOpening{
+	n.broadcaster.Write(&router.UpdateChannelOpening{
 		UserID:        c.UserID,
 		ChannelID:     c.ChannelID,
 		UserBalance:   router.ChannelUnit(c.UserBalance),
@@ -220,7 +220,7 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 
 		// TODO(andrew.shvv) Add work with fee
 		Fee: 0,
-	}
+	})
 
 	log.Tracef("User(%v) opened channel(%v) with router", userID, chanID)
 
@@ -241,7 +241,7 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 		defer n.Unlock()
 
 		c.IsPending = false
-		n.updates <- &router.UpdateChannelOpened{
+		n.broadcaster.Write(&router.UpdateChannelOpened{
 			UserID:        c.UserID,
 			ChannelID:     c.ChannelID,
 			UserBalance:   router.ChannelUnit(c.UserBalance),
@@ -249,7 +249,7 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 
 			// TODO(andrew.shvv) Add work with fee
 			Fee: 0,
-		}
+		})
 
 		log.Tracef("Channel(%v) with user(%v) unlocked", chanID, userID)
 	}()
@@ -280,13 +280,13 @@ func (n *emulationNetwork) CloseChannel(_ context.Context, req *CloseChannelRequ
 	// Increase the pending balance till block is generated.
 	n.router.pendingBalance += channel.RouterBalance
 	channel.IsPending = true
-	n.updates <- &router.UpdateChannelClosing{
+	n.broadcaster.Write(&router.UpdateChannelClosing{
 		UserID:    channel.UserID,
 		ChannelID: channel.ChannelID,
 
 		// TODO(andrew.shvv) Add work with fee
 		Fee: 0,
-	}
+	})
 
 	log.Tracef("User(%v) closed channel(%v)", channel.UserID, channel.ChannelID)
 
@@ -307,13 +307,13 @@ func (n *emulationNetwork) CloseChannel(_ context.Context, req *CloseChannelRequ
 		n.Lock()
 		defer n.Unlock()
 
-		n.updates <- &router.UpdateChannelClosed{
+		n.broadcaster.Write(&router.UpdateChannelClosed{
 			UserID:    channel.UserID,
 			ChannelID: channel.ChannelID,
 
 			// TODO(andrew.shvv) Add work with fee
 			Fee: 0,
-		}
+		})
 
 		delete(n.channels, chanID)
 		delete(n.users, channel.UserID)
