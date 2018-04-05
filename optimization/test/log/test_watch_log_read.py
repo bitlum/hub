@@ -1,9 +1,10 @@
-import os
 from watchdog.events import PatternMatchingEventHandler
 
 import sys
+import os
 
-sys.path.append('../../')
+current_path = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(current_path, '../../'))
 
 import protobuffer.test.test_pb2 as proto
 

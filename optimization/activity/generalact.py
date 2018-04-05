@@ -1,3 +1,9 @@
+import sys
+import os
+
+current_path = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(current_path, '../'))
+
 from activity.flowvect import flowvect_gen
 from activity.flowmatr import flowmatr_gen
 from activity.periodmatr import periodmatr_gen
@@ -6,10 +12,6 @@ from activity.actmatr import actmatr_gen
 from activity.balances import balances_gen
 from activity.transstream import transstream_gen
 
-
-import sys
-
-sys.path.append('../')
 
 # flowvect_gen(file_name_inlet='inlet/flowvect_inlet.json')
 

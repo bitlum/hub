@@ -1,12 +1,14 @@
 import time
 import random
+from datetime import datetime
 
 import sys
+import os
 
-sys.path.append('../../')
+current_path = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(current_path, '../../'))
 
 import protobuffer.test.test_pb2 as proto
-from datetime import datetime
 
 
 def log_generate():

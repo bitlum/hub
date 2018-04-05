@@ -1,10 +1,10 @@
-import time
 from watchdog.observers import Observer
-
+import time
 import sys
+import os
 
-sys.path.append('../')
-
+current_path = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(current_path, '../'))
 
 from samples.smartlog import *
 from watcher.watchlogread import *

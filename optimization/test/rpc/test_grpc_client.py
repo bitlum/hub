@@ -4,8 +4,10 @@ import time
 import grpc
 
 import sys
+import os
 
-sys.path.append('../../')
+current_path = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(current_path, '../../'))
 
 import protobuffer.test.test_grpc_pb2 as proto
 import protobuffer.test.test_grpc_pb2_grpc as proto_grpc

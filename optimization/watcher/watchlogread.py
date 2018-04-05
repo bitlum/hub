@@ -1,17 +1,16 @@
-import os
 from watchdog.events import PatternMatchingEventHandler
 import datetime
-import time
 from sortedcontainers import SortedDict
+
+import sys
+import os
+
+current_path = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(current_path, '../'))
 
 import protobuffer.log_pb2 as proto
 
 from protobuf_to_dict import protobuf_to_dict
-
-
-import sys
-
-sys.path.append('../')
 
 
 def print_massege(massege, nesting=-4):

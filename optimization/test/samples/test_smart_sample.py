@@ -1,6 +1,8 @@
 import sys
+import os
 
-sys.path.append('../../')
+current_path = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(current_path, '../../'))
 
 from samples.samplegen import *
 from samples.smartsample import *

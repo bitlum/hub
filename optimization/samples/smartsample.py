@@ -1,9 +1,12 @@
 import statistics
-import samples.erfcut as erfcut
 
 import sys
+import os
 
-sys.path.append('../')
+current_path = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(current_path, '../'))
+
+import samples.erfcut as erfcut
 
 
 class SmartSample:
