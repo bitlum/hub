@@ -4,6 +4,7 @@ import (
 	"github.com/bitlum/hub/manager/router"
 	"github.com/go-errors/errors"
 	"time"
+	"strconv"
 )
 
 // RouterEmulation is an implementation of router. Router interface which
@@ -68,7 +69,8 @@ func (r *RouterEmulation) OpenChannel(userID router.UserID,
 	defer r.network.Unlock()
 
 	r.network.channelIndex++
-	chanID := router.ChannelID(r.network.channelIndex)
+	id := strconv.FormatUint(r.network.channelIndex, 10)
+	chanID := router.ChannelID(id)
 
 	if _, ok := r.network.users[userID]; ok {
 		// TODO(andrew.shvv) add multiple channels support

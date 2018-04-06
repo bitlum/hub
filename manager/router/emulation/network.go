@@ -193,7 +193,8 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 	defer n.Unlock()
 
 	n.channelIndex++
-	chanID := router.ChannelID(n.channelIndex)
+	id := strconv.FormatUint(n.channelIndex, 10)
+	chanID := router.ChannelID(id)
 	userID := router.UserID(req.UserId)
 
 	if _, ok := n.users[userID]; ok {

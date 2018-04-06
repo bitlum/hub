@@ -174,19 +174,19 @@ func TestEmulationNetwork(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if r.network.channels[router.ChannelID(1)].RouterBalance != 5 {
+	if r.network.channels[router.ChannelID("1")].RouterBalance != 5 {
 		t.Fatalf("wrong router balance")
 	}
 
-	if r.network.channels[router.ChannelID(1)].UserBalance != 5 {
+	if r.network.channels[router.ChannelID("1")].UserBalance != 5 {
 		t.Fatalf("wrong user balance")
 	}
 
-	if r.network.channels[router.ChannelID(2)].RouterBalance != 5 {
+	if r.network.channels[router.ChannelID("2")].RouterBalance != 5 {
 		t.Fatalf("wrong router balance")
 	}
 
-	if r.network.channels[router.ChannelID(2)].UserBalance != 5 {
+	if r.network.channels[router.ChannelID("2")].UserBalance != 5 {
 		t.Fatalf("wrong user balance")
 	}
 
