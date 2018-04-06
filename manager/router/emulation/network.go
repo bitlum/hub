@@ -228,16 +228,13 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 
 	// Subscribe on block notification and update channel when block is
 	// generated.
-	s, err := n.blockNotifier.Subscribe()
-	if err != nil {
-		return nil, errors.Errorf("unable to send update payment: %v", err)
-	}
+	l := n.blockNotifier.Listen()
 
 	// Channel is able to operate only after block is generated.
 	// Send update that channel is opened only after it is unlocked.
 	go func() {
-		defer n.blockNotifier.RemoveSubscription(s)
-		<-s.C
+		defer l.Stop()
+		<-l.Read()
 
 		n.Lock()
 		defer n.Unlock()
@@ -294,17 +291,13 @@ func (n *emulationNetwork) CloseChannel(_ context.Context, req *CloseChannelRequ
 
 	// Subscribe on block notification and return funds when block is
 	// generated.
-	s, err := n.blockNotifier.Subscribe()
-	if err != nil {
-		return nil, errors.Errorf("unable to increase router free "+
-			"balance: %v", err)
-	}
+	l := n.blockNotifier.Listen()
 
 	// Update router free balance only after block is mined and increase
 	// router balance on amount which we locked on our side in this channel.
 	go func() {
-		defer n.blockNotifier.RemoveSubscription(s)
-		<-s.C
+		defer l.Stop()
+		<-l.Read()
 
 		n.Lock()
 		defer n.Unlock()

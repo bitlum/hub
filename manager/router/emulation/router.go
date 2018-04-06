@@ -102,16 +102,13 @@ func (r *RouterEmulation) OpenChannel(userID router.UserID,
 
 	// Subscribe on block notification and update channel when block is
 	// generated.
-	s, err := r.network.blockNotifier.Subscribe()
-	if err != nil {
-		return errors.Errorf("unable to send update payment: %v", err)
-	}
+	l := r.network.blockNotifier.Listen()
 
 	// Channel is able to operate only after block is generated.
 	// Send update that channel is opened only after it is unlocked.
 	go func() {
-		defer r.network.blockNotifier.RemoveSubscription(s)
-		<-s.C
+		defer l.Stop()
+		<-l.Read()
 
 		r.network.Lock()
 		defer r.network.Unlock()
@@ -167,17 +164,13 @@ func (r *RouterEmulation) CloseChannel(id router.ChannelID) error {
 
 			// Subscribe on block notification and return funds when block is
 			// generated.
-			s, err := r.network.blockNotifier.Subscribe()
-			if err != nil {
-				return errors.Errorf("unable subscribe "+
-					"on block notifications: %v", err)
-			}
+			l := r.network.blockNotifier.Listen()
 
 			// Update router free balance only after block is mined and increase
 			// router balance on amount which we locked on our side in this channel.
 			go func() {
-				defer r.network.blockNotifier.RemoveSubscription(s)
-				<-s.C
+				defer l.Stop()
+				<-l.Read()
 
 				r.network.Lock()
 				defer r.network.Unlock()
@@ -268,17 +261,13 @@ func (r *RouterEmulation) UpdateChannel(id router.ChannelID,
 
 	// Subscribe on block notification and return funds when block is
 	// generated.
-	s, err := r.network.blockNotifier.Subscribe()
-	if err != nil {
-		return errors.Errorf("unable subscribe "+
-			"on block notifications: %v", err)
-	}
+	l := r.network.blockNotifier.Listen()
 
 	// Update router free balance only after block is mined and increase
 	// router balance on amount which we locked on our side in this channel.
 	go func() {
-		defer r.network.blockNotifier.RemoveSubscription(s)
-		<-s.C
+		defer l.Stop()
+		<-l.Read()
 
 		r.network.Lock()
 		defer r.network.Unlock()

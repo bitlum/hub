@@ -32,7 +32,7 @@ func TestEmulationNetwork(t *testing.T) {
 
 	// This subscription is used to understand when new block has been
 	// generated.
-	s, _ := r.network.blockNotifier.Subscribe()
+	l := r.network.blockNotifier.Listen()
 
 	if _, err := r.network.OpenChannel(context.Background(), &OpenChannelRequest{
 		UserId:       "1",
@@ -50,7 +50,7 @@ func TestEmulationNetwork(t *testing.T) {
 	// received.
 	r.network.blockNotifier.MineBlock()
 	select {
-	case <-s.C:
+	case <-l.Read():
 	case <-time.After(time.Second):
 		t.Fatalf("haven't received block notification")
 	}
@@ -76,7 +76,7 @@ func TestEmulationNetwork(t *testing.T) {
 	// received.
 	r.network.blockNotifier.MineBlock()
 	select {
-	case <-s.C:
+	case <-l.Read():
 	case <-time.After(time.Second):
 		t.Fatalf("haven't received block notification")
 	}
@@ -149,7 +149,7 @@ func TestEmulationNetwork(t *testing.T) {
 	// received.
 	r.network.blockNotifier.MineBlock()
 	select {
-	case <-s.C:
+	case <-l.Read():
 		// Wait for balance to be updated after block is generated.
 		time.Sleep(100 * time.Millisecond)
 	case <-time.After(time.Second):
@@ -208,7 +208,7 @@ func TestEmulationNetwork(t *testing.T) {
 	// received.
 	r.network.blockNotifier.MineBlock()
 	select {
-	case <-s.C:
+	case <-l.Read():
 		// Wait for balance to be updated after block is generated.
 		time.Sleep(100 * time.Millisecond)
 	case <-time.After(time.Second):
@@ -244,7 +244,7 @@ func TestEmulationNetwork(t *testing.T) {
 	// received.
 	r.network.blockNotifier.MineBlock()
 	select {
-	case <-s.C:
+	case <-l.Read():
 	case <-time.After(time.Second):
 		t.Fatalf("haven't received block notification")
 	}
