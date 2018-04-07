@@ -16,7 +16,7 @@ service Manager {
 message UpdateLinkRequest {
     // Time of the last sync with state of the router.
     uint64 time = 1;
-    uint64 user_id = 2;
+    string user_id = 2;
     uint64 router_balance = 4;
 }
 
