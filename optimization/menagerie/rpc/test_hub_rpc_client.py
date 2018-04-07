@@ -9,10 +9,10 @@ import os
 current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_path, '../../'))
 
+from menagerie.rpc.test_router_rpc_client import ActivityGenerator
+
 import protobuffer.hubrpc_pb2 as proto_hub
 import protobuffer.hubrpc_pb2_grpc as proto_rpc_hub
-
-from test_router_rpc_client import ActivityGenerator
 
 
 class OptimisationGenerator(ActivityGenerator):

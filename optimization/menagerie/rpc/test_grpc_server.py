@@ -10,8 +10,8 @@ import os
 current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_path, '../../'))
 
-import protobuffer.test.test_grpc_pb2 as proto
-import protobuffer.test.test_grpc_pb2_grpc as proto_grpc
+import protobuffer.menagerie.test_grpc_pb2 as proto
+import protobuffer.menagerie.test_grpc_pb2_grpc as proto_grpc
 
 _ONE_DAY_IN_SECONDS = 60 * 60 * 24
 
