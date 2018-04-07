@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='hubrpc.proto',
   package='hubrpc',
   syntax='proto3',
-  serialized_pb=_b('\n\x0chubrpc.proto\x12\x06hubrpc\"J\n\x11UpdateLinkRequest\x12\x0c\n\x04time\x18\x01 \x01(\x04\x12\x0f\n\x07user_id\x18\x02 \x01(\x04\x12\x16\n\x0erouter_balance\x18\x04 \x01(\x04\"\x14\n\x12UpdateLinkResponse2N\n\x07Manager\x12\x43\n\nUpdateLink\x12\x19.hubrpc.UpdateLinkRequest\x1a\x1a.hubrpc.UpdateLinkResponseb\x06proto3')
+  serialized_pb=_b('\n\x0chubrpc.proto\x12\x06hubrpc\"J\n\x11UpdateLinkRequest\x12\x0c\n\x04time\x18\x01 \x01(\x04\x12\x0f\n\x07user_id\x18\x02 \x01(\t\x12\x16\n\x0erouter_balance\x18\x04 \x01(\x04\"\x14\n\x12UpdateLinkResponse2N\n\x07Manager\x12\x43\n\nUpdateLink\x12\x19.hubrpc.UpdateLinkRequest\x1a\x1a.hubrpc.UpdateLinkResponseb\x06proto3')
 )
 
 
@@ -41,8 +41,8 @@ _UPDATELINKREQUEST = _descriptor.Descriptor(
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='user_id', full_name='hubrpc.UpdateLinkRequest.user_id', index=1,
-      number=2, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),

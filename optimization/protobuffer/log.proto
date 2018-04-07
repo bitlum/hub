@@ -37,8 +37,8 @@ message RouterState {
 // Channel is used as the building block in describing of the lightning
 // network topology.
 message Channel {
-    uint64 user_id = 1;
-    uint64 channel_id = 2;
+    string user_id = 1;
+    string channel_id = 2;
     uint64 user_balance = 3;
     uint64 router_balance = 4;
     bool is_pending = 5;
@@ -49,8 +49,8 @@ message Channel {
 message Payment {
     PaymentStatus status = 1;
 
-    uint64 sender = 2;
-    uint64 receiver = 3;
+    string sender = 2;
+    string receiver = 3;
     uint64 amount = 5;
 
     // Earned is the number of funds which router earned by making this payment.
@@ -74,8 +74,8 @@ enum PaymentStatus {
 message ChannelChange {
     ChannelChangeType type = 1;
 
-    uint64 user_id = 2;
-    uint64 channel_id = 3;
+    string user_id = 2;
+    string channel_id = 3;
 
     uint64 user_balance = 4;
     uint64 router_balance = 5;

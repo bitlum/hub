@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-echo 'log:'
+echo 'diff log:'
 diff log.proto ../../manager/logger/log.proto
 
-echo 'hubrpc:'
+echo 'diff hubrpc:'
 diff hubrpc.proto ../../manager/hubrpc/hubrpc.proto
 
-echo 'rpc:'
+echo 'diff rpc:'
 diff rpc.proto ../../manager/router/emulation/rpc.proto
 
 
