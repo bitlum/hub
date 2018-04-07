@@ -8,7 +8,7 @@ current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_path, '../../'))
 
 from samples.smartlog import *
-from test.log.test_watch_log_read import *
+from menagerie.log.test_watch_log_read import *
 
 log = SmartLog()
 
