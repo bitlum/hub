@@ -11,8 +11,8 @@ import (
 // completely detached from real lightning network daemon and emulates it
 // activity.
 type RouterEmulation struct {
-	freeBalance    router.ChannelUnit
-	pendingBalance router.ChannelUnit
+	freeBalance    router.BalanceUnit
+	pendingBalance router.BalanceUnit
 	network        *emulationNetwork
 	fee            uint64
 }
@@ -21,7 +21,7 @@ type RouterEmulation struct {
 var _ router.Router = (*RouterEmulation)(nil)
 
 // NewRouter creates new entity of emulator router and start grpc server which l
-func NewRouter(freeBalance router.ChannelUnit,
+func NewRouter(freeBalance router.BalanceUnit,
 	blockGeneration time.Duration) *RouterEmulation {
 
 	n := newEmulationNetwork(blockGeneration)
@@ -54,7 +54,7 @@ func (r *RouterEmulation) Stop() {
 // lightning network hub manager this hook might be used for future
 // off-chain channel re-balancing tactics.
 func (r *RouterEmulation) SendPayment(userID router.UserID,
-	amount router.ChannelUnit) error {
+	amount router.BalanceUnit) error {
 	r.network.Lock()
 	defer r.network.Unlock()
 
@@ -64,7 +64,7 @@ func (r *RouterEmulation) SendPayment(userID router.UserID,
 
 // OpenChannel opens the channel with the given user.
 func (r *RouterEmulation) OpenChannel(userID router.UserID,
-	funds router.ChannelUnit) error {
+	funds router.BalanceUnit) error {
 	r.network.Lock()
 	defer r.network.Unlock()
 
@@ -91,8 +91,8 @@ func (r *RouterEmulation) OpenChannel(userID router.UserID,
 	r.network.broadcaster.Write(&router.UpdateChannelOpening{
 		UserID:        c.UserID,
 		ChannelID:     c.ChannelID,
-		UserBalance:   router.ChannelUnit(c.UserBalance),
-		RouterBalance: router.ChannelUnit(c.RouterBalance),
+		UserBalance:   router.BalanceUnit(c.UserBalance),
+		RouterBalance: router.BalanceUnit(c.RouterBalance),
 
 		// TODO(andrew.shvv) Add work with fee
 		Fee: 0,
@@ -117,8 +117,8 @@ func (r *RouterEmulation) OpenChannel(userID router.UserID,
 		r.network.broadcaster.Write(&router.UpdateChannelOpened{
 			UserID:        c.UserID,
 			ChannelID:     c.ChannelID,
-			UserBalance:   router.ChannelUnit(c.UserBalance),
-			RouterBalance: router.ChannelUnit(c.RouterBalance),
+			UserBalance:   router.BalanceUnit(c.UserBalance),
+			RouterBalance: router.BalanceUnit(c.RouterBalance),
 
 			// TODO(andrew.shvv) Add work with fee
 			Fee: 0,
@@ -203,7 +203,7 @@ func (r *RouterEmulation) CloseChannel(id router.ChannelID) error {
 // UpdateChannel updates the number of locked funds in the specified
 // channel.
 func (r *RouterEmulation) UpdateChannel(id router.ChannelID,
-	newRouterBalance router.ChannelUnit) error {
+	newRouterBalance router.BalanceUnit) error {
 	r.network.Lock()
 	defer r.network.Unlock()
 
@@ -338,7 +338,7 @@ func (r *RouterEmulation) Network() ([]*router.Channel, error) {
 }
 
 // FreeBalance returns the amount of funds at router disposal.
-func (r *RouterEmulation) FreeBalance() (router.ChannelUnit, error) {
+func (r *RouterEmulation) FreeBalance() (router.BalanceUnit, error) {
 	r.network.Lock()
 	defer r.network.Unlock()
 
@@ -347,7 +347,7 @@ func (r *RouterEmulation) FreeBalance() (router.ChannelUnit, error) {
 
 // PendingBalance returns the amount of funds which in the process of
 // being accepted by blockchain.
-func (r *RouterEmulation) PendingBalance() (router.ChannelUnit, error) {
+func (r *RouterEmulation) PendingBalance() (router.BalanceUnit, error) {
 	r.network.Lock()
 	defer r.network.Unlock()
 

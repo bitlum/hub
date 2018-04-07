@@ -46,8 +46,8 @@ func (h *Hub) UpdateLink(_ context.Context,
 			equilibriumNetwork[i] = &router.Channel{
 				ChannelID:     router.ChannelID(c.ChannelID),
 				UserID:        router.UserID(req.UserId),
-				RouterBalance: router.ChannelUnit(c.RouterBalance),
-				UserBalance:   router.ChannelUnit(c.UserBalance),
+				RouterBalance: router.BalanceUnit(c.RouterBalance),
+				UserBalance:   router.BalanceUnit(c.UserBalance),
 			}
 		} else {
 			equilibriumNetwork[i] = c

@@ -11,17 +11,17 @@ type Router interface {
 	// SendPayment makes the payment on behalf of router. In the context of
 	// lightning network hub manager this hook might be used for future
 	// off-chain channel re-balancing tactics.
-	SendPayment(userID UserID, amount ChannelUnit) error
+	SendPayment(userID UserID, amount BalanceUnit) error
 
 	// OpenChannel opens the channel with the given user.
-	OpenChannel(id UserID, funds ChannelUnit) error
+	OpenChannel(id UserID, funds BalanceUnit) error
 
 	// CloseChannel closes the specified channel.
 	CloseChannel(id ChannelID) error
 
 	// UpdateChannel updates the number of locked funds in the specified
 	// channel.
-	UpdateChannel(id ChannelID, funds ChannelUnit) error
+	UpdateChannel(id ChannelID, funds BalanceUnit) error
 
 	// SetFee updates the fee which router takes for routing the users
 	// payments.
@@ -37,11 +37,11 @@ type Router interface {
 	Network() ([]*Channel, error)
 
 	// FreeBalance returns the amount of funds at router disposal.
-	FreeBalance() (ChannelUnit, error)
+	FreeBalance() (BalanceUnit, error)
 
 	// PendingBalance returns the amount of funds which in the process of
 	// being accepted by blockchain.
-	PendingBalance() (ChannelUnit, error)
+	PendingBalance() (BalanceUnit, error)
 
 	// AverageChangeUpdateDuration average time which is needed the change of
 	// state to ba updated over blockchain.
@@ -54,15 +54,15 @@ type ChannelID string
 // UserID uniquely identifies the user in the local lightning network.
 type UserID string
 
-// ChannelUnit represent the number of funds locked by the participant.
-type ChannelUnit int64
+// BalanceUnit represent the number of funds.
+type BalanceUnit int64
 
 // Channel represent the Lightning Network channel.
 type Channel struct {
 	ChannelID     ChannelID
 	UserID        UserID
-	UserBalance   ChannelUnit
-	RouterBalance ChannelUnit
+	UserBalance   BalanceUnit
+	RouterBalance BalanceUnit
 	IsPending     bool
 }
 
@@ -73,7 +73,7 @@ type UpdateChannelClosing struct {
 	// Fee which was taken by blockchain decentralised computer / mainers or
 	// some other form of smart contract manager from initiator of the
 	// channel. By initiator we means the side which created the channel.
-	Fee ChannelUnit
+	Fee BalanceUnit
 }
 
 type UpdateChannelClosed struct {
@@ -83,7 +83,7 @@ type UpdateChannelClosed struct {
 	// Fee which was taken by blockchain decentralised computer / mainers or
 	// some other form of smart contract manager from initiator of the
 	// channel. By initiator we means the side which created the channel.
-	Fee ChannelUnit
+	Fee BalanceUnit
 }
 
 // UpdateChannelUpdating is used to notify that one of the participants
@@ -96,13 +96,13 @@ type UpdateChannelUpdating struct {
 	UserID    UserID
 	ChannelID ChannelID
 
-	UserBalance   ChannelUnit
-	RouterBalance ChannelUnit
+	UserBalance   BalanceUnit
+	RouterBalance BalanceUnit
 
 	// Fee which was taken by blockchain decentralised computer / mainers or
 	// some other form of smart contract manager from initiator of the
 	// channel. By initiator we means the side which created the channel.
-	Fee ChannelUnit
+	Fee BalanceUnit
 }
 
 // UpdateChannelUpdated is used to notify that one of the participants
@@ -115,13 +115,13 @@ type UpdateChannelUpdated struct {
 	UserID    UserID
 	ChannelID ChannelID
 
-	UserBalance   ChannelUnit
-	RouterBalance ChannelUnit
+	UserBalance   BalanceUnit
+	RouterBalance BalanceUnit
 
 	// Fee which was taken by blockchain decentralised computer / mainers or
 	// some other form of smart contract manager from initiator of the
 	// channel. By initiator we means the side which created the channel.
-	Fee ChannelUnit
+	Fee BalanceUnit
 }
 
 // UpdateChannelOpening is used as notifications from router or network that
@@ -129,13 +129,13 @@ type UpdateChannelUpdated struct {
 type UpdateChannelOpening struct {
 	UserID        UserID
 	ChannelID     ChannelID
-	UserBalance   ChannelUnit
-	RouterBalance ChannelUnit
+	UserBalance   BalanceUnit
+	RouterBalance BalanceUnit
 
 	// Fee which was taken by blockchain decentralised computer / mainers or
 	// some other form of smart contract manager from initiator of the
 	// channel. By initiator we means the side which created the channel.
-	Fee ChannelUnit
+	Fee BalanceUnit
 }
 
 // UpdateChannelOpened is used as notifications from router or network that
@@ -143,13 +143,13 @@ type UpdateChannelOpening struct {
 type UpdateChannelOpened struct {
 	UserID        UserID
 	ChannelID     ChannelID
-	UserBalance   ChannelUnit
-	RouterBalance ChannelUnit
+	UserBalance   BalanceUnit
+	RouterBalance BalanceUnit
 
 	// Fee which was taken by blockchain decentralised computer / mainers or
 	// some other form of smart contract manager from initiator of the
 	// channel. By initiator we means the side which created the channel.
-	Fee ChannelUnit
+	Fee BalanceUnit
 }
 
 type UpdatePayment struct {

@@ -113,12 +113,12 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 				channel.ChannelID)
 		}
 
-		channel.UserBalance -= router.ChannelUnit(req.Amount)
-		channel.RouterBalance += router.ChannelUnit(req.Amount)
+		channel.UserBalance -= router.BalanceUnit(req.Amount)
+		channel.RouterBalance += router.BalanceUnit(req.Amount)
 		defer func() {
 			if paymentFailed {
-				channel.UserBalance += router.ChannelUnit(req.Amount)
-				channel.RouterBalance -= router.ChannelUnit(req.Amount)
+				channel.UserBalance += router.BalanceUnit(req.Amount)
+				channel.RouterBalance -= router.BalanceUnit(req.Amount)
 			}
 		}()
 
@@ -144,12 +144,12 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 				channel.ChannelID)
 		}
 
-		channel.RouterBalance -= router.ChannelUnit(req.Amount - n.router.fee)
-		channel.UserBalance += router.ChannelUnit(req.Amount - n.router.fee)
+		channel.RouterBalance -= router.BalanceUnit(req.Amount - n.router.fee)
+		channel.UserBalance += router.BalanceUnit(req.Amount - n.router.fee)
 		defer func() {
 			if paymentFailed {
-				channel.RouterBalance += router.ChannelUnit(req.Amount + n.router.fee)
-				channel.UserBalance -= router.ChannelUnit(req.Amount + n.router.fee)
+				channel.RouterBalance += router.BalanceUnit(req.Amount + n.router.fee)
+				channel.UserBalance -= router.BalanceUnit(req.Amount + n.router.fee)
 			}
 		}()
 
@@ -206,7 +206,7 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 	c := &router.Channel{
 		ChannelID:     chanID,
 		UserID:        userID,
-		UserBalance:   router.ChannelUnit(req.LockedByUser),
+		UserBalance:   router.BalanceUnit(req.LockedByUser),
 		RouterBalance: 0,
 		IsPending:     true,
 	}
@@ -217,8 +217,8 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 	n.broadcaster.Write(&router.UpdateChannelOpening{
 		UserID:        c.UserID,
 		ChannelID:     c.ChannelID,
-		UserBalance:   router.ChannelUnit(c.UserBalance),
-		RouterBalance: router.ChannelUnit(c.RouterBalance),
+		UserBalance:   router.BalanceUnit(c.UserBalance),
+		RouterBalance: router.BalanceUnit(c.RouterBalance),
 
 		// TODO(andrew.shvv) Add work with fee
 		Fee: 0,
@@ -243,8 +243,8 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 		n.broadcaster.Write(&router.UpdateChannelOpened{
 			UserID:        c.UserID,
 			ChannelID:     c.ChannelID,
-			UserBalance:   router.ChannelUnit(c.UserBalance),
-			RouterBalance: router.ChannelUnit(c.RouterBalance),
+			UserBalance:   router.BalanceUnit(c.UserBalance),
+			RouterBalance: router.BalanceUnit(c.RouterBalance),
 
 			// TODO(andrew.shvv) Add work with fee
 			Fee: 0,
