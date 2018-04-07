@@ -27,10 +27,10 @@ type Router interface {
 	// payments.
 	SetFee(fee uint64) error
 
-	// ReceiveUpdates returns updates about router local network topology
-	// changes, about attempts of propagating the payment through the
-	// router, about fee changes etc.
-	ReceiveUpdates() <-chan interface{}
+	// RegisterOnUpdates returns register which returns updates about router
+	// local network topology changes, about attempts of propagating the payment
+	// through the router, about fee changes etc.
+	RegisterOnUpdates() *Receiver
 
 	// Network returns the information about the current local network router
 	// topology.
@@ -49,10 +49,10 @@ type Router interface {
 }
 
 // ChannelID uniquely identifies the channel in the lightning network.
-type ChannelID uint64
+type ChannelID string
 
 // UserID uniquely identifies the user in the local lightning network.
-type UserID uint64
+type UserID string
 
 // ChannelUnit represent the number of funds locked by the participant.
 type ChannelUnit int64
@@ -154,8 +154,8 @@ type UpdateChannelOpened struct {
 
 type UpdatePayment struct {
 	Status    string
-	Sender    uint64
-	Receiver  uint64
+	Sender    UserID
+	Receiver  UserID
 	ChannelID uint64
 	Amount    uint64
 

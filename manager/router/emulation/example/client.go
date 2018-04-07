@@ -28,7 +28,7 @@ func main() {
 	client := emulation.NewEmulatorClient(conn)
 	if _, err := client.OpenChannel(context.Background(),
 		&emulation.OpenChannelRequest{
-			UserId:       1,
+			UserId:       "1",
 			LockedByUser: 10,
 		}); err != nil {
 		fmt.Fprintln(os.Stderr, err)

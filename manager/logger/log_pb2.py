@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='log.proto',
   package='logger',
   syntax='proto3',
-  serialized_pb=_b('\n\tlog.proto\x12\x06logger\"\x96\x01\n\x03Log\x12\x0c\n\x04time\x18\x01 \x01(\x03\x12$\n\x05state\x18\x02 \x01(\x0b\x32\x13.logger.RouterStateH\x00\x12\"\n\x07payment\x18\x03 \x01(\x0b\x32\x0f.logger.PaymentH\x00\x12/\n\x0e\x63hannel_change\x18\x04 \x01(\x0b\x32\x15.logger.ChannelChangeH\x00\x42\x06\n\x04\x64\x61ta\"\x87\x01\n\x0bRouterState\x12!\n\x08\x63hannels\x18\x01 \x03(\x0b\x32\x0f.logger.Channel\x12\x14\n\x0c\x66ree_balance\x18\x02 \x01(\x04\x12\x17\n\x0fpending_balance\x18\x03 \x01(\x04\x12&\n\x1e\x61verage_change_update_duration\x18\x04 \x01(\x04\"p\n\x07\x43hannel\x12\x0f\n\x07user_id\x18\x01 \x01(\x04\x12\x12\n\nchannel_id\x18\x02 \x01(\x04\x12\x14\n\x0cuser_balance\x18\x03 \x01(\x04\x12\x16\n\x0erouter_balance\x18\x04 \x01(\x04\x12\x12\n\nis_pending\x18\x05 \x01(\x08\"r\n\x07Payment\x12%\n\x06status\x18\x01 \x01(\x0e\x32\x15.logger.PaymentStatus\x12\x0e\n\x06sender\x18\x02 \x01(\x04\x12\x10\n\x08receiver\x18\x03 \x01(\x04\x12\x0e\n\x06\x61mount\x18\x05 \x01(\x04\x12\x0e\n\x06\x65\x61rned\x18\x06 \x01(\x03\"\x98\x01\n\rChannelChange\x12\'\n\x04type\x18\x01 \x01(\x0e\x32\x19.logger.ChannelChangeType\x12\x0f\n\x07user_id\x18\x02 \x01(\x04\x12\x12\n\nchannel_id\x18\x03 \x01(\x04\x12\x14\n\x0cuser_balance\x18\x04 \x01(\x04\x12\x16\n\x0erouter_balance\x18\x05 \x01(\x04\x12\x0b\n\x03\x66\x65\x65\x18\x06 \x01(\x04*G\n\rPaymentStatus\x12\x0b\n\x07success\x10\x00\x12\x16\n\x12unsufficient_funds\x10\x01\x12\x11\n\rexternal_fail\x10\x02*a\n\x11\x43hannelChangeType\x12\x0c\n\x08openning\x10\x00\x12\n\n\x06opened\x10\x01\x12\x0b\n\x07\x63losing\x10\x02\x12\n\n\x06\x63losed\x10\x03\x12\x0c\n\x08udpating\x10\x04\x12\x0b\n\x07udpated\x10\x05\x62\x06proto3')
+  serialized_pb=_b('\n\tlog.proto\x12\x06logger\"\x96\x01\n\x03Log\x12\x0c\n\x04time\x18\x01 \x01(\x03\x12$\n\x05state\x18\x02 \x01(\x0b\x32\x13.logger.RouterStateH\x00\x12\"\n\x07payment\x18\x03 \x01(\x0b\x32\x0f.logger.PaymentH\x00\x12/\n\x0e\x63hannel_change\x18\x04 \x01(\x0b\x32\x15.logger.ChannelChangeH\x00\x42\x06\n\x04\x64\x61ta\"\x87\x01\n\x0bRouterState\x12!\n\x08\x63hannels\x18\x01 \x03(\x0b\x32\x0f.logger.Channel\x12\x14\n\x0c\x66ree_balance\x18\x02 \x01(\x04\x12\x17\n\x0fpending_balance\x18\x03 \x01(\x04\x12&\n\x1e\x61verage_change_update_duration\x18\x04 \x01(\x04\"p\n\x07\x43hannel\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x12\n\nchannel_id\x18\x02 \x01(\t\x12\x14\n\x0cuser_balance\x18\x03 \x01(\x04\x12\x16\n\x0erouter_balance\x18\x04 \x01(\x04\x12\x12\n\nis_pending\x18\x05 \x01(\x08\"r\n\x07Payment\x12%\n\x06status\x18\x01 \x01(\x0e\x32\x15.logger.PaymentStatus\x12\x0e\n\x06sender\x18\x02 \x01(\t\x12\x10\n\x08receiver\x18\x03 \x01(\t\x12\x0e\n\x06\x61mount\x18\x05 \x01(\x04\x12\x0e\n\x06\x65\x61rned\x18\x06 \x01(\x03\"\x98\x01\n\rChannelChange\x12\'\n\x04type\x18\x01 \x01(\x0e\x32\x19.logger.ChannelChangeType\x12\x0f\n\x07user_id\x18\x02 \x01(\t\x12\x12\n\nchannel_id\x18\x03 \x01(\t\x12\x14\n\x0cuser_balance\x18\x04 \x01(\x04\x12\x16\n\x0erouter_balance\x18\x05 \x01(\x04\x12\x0b\n\x03\x66\x65\x65\x18\x06 \x01(\x04*G\n\rPaymentStatus\x12\x0b\n\x07success\x10\x00\x12\x16\n\x12unsufficient_funds\x10\x01\x12\x11\n\rexternal_fail\x10\x02*a\n\x11\x43hannelChangeType\x12\x0c\n\x08openning\x10\x00\x12\n\n\x06opened\x10\x01\x12\x0b\n\x07\x63losing\x10\x02\x12\n\n\x06\x63losed\x10\x03\x12\x0c\n\x08udpating\x10\x04\x12\x0b\n\x07udpated\x10\x05\x62\x06proto3')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -218,15 +218,15 @@ _CHANNEL = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='user_id', full_name='logger.Channel.user_id', index=0,
-      number=1, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
       name='channel_id', full_name='logger.Channel.channel_id', index=1,
-      number=2, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
@@ -284,15 +284,15 @@ _PAYMENT = _descriptor.Descriptor(
       options=None),
     _descriptor.FieldDescriptor(
       name='sender', full_name='logger.Payment.sender', index=1,
-      number=2, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
       name='receiver', full_name='logger.Payment.receiver', index=2,
-      number=3, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
@@ -343,15 +343,15 @@ _CHANNELCHANGE = _descriptor.Descriptor(
       options=None),
     _descriptor.FieldDescriptor(
       name='user_id', full_name='logger.ChannelChange.user_id', index=1,
-      number=2, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
       name='channel_id', full_name='logger.ChannelChange.channel_id', index=2,
-      number=3, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),

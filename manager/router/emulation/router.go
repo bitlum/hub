@@ -4,6 +4,7 @@ import (
 	"github.com/bitlum/hub/manager/router"
 	"github.com/go-errors/errors"
 	"time"
+	"strconv"
 )
 
 // RouterEmulation is an implementation of router. Router interface which
@@ -68,7 +69,8 @@ func (r *RouterEmulation) OpenChannel(userID router.UserID,
 	defer r.network.Unlock()
 
 	r.network.channelIndex++
-	chanID := router.ChannelID(r.network.channelIndex)
+	id := strconv.FormatUint(r.network.channelIndex, 10)
+	chanID := router.ChannelID(id)
 
 	if _, ok := r.network.users[userID]; ok {
 		// TODO(andrew.shvv) add multiple channels support
@@ -86,7 +88,7 @@ func (r *RouterEmulation) OpenChannel(userID router.UserID,
 	r.network.users[userID] = c
 	r.network.channels[chanID] = c
 
-	r.network.updates <- &router.UpdateChannelOpening{
+	r.network.broadcaster.Write(&router.UpdateChannelOpening{
 		UserID:        c.UserID,
 		ChannelID:     c.ChannelID,
 		UserBalance:   router.ChannelUnit(c.UserBalance),
@@ -94,28 +96,25 @@ func (r *RouterEmulation) OpenChannel(userID router.UserID,
 
 		// TODO(andrew.shvv) Add work with fee
 		Fee: 0,
-	}
+	})
 
 	log.Tracef("Router opened channel(%v) with user(%v)", chanID, userID)
 
 	// Subscribe on block notification and update channel when block is
 	// generated.
-	s, err := r.network.blockNotifier.Subscribe()
-	if err != nil {
-		return errors.Errorf("unable to send update payment: %v", err)
-	}
+	l := r.network.blockNotifier.Listen()
 
 	// Channel is able to operate only after block is generated.
 	// Send update that channel is opened only after it is unlocked.
 	go func() {
-		defer r.network.blockNotifier.RemoveSubscription(s)
-		<-s.C
+		defer l.Stop()
+		<-l.Read()
 
 		r.network.Lock()
 		defer r.network.Unlock()
 
 		c.IsPending = false
-		r.network.updates <- &router.UpdateChannelOpened{
+		r.network.broadcaster.Write(&router.UpdateChannelOpened{
 			UserID:        c.UserID,
 			ChannelID:     c.ChannelID,
 			UserBalance:   router.ChannelUnit(c.UserBalance),
@@ -123,7 +122,7 @@ func (r *RouterEmulation) OpenChannel(userID router.UserID,
 
 			// TODO(andrew.shvv) Add work with fee
 			Fee: 0,
-		}
+		})
 
 		log.Tracef("Channel(%v) with user(%v) unlocked", chanID, userID)
 	}()
@@ -153,29 +152,25 @@ func (r *RouterEmulation) CloseChannel(id router.ChannelID) error {
 			// Wait for block to be generated and only after that remove it
 			// from router network.
 			channel.IsPending = true
-			r.network.updates <- &router.UpdateChannelClosing{
+			r.network.broadcaster.Write(&router.UpdateChannelClosing{
 				UserID:    userID,
 				ChannelID: id,
 
 				// TODO(andrew.shvv) Add work with fee
 				Fee: 0,
-			}
+			})
 
 			log.Tracef("Router closed channel(%v)", id)
 
 			// Subscribe on block notification and return funds when block is
 			// generated.
-			s, err := r.network.blockNotifier.Subscribe()
-			if err != nil {
-				return errors.Errorf("unable subscribe "+
-					"on block notifications: %v", err)
-			}
+			l := r.network.blockNotifier.Listen()
 
 			// Update router free balance only after block is mined and increase
 			// router balance on amount which we locked on our side in this channel.
 			go func() {
-				defer r.network.blockNotifier.RemoveSubscription(s)
-				<-s.C
+				defer l.Stop()
+				<-l.Read()
 
 				r.network.Lock()
 				defer r.network.Unlock()
@@ -186,13 +181,13 @@ func (r *RouterEmulation) CloseChannel(id router.ChannelID) error {
 				r.pendingBalance -= channel.RouterBalance
 				r.freeBalance += channel.RouterBalance
 
-				r.network.updates <- &router.UpdateChannelClosed{
+				r.network.broadcaster.Write(&router.UpdateChannelClosed{
 					UserID:    userID,
 					ChannelID: id,
 
 					// TODO(andrew.shvv) Add work with fee
 					Fee: 0,
-				}
+				})
 
 				log.Tracef("Router received %v money previously locked in"+
 					" channel(%v)", channel.RouterBalance, id)
@@ -254,7 +249,7 @@ func (r *RouterEmulation) UpdateChannel(id router.ChannelID,
 	// During channel update make it locked, so that it couldn't be used by
 	// both sides.
 	channel.IsPending = true
-	r.network.updates <- &router.UpdateChannelUpdating{
+	r.network.broadcaster.Write(&router.UpdateChannelUpdating{
 		UserID:        channel.UserID,
 		ChannelID:     channel.ChannelID,
 		UserBalance:   channel.UserBalance,
@@ -262,21 +257,17 @@ func (r *RouterEmulation) UpdateChannel(id router.ChannelID,
 
 		// TODO(andrew.shvv) Add work with fee
 		Fee: 0,
-	}
+	})
 
 	// Subscribe on block notification and return funds when block is
 	// generated.
-	s, err := r.network.blockNotifier.Subscribe()
-	if err != nil {
-		return errors.Errorf("unable subscribe "+
-			"on block notifications: %v", err)
-	}
+	l := r.network.blockNotifier.Listen()
 
 	// Update router free balance only after block is mined and increase
 	// router balance on amount which we locked on our side in this channel.
 	go func() {
-		defer r.network.blockNotifier.RemoveSubscription(s)
-		<-s.C
+		defer l.Stop()
+		<-l.Read()
 
 		r.network.Lock()
 		defer r.network.Unlock()
@@ -301,7 +292,7 @@ func (r *RouterEmulation) UpdateChannel(id router.ChannelID,
 			channel.RouterBalance, newRouterBalance)
 
 		channel.IsPending = false
-		r.network.updates <- &router.UpdateChannelUpdated{
+		r.network.broadcaster.Write(&router.UpdateChannelUpdated{
 			UserID:        channel.UserID,
 			ChannelID:     channel.ChannelID,
 			UserBalance:   channel.UserBalance,
@@ -309,21 +300,21 @@ func (r *RouterEmulation) UpdateChannel(id router.ChannelID,
 
 			// TODO(andrew.shvv) Add work with fee
 			Fee: 0,
-		}
+		})
 	}()
 
 	return nil
 
 }
 
-// ReceiveUpdates returns updates about router local network topology
+// RegisterOnUpdates returns updates about router local network topology
 // changes, about attempts of propagating the payment through the
 // router, about fee changes etc.
-func (r *RouterEmulation) ReceiveUpdates() <-chan interface{} {
+func (r *RouterEmulation) RegisterOnUpdates() *router.Receiver {
 	r.network.Lock()
 	defer r.network.Unlock()
 
-	return r.network.updates
+	return r.network.broadcaster.Listen()
 }
 
 // Network returns the information about the current local network router
