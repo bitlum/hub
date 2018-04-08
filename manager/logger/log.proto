@@ -60,15 +60,18 @@ message Payment {
 }
 
 enum PaymentStatus {
-    success = 0;
+    // Null is used to catch that field wasn't initialised.
+    null = 0;
+
+    success = 1;
 
     // UnsufficientFunds means that router haven't posses/locked enough funds
     // with receiver user to route thouth the payment.
-    unsufficient_funds = 1;
+    unsufficient_funds = 2;
 
     // ExternalFail means that receiver failed to receive payment because of
     // the unknown to us reason.
-    external_fail = 2;
+    external_fail = 3;
 }
 
 message ChannelChange {
