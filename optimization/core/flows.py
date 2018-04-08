@@ -26,27 +26,27 @@ def flows_calc(file_name_inlet):
             if flowmatr_calc[i][j] is not None:
                 flowmatr_calc[i][j] /= periodmatr_mean[i][j]
 
-    flowvect_calc_out = [0 for _ in range(len(flowmatr_calc))]
-    flowvect_calc_in = [0 for _ in range(len(flowmatr_calc))]
+    flowvect_out_calc = [0 for _ in range(len(flowmatr_calc))]
+    flowvect_in_calc = [0 for _ in range(len(flowmatr_calc))]
 
     for i in range(len(flowmatr_calc)):
         for j in range(len(flowmatr_calc[i])):
             if flowmatr_calc[i][j] is not None:
-                flowvect_calc_out[i] += flowmatr_calc[i][j]
-                flowvect_calc_in[j] += flowmatr_calc[i][j]
+                flowvect_out_calc[i] += flowmatr_calc[i][j]
+                flowvect_in_calc[j] += flowmatr_calc[i][j]
 
     with open(inlet['flowmatr_calc_file_name'], 'w') as f:
         json.dump({'flowmatr_calc': flowmatr_calc}, f, sort_keys=True,
                   indent=4 * ' ')
 
-    with open(inlet['flowvector_out_calc_file_name'], 'w') as f:
-        json.dump({'flowvect_calc_out': flowvect_calc_out}, f, sort_keys=True,
+    with open(inlet['flowvect_out_calc_file_name'], 'w') as f:
+        json.dump({'flowvect_out_calc': flowvect_out_calc}, f, sort_keys=True,
                   indent=4 * ' ')
 
-    with open(inlet['flowvector_in_calc_file_name'], 'w') as f:
-        json.dump({'flowvect_calc_in': flowvect_calc_in}, f, sort_keys=True,
+    with open(inlet['flowvect_in_calc_file_name'], 'w') as f:
+        json.dump({'flowvect_in_calc': flowvect_in_calc}, f, sort_keys=True,
                   indent=4 * ' ')
 
 
 if __name__ == '__main__':
-    flows_calc(file_name_inlet='inlet/flows_calc_inlet.json')
+    flows_calc(file_name_inlet='inlet/flows_inlet.json')
