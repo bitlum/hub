@@ -46,6 +46,10 @@ type Router interface {
 	// AverageChangeUpdateDuration average time which is needed the change of
 	// state to ba updated over blockchain.
 	AverageChangeUpdateDuration() (time.Duration, error)
+
+	// Done returns error if router stopped working for some reason,
+	// and nil if it was stopped.
+	Done() chan error
 }
 
 // ChannelID uniquely identifies the channel in the lightning network.
