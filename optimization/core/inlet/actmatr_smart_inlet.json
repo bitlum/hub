@@ -3,6 +3,6 @@
     "trans_cut_frac": 0.7,
     "periodmatr_calc_file_name": "outlet/periodmatr_calc.json",
     "transmatr_calc_file_name": "outlet/transmatr_calc.json",
-    "periodmatr_smart_file_name": "outlet/periodmatr_smart.json",
-    "transmatr_smart_file_name": "outlet/transmatr_smart.json"
+    "periodmatr_mean_file_name": "outlet/periodmatr_mean.json",
+    "transmatr_mean_file_name": "outlet/transmatr_mean.json"
 }
