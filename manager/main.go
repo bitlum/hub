@@ -14,6 +14,7 @@ import (
 	"google.golang.org/grpc"
 	"net"
 	"time"
+	"github.com/bitlum/hub/manager/router/lnd"
 )
 
 var (
@@ -46,9 +47,34 @@ func backendMain() error {
 	// in the file, so that third-party optimisation program could read it
 	// and make optimisation decisions.
 	errChan := make(chan error)
-	r := emulation.NewRouter(10, 200 * time.Millisecond)
-	r.Start(config.Emulate.Host, config.Emulate.Port)
-	defer r.Stop()
+
+	var r router.Router
+	switch config.Backend {
+	case "emulator":
+		mainLog.Infof("Initialise emulator router...")
+		emulationRouter := emulation.NewRouter(10, 200*time.Millisecond)
+		emulationRouter.Start(config.Emulator.ListenHost, config.Emulator.ListenPort)
+		defer emulationRouter.Stop()
+		r = emulationRouter
+	case "lnd":
+		mainLog.Infof("Initialise lnd router...")
+		lndConfig := &lnd.Config{
+			Asset:       "BTC",
+			Host:        config.LND.Host,
+			Port:        config.LND.Port,
+			TlsCertPath: config.LND.TlsCert,
+			DB:          &lnd.InMemory{},
+		}
+
+		lndRouter, err := lnd.NewRouter(lndConfig)
+		if err != nil {
+			return errors.Errorf("unable to init lnd router: %v", err)
+		}
+
+		lndRouter.Start()
+		defer lndRouter.Stop("shutdown")
+		r = lndRouter
+	}
 
 	go updateLogFileGoroutine(r, config.UpdateLogFile, errChan)
 
