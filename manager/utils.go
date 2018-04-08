@@ -5,8 +5,9 @@ import (
 	"time"
 	"github.com/bitlum/hub/manager/router"
 	"github.com/go-errors/errors"
-	"github.com/kr/pretty"
 	"os"
+	"github.com/davecgh/go-spew/spew"
+	"reflect"
 )
 
 // getState...
@@ -72,6 +73,11 @@ func getState(r router.Router) (*logger.Log, error) {
 func updateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 	var logEntry *logger.Log
 
+	// Ensure that gRPC structures are printed properly
+	pretty := spew.NewDefaultConfig()
+	pretty.DisableMethods = true
+	pretty.DisablePointerAddresses = true
+
 	logEntry, err := getState(r)
 	if err != nil {
 		fail(errChan, "unable to get state: %v", err)
@@ -88,26 +94,29 @@ func updateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 	defer receiver.Stop()
 
 	for {
-		// NOTE: If move open/close of the file out of this cycle than this
-		// would lead to optimisation third-party program unable to get and
-		// log update via watchdog package.
-		mainLog.Debugf("Open update log file(%v) to write an update: %v",
-			path, pretty.Sprint(logEntry))
-		updateLogFile, err := os.OpenFile(path, os.O_APPEND | os.O_RDWR|
-			os.O_CREATE, 0666)
-		if err != nil {
-			fail(errChan, "unable to open update log file: %v", err)
-			return
-		}
+		if logEntry != nil {
+			// NOTE: If move open/close of the file out of this cycle than this
+			// would lead to optimisation third-party program unable to get and
+			// log update via watchdog package.
+			mainLog.Debugf("Open update log file(%v) to write an update: %v",
+				path, pretty.Sdump(logEntry))
+			updateLogFile, err := os.OpenFile(path, os.O_APPEND | os.O_RDWR|
+				os.O_CREATE, 0666)
+			if err != nil {
+				fail(errChan, "unable to open update log file: %v", err)
+				return
+			}
 
-		if err := logger.WriteLog(updateLogFile, logEntry); err != nil {
-			fail(errChan, "unable to write new log entry: %v", err)
-			return
-		}
+			if err := logger.WriteLog(updateLogFile, logEntry); err != nil {
+				fail(errChan, "unable to write new log entry: %v", err)
+				return
+			}
 
-		if err := updateLogFile.Close(); err != nil {
-			fail(errChan, "unable to close log file: %v", err)
-			return
+			if err := updateLogFile.Close(); err != nil {
+				fail(errChan, "unable to close log file: %v", err)
+				return
+			}
+			logEntry = nil
 		}
 
 		select {
@@ -232,24 +241,23 @@ func updateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 							Status:   status,
 							Sender:   string(u.Sender),
 							Receiver: string(u.Receiver),
-							Amount:   u.Amount,
-							Earned:   u.Earned,
+							Amount:   uint64(u.Amount),
+							Earned:   int64(u.Earned),
 						},
 					},
 				}
-			}
 
-			// After we have update the state somehow
-			triggerStateWrite()
-
-		case <-needWriteState:
-			// With this we ensure that state of router is not written in
-			// the log if not changes we made. Basically we ensure that there
-			// will be no two state updates consequently.
-			if _, ok := logEntry.Data.(*logger.Log_State); ok {
+			default:
+				mainLog.Errorf("unhandled type of update: %v",
+					reflect.TypeOf(u))
 				continue
 			}
 
+			// After the any log update we have to dump the state of the
+			// router
+			triggerStateWrite()
+
+		case <-needWriteState:
 			mainLog.Info("Synchronise state of the router and write state in the log")
 
 			logEntry, err = getState(r)
