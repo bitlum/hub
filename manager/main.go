@@ -81,6 +81,7 @@ func backendMain() error {
 	}()
 
 	addInterruptHandler(shutdownChannel, func() {
+		close(errChan)
 		grpcServer.Stop()
 	})
 

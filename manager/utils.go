@@ -265,5 +265,16 @@ func updateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 
 func fail(errChan chan error, format string, params ...interface{}) {
 	err := errors.Errorf(format, params...)
-	errChan <- err
+	select {
+	case _, ok := <-errChan:
+		if !ok {
+			return
+		}
+	default:
+	}
+
+	select {
+	case errChan <- err:
+	default:
+	}
 }
