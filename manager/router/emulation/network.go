@@ -163,7 +163,7 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 				Status:   router.InsufficientFunds,
 				Sender:   router.UserID(req.Sender),
 				Receiver: router.UserID(req.Receiver),
-				Amount:   req.Amount,
+				Amount:   router.BalanceUnit(req.Amount),
 			})
 
 			return &SendPaymentResponse{}, nil
@@ -174,7 +174,7 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 		Status:   router.Successful,
 		Sender:   router.UserID(req.Sender),
 		Receiver: router.UserID(req.Receiver),
-		Amount:   req.Amount,
+		Amount:   router.BalanceUnit(req.Amount),
 
 		// TODO(andrew.shvv) Add earned
 		Earned: 0,

@@ -34,8 +34,10 @@ func NewRouter(freeBalance router.BalanceUnit,
 	return r
 }
 
-// Done is used to notify external subsystems that emulator router stopped
-// working.
+// Done returns error if router stopped working for some reason,
+// and nil if it was stopped.
+//
+// NOTE: Part of the router.Router interface.
 func (r *RouterEmulation) Done() chan error {
 	return r.network.errChan
 }
