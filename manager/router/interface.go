@@ -157,16 +157,17 @@ type UpdateChannelOpened struct {
 }
 
 type UpdatePayment struct {
-	Status    string
-	Sender    UserID
-	Receiver  UserID
-	ChannelID uint64
-	Amount    uint64
+	Status string
+
+	Sender   UserID
+	Receiver UserID
+
+	Amount BalanceUnit
 
 	// Earned is the number of funds which router earned by making this payment.
 	// In case of re-balancing router will pay the fee, for that reason this
 	// number will be negative.
-	Earned int64
+	Earned BalanceUnit
 }
 
 // UpdateLinkAverageUpdateDuration is used when router wants to notify that
