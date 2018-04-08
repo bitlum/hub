@@ -41,8 +41,11 @@ type config struct {
 
 	UpdateLogFile string `long:"updateslog" description:"Path to log file in which manager will direct router network updates output"`
 
-	Emulate *emulateRouterConfig `group:"Emulate" namespace:"emulate"`
-	Hub     *hubConfig           `group:"Hub" namespace:"hub"`
+	Backend  string               `long:"backend" description:"Type of router backend used" choice:"emulator" choice:"lnd"`
+	Emulator *emulateRouterConfig `group:"Emulator" namespace:"emulator"`
+	LND      *lndRouterConfig     `group:"Lnd" namespace:"lnd"`
+
+	Hub *hubConfig `group:"Hub" namespace:"hub"`
 
 	ConfigFile string `long:"configfile" description:"Path to configuration file"`
 	LogDir     string `long:"logdir" description:"Directory to log output."`
@@ -61,8 +64,14 @@ type hubConfig struct {
 // with this interface third-party service could send the emulation network
 // activity.
 type emulateRouterConfig struct {
-	Port string `long:"port" description:"Port on which GRPC emulator router is working"` 
-	Host string `long:"host" description:"Host on which GRPC emulator router is working"`
+	ListenPort string `long:"listenport" description:"Port on which GRPC emulator "`
+	ListenHost string `long:"listenhost" description:"Host on which GRPC emulator router should listen for incoming requests"`
+}
+
+type lndRouterConfig struct {
+	TlsCert string `long:"tlscert" description:"Path to the LND certificate"`
+	Port    string `long:"port" description:"Port on which LND is working"`
+	Host    string `long:"host" description:"Host on which LND is working"`
 }
 
 // getDefaultConfig return default version of service config.
@@ -75,9 +84,11 @@ func getDefaultConfig() config {
 			Port: defaultHubPort,
 			Host: defaultHubHost,
 		},
-		Emulate: &emulateRouterConfig{
-			Port: defaultEmulateNetworkPort,
-			Host: defaultEmulateNetworkHost,
+
+		Backend: "emulator",
+		Emulator: &emulateRouterConfig{
+			ListenPort: defaultEmulateNetworkPort,
+			ListenHost: defaultEmulateNetworkHost,
 		},
 	}
 }
