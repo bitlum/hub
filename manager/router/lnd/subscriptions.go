@@ -9,8 +9,11 @@ import (
 	"github.com/go-errors/errors"
 	"github.com/davecgh/go-spew/spew"
 	"fmt"
+	"github.com/bitlum/hub/manager/metrics/crypto"
+	"github.com/bitlum/hub/manager/metrics"
 )
 
+// ChannelsState is a map of chan points and current state of the channel.
 type ChannelsState map[string]string
 
 // listenLocalTopologyUpdates tracks the local channel topology state updates
@@ -32,123 +35,130 @@ func (r *Router) listenLocalTopologyUpdates() {
 				return
 			}
 
-			newChannelsState := make(ChannelsState)
-
-			// Take all pending/closing/opened channels and form the current
-			// state out of it. As far as those two operation are not atomic,
-			// it might happen that some channel sleeps away.
-			reqPending := &lnrpc.PendingChannelsRequest{}
-			respPending, err := r.client.PendingChannels(context.Background(), reqPending)
-			if err != nil {
-				log.Errorf("(topology updates) unable to fetch pending"+
-					" channels: %v", err)
-				continue
-			}
-
-			reqOpen := &lnrpc.ListChannelsRequest{}
-			respOpen, err := r.client.ListChannels(context.Background(), reqOpen)
-			if err != nil {
-				log.Errorf("(topology updates) unable to fetch list channels"+
-					": %v", err)
-				continue
-			}
-
-			for _, channel := range respPending.PendingOpenChannels {
-				newChannelsState[channel.Channel.ChannelPoint] = "opening"
-			}
-			for _, channel := range respPending.PendingClosingChannels {
-				newChannelsState[channel.Channel.ChannelPoint] = "closing"
-
-			}
-			for _, channel := range respPending.PendingForceClosingChannels {
-				newChannelsState[channel.Channel.ChannelPoint] = "closing"
-			}
-			for _, channel := range respOpen.Channels {
-				newChannelsState[channel.ChannelPoint] = "opened"
-			}
-
-			// Fetch prev pending/closing/opened channels from db which
-			// corresponds to the old/previous channel state.
-			oldChannelsState, err := r.cfg.DB.ChannelsState()
-			log.Debugf("Fetching channel state from db...")
-			if err != nil {
-				log.Errorf("(topology updates) unable to fetch old channel"+
-					" state: %v", err)
-				continue
-			}
-
-			var updates []interface{}
-			for chanPoint, oldState := range oldChannelsState {
-				newState, ok := newChannelsState[chanPoint]
-				if !ok {
-					newState = "not_exist"
-				}
-
-				update, err := r.actOnChannelStateChange(oldState, newState)
-				if err != nil {
-					log.Errorf("(topology updates) error during channel"+
-						" states comparison: %v", err)
-					continue
-				}
-
-				if update != nil {
-					updates = append(updates, update)
-				}
-			}
-
-			for chanPoint, newState := range newChannelsState {
-				oldState, ok := oldChannelsState[chanPoint]
-				if !ok {
-					oldState = "not_exist"
-				}
-
-				update, err := r.actOnChannelStateChange(oldState, newState)
-				if err != nil {
-					log.Errorf("(topology updates) error during channel"+
-						" states comparison: %v",
-						err)
-					continue
-				}
-
-				if update != nil {
-					updates = append(updates, update)
-				}
-			}
-
-			// Avoid redundant db usage.
-			if len(updates) == 0 {
-				continue
-			}
-
-			log.Infof("(topology updates) Broadcast %v topology updates",
-				len(updates))
-
-			for _, update := range updates {
-				log.Debugf("(topology updates) Send topology update: %v",
-					spew.Sdump(update))
-				r.broadcaster.Write(update)
-			}
-
-			// Try to save new state until it will be successful,
-			// otherwise we might send the same notifications.
-			for {
-				select {
-				case <-time.After(time.Second * 5):
-				case <-r.quit:
-					return
-				}
-
-				log.Debug("(topology updates) Putting channel state in db...")
-				if err := r.cfg.DB.PutChannelsState(newChannelsState); err != nil {
-					log.Errorf("(topology updates) unable update channel"+
-						" states: %v", err)
-					continue
-				}
-
-				break
-			}
+			r.syncTopologyUpdates()
 		}
 	}()
+}
+
+// syncTopologyUpdates is used as wrapper for fetching and syncing topology
+// updates. Main purpose of creating distinct method was usage of defer, which
+// is needed mainly for metric gathering usage.
+func (r *Router) syncTopologyUpdates() {
+	newChannelsState := make(ChannelsState)
+
+	// Take all pending/closing/opened channels and form the current
+	// state out of it. As far as those two operation are not atomic,
+	// it might happen that some channel sleeps away.
+	reqPending := &lnrpc.PendingChannelsRequest{}
+	respPending, err := r.client.PendingChannels(context.Background(), reqPending)
+	if err != nil {
+		log.Errorf("(topology updates) unable to fetch pending"+
+			" channels: %v", err)
+		return
+	}
+
+	reqOpen := &lnrpc.ListChannelsRequest{}
+	respOpen, err := r.client.ListChannels(context.Background(), reqOpen)
+	if err != nil {
+		log.Errorf("(topology updates) unable to fetch list channels"+
+			": %v", err)
+		return
+	}
+
+	for _, channel := range respPending.PendingOpenChannels {
+		newChannelsState[channel.Channel.ChannelPoint] = "opening"
+	}
+	for _, channel := range respPending.PendingClosingChannels {
+		newChannelsState[channel.Channel.ChannelPoint] = "closing"
+
+	}
+	for _, channel := range respPending.PendingForceClosingChannels {
+		newChannelsState[channel.Channel.ChannelPoint] = "closing"
+	}
+	for _, channel := range respOpen.Channels {
+		newChannelsState[channel.ChannelPoint] = "opened"
+	}
+
+	// Fetch prev pending/closing/opened channels from db which
+	// corresponds to the old/previous channel state.
+	oldChannelsState, err := r.cfg.DB.ChannelsState()
+	log.Debugf("Fetching channel state from db...")
+	if err != nil {
+		log.Errorf("(topology updates) unable to fetch old channel"+
+			" state: %v", err)
+		return
+	}
+
+	var updates []interface{}
+	for chanPoint, oldState := range oldChannelsState {
+		newState, ok := newChannelsState[chanPoint]
+		if !ok {
+			newState = "not_exist"
+		}
+
+		update, err := r.actOnChannelStateChange(oldState, newState)
+		if err != nil {
+			log.Errorf("(topology updates) error during channel"+
+				" states comparison: %v", err)
+			return
+		}
+
+		if update != nil {
+			updates = append(updates, update)
+		}
+	}
+
+	for chanPoint, newState := range newChannelsState {
+		oldState, ok := oldChannelsState[chanPoint]
+		if !ok {
+			oldState = "not_exist"
+		}
+
+		update, err := r.actOnChannelStateChange(oldState, newState)
+		if err != nil {
+			log.Errorf("(topology updates) error during channel"+
+				" states comparison: %v",
+				err)
+			return
+		}
+
+		if update != nil {
+			updates = append(updates, update)
+		}
+	}
+
+	// Avoid redundant db usage.
+	if len(updates) == 0 {
+		return
+	}
+
+	log.Infof("(topology updates) Broadcast %v topology updates",
+		len(updates))
+
+	for _, update := range updates {
+		log.Debugf("(topology updates) Send topology update: %v",
+			spew.Sdump(update))
+		r.broadcaster.Write(update)
+	}
+
+	// Try to save new state until it will be successful,
+	// otherwise we might send the same notifications.
+	for {
+		select {
+		case <-time.After(time.Second * 5):
+		case <-r.quit:
+			return
+		}
+
+		log.Debug("(topology updates) Putting channel state in db...")
+		if err := r.cfg.DB.PutChannelsState(newChannelsState); err != nil {
+			log.Errorf("(topology updates) unable update channel"+
+				" states: %v", err)
+			continue
+		}
+
+		break
+	}
 }
 
 // actOnChannelStateChange handles all possible cases of channel state
