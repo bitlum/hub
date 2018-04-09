@@ -44,6 +44,12 @@ func (r *Router) listenLocalTopologyUpdates() {
 // updates. Main purpose of creating distinct method was usage of defer, which
 // is needed mainly for metric gathering usage.
 func (r *Router) syncTopologyUpdates() {
+	defer panicRecovering()
+
+	m := crypto.NewMetric(r.cfg.Asset, "SyncTopologyUpdates",
+		r.cfg.MetricsBackend)
+	defer m.Finish()
+
 	newChannelsState := make(ChannelsState)
 
 	// Take all pending/closing/opened channels and form the current
@@ -52,6 +58,7 @@ func (r *Router) syncTopologyUpdates() {
 	reqPending := &lnrpc.PendingChannelsRequest{}
 	respPending, err := r.client.PendingChannels(context.Background(), reqPending)
 	if err != nil {
+		m.AddError(metrics.HighSeverity)
 		log.Errorf("(topology updates) unable to fetch pending"+
 			" channels: %v", err)
 		return
@@ -60,6 +67,7 @@ func (r *Router) syncTopologyUpdates() {
 	reqOpen := &lnrpc.ListChannelsRequest{}
 	respOpen, err := r.client.ListChannels(context.Background(), reqOpen)
 	if err != nil {
+		m.AddError(metrics.HighSeverity)
 		log.Errorf("(topology updates) unable to fetch list channels"+
 			": %v", err)
 		return
@@ -82,8 +90,9 @@ func (r *Router) syncTopologyUpdates() {
 	// Fetch prev pending/closing/opened channels from db which
 	// corresponds to the old/previous channel state.
 	oldChannelsState, err := r.cfg.DB.ChannelsState()
-	log.Debugf("Fetching channel state from db...")
+	log.Debugf("(topology updates) Fetching channel state from db...")
 	if err != nil {
+		m.AddError(metrics.HighSeverity)
 		log.Errorf("(topology updates) unable to fetch old channel"+
 			" state: %v", err)
 		return
@@ -98,9 +107,10 @@ func (r *Router) syncTopologyUpdates() {
 
 		update, err := r.actOnChannelStateChange(oldState, newState)
 		if err != nil {
+			m.AddError(metrics.MiddleSeverity)
 			log.Errorf("(topology updates) error during channel"+
 				" states comparison: %v", err)
-			return
+			continue
 		}
 
 		if update != nil {
@@ -116,10 +126,11 @@ func (r *Router) syncTopologyUpdates() {
 
 		update, err := r.actOnChannelStateChange(oldState, newState)
 		if err != nil {
+			m.AddError(metrics.MiddleSeverity)
 			log.Errorf("(topology updates) error during channel"+
 				" states comparison: %v",
 				err)
-			return
+			continue
 		}
 
 		if update != nil {
@@ -152,6 +163,7 @@ func (r *Router) syncTopologyUpdates() {
 
 		log.Debug("(topology updates) Putting channel state in db...")
 		if err := r.cfg.DB.PutChannelsState(newChannelsState); err != nil {
+			m.AddError(metrics.HighSeverity)
 			log.Errorf("(topology updates) unable update channel"+
 				" states: %v", err)
 			continue
@@ -249,103 +261,119 @@ func (r *Router) listenForwardingUpdates() {
 
 		log.Info("Started forwarding payments goroutine")
 
-		var lastIndex uint32
-		var err error
-
-		// Try to fetch last index, and if fails than try after yet again after
-		// some time.
 		for {
 			select {
+			case <-time.After(time.Second * 5):
 			case <-r.quit:
 				return
-			case <-time.After(time.Second * 5):
 			}
 
-			log.Debug("(forwarding updates) Fetching last forwarding index...")
-			lastIndex, err = r.cfg.DB.LastForwardingIndex()
-			if err != nil {
-				log.Errorf("(forwarding updates) unable to get last"+
-					" forwarding index: %v", err)
-				continue
-			}
-
-			break
-		}
-
-		for {
-			select {
-			case <-r.quit:
-				return
-			case <-time.After(time.Second * 5):
-			}
-
-			events, err := r.getNewForwardingEvents(lastIndex)
-			if err != nil {
-				log.Errorf("(forwarding updates) unable to get forwarding"+
-					" events, index(%v): %v",
-					lastIndex, err)
-				continue
-			}
-
-			// Avoid db usage if possible.
-			if len(events) == 0 {
-				continue
-			}
-
-			log.Infof("(forwarding updates) Broadcast %v forwarding"+
-				" events", len(events))
-			for _, event := range events {
-				sender, err := r.getPubKeyByChainID(event.ChanIdIn)
-				if err != nil {
-					log.Errorf("(forwarding updates) error during event"+
-						" broadcasting: %v", err)
-					continue
-				}
-
-				receiver, err := r.getPubKeyByChainID(event.ChanIdOut)
-				if err != nil {
-					log.Errorf("(forwarding updates) error during event"+
-						" broadcasting: %v", err)
-					continue
-				}
-
-				update := &router.UpdatePayment{
-					Status:   router.Successful,
-					Sender:   router.UserID(sender),
-					Receiver: router.UserID(receiver),
-					Amount:   router.BalanceUnit(event.AmtOut),
-					Earned:   router.BalanceUnit(event.Fee),
-				}
-
-				// Send update notification to all listeners.
-				log.Debugf("(forwarding updates) Send forwarding update: %v"+
-					"", spew.Sdump(update))
-				r.broadcaster.Write(update)
-			}
-
-			lastIndex += uint32(len(events))
-
-			// Try to update the last forwarding index until this operation will
-			// be successful.
-			for {
-				select {
-				case <-r.quit:
-					return
-				case <-time.After(time.Second * 5):
-				}
-
-				log.Debugf("(forwarding updates) Save last forwarding index"+
-					" %v...", lastIndex)
-				if err := r.cfg.DB.PutLastForwardingIndex(lastIndex); err != nil {
-					log.Errorf("(forwarding updates) unable to get last"+
-						" forwarding index: %v", err)
-					continue
-				}
-
-				break
-			}
+			r.syncForwardingUpdate()
 		}
 	}()
+}
+
+// syncForwardingUpdate is used as wrapper for fetching and syncing forwarding
+// updates. Main purpose of creating distinct method was usage of defer, which
+// is needed mainly for metric gathering usage.
+func (r *Router) syncForwardingUpdate() {
+	defer panicRecovering()
+
+	var lastIndex uint32
+	var err error
+
+	m := crypto.NewMetric(r.cfg.Asset, "SyncForwardingUpdates",
+		r.cfg.MetricsBackend)
+	defer m.Finish()
+
+	// Try to fetch last index, and if fails than try after yet again after
+	// some time.
+	for {
+		log.Debug("(forwarding updates) Fetching last forwarding index...")
+		lastIndex, err = r.cfg.DB.LastForwardingIndex()
+		if err != nil {
+			m.AddError(metrics.HighSeverity)
+			log.Errorf("(forwarding updates) unable to get last"+
+				" forwarding index: %v", err)
+			select {
+			case <-r.quit:
+				return
+			case <-time.After(time.Second * 5):
+				continue
+			}
+		}
+
+		break
+	}
+
+	events, err := r.getNewForwardingEvents(lastIndex)
+	if err != nil {
+		m.AddError(metrics.HighSeverity)
+		log.Errorf("(forwarding updates) unable to get forwarding"+
+			" events, index(%v): %v",
+			lastIndex, err)
+		return
+	}
+
+	// Avoid db usage if possible.
+	if len(events) == 0 {
+		return
+	}
+
+	log.Infof("(forwarding updates) Broadcast %v forwarding"+
+		" events", len(events))
+	for _, event := range events {
+		sender, err := r.getPubKeyByChainID(event.ChanIdIn)
+		if err != nil {
+			m.AddError(metrics.MiddleSeverity)
+			log.Errorf("(forwarding updates) error during event"+
+				" broadcasting: %v", err)
+			continue
+		}
+
+		receiver, err := r.getPubKeyByChainID(event.ChanIdOut)
+		if err != nil {
+			m.AddError(metrics.MiddleSeverity)
+			log.Errorf("(forwarding updates) error during event"+
+				" broadcasting: %v", err)
+			continue
+		}
+
+		update := &router.UpdatePayment{
+			Status:   router.Successful,
+			Sender:   router.UserID(sender),
+			Receiver: router.UserID(receiver),
+			Amount:   router.BalanceUnit(event.AmtOut),
+			Earned:   router.BalanceUnit(event.Fee),
+		}
+
+		// Send update notification to all listeners.
+		log.Debugf("(forwarding updates) Send forwarding update: %v"+
+			"", spew.Sdump(update))
+		r.broadcaster.Write(update)
+	}
+
+	lastIndex += uint32(len(events))
+
+	// Try to update the last forwarding index until this operation will
+	// be successful.
+	for {
+		log.Debugf("(forwarding updates) Save last forwarding index"+
+			" %v...", lastIndex)
+		if err := r.cfg.DB.PutLastForwardingIndex(lastIndex); err != nil {
+			m.AddError(metrics.HighSeverity)
+			log.Errorf("(forwarding updates) unable to get last"+
+				" forwarding index: %v", err)
+			select {
+			case <-r.quit:
+				return
+			case <-time.After(time.Second * 5):
+				continue
+			}
+		}
+
+		break
+	}
 }
 
 // getPubKeyByChainID returns the pubkey which identifies the user by the
@@ -417,9 +445,15 @@ func (r *Router) getNewForwardingEvents(index uint32) (
 // disconnected listener will be re-subscribe on updates when lnd goes live
 // and continue listening.
 func (r *Router) listenInvoiceUpdates() {
+	defer panicRecovering()
+
+	m := crypto.NewMetric(r.cfg.Asset, "ListenInvoiceUpdates",
+		r.cfg.MetricsBackend)
+
 	r.wg.Add(1)
 	go func() {
 		defer func() {
+			panicRecovering()
 			log.Info("Stopped incoming payments goroutine")
 			r.wg.Done()
 		}()
@@ -446,6 +480,7 @@ func (r *Router) listenInvoiceUpdates() {
 				invoiceSubsc, err = r.client.SubscribeInvoices(context.Background(),
 					&lnrpc.InvoiceSubscription{})
 				if err != nil {
+					m.AddError(metrics.HighSeverity)
 					log.Errorf("(payments updates) unable to re-subscribe on"+
 						" invoice updates"+
 						": %v", err)
@@ -457,6 +492,7 @@ func (r *Router) listenInvoiceUpdates() {
 
 			invoiceUpdate, err := invoiceSubsc.Recv()
 			if err != nil {
+				m.AddError(metrics.HighSeverity)
 				// Re-subscribe on lnd invoice updates by making subscription
 				// equal to nil.
 				invoiceSubsc = nil

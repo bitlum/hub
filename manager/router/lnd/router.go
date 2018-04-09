@@ -1,7 +1,6 @@
 package lnd
 
 import (
-	"github.com/bitlum/hub/manager/router"
 	"time"
 	"github.com/lightningnetwork/lnd/lnrpc"
 	"sync"
@@ -13,6 +12,9 @@ import (
 	"net"
 	"context"
 	"strings"
+	"github.com/bitlum/hub/manager/metrics/crypto"
+	"github.com/bitlum/hub/manager/metrics"
+	"github.com/bitlum/hub/manager/router"
 )
 
 // Config is a connector config.
@@ -34,6 +36,9 @@ type Config struct {
 	// exact implementation of database backend is unknown for the hub,
 	// in the simplest case it might be in-memory storage.
 	DB DB
+
+	// MetricsBackend...
+	MetricsBackend crypto.MetricsBackend
 }
 
 func (c *Config) validate() error {
@@ -55,6 +60,10 @@ func (c *Config) validate() error {
 
 	if c.DB == nil {
 		return errors.Errorf("db should be specified")
+	}
+
+	if c.MetricsBackend == nil {
+		return errors.Errorf("metrics backend should be specified")
 	}
 
 	return nil
@@ -98,12 +107,17 @@ func NewRouter(cfg *Config) (*Router, error) {
 // Start...
 func (r *Router) Start() error {
 	if !atomic.CompareAndSwapInt32(&r.started, 0, 1) {
-		log.Warn("lnd router already started")
+		log.Warn("Lnd router already started")
 		return nil
 	}
 
+	m := crypto.NewMetric(r.cfg.Asset, "Start",
+		r.cfg.MetricsBackend)
+	defer m.Finish()
+
 	creds, err := credentials.NewClientTLSFromFile(r.cfg.TlsCertPath, "")
 	if err != nil {
+		m.AddError(metrics.HighSeverity)
 		return errors.Errorf("unable to load credentials: %v", err)
 	}
 
@@ -112,10 +126,11 @@ func (r *Router) Start() error {
 	}
 
 	target := net.JoinHostPort(r.cfg.Host, r.cfg.Port)
-	log.Infof("lightning client connection to lnd: %v", target)
+	log.Infof("Lightning client connects to lnd: %v", target)
 
 	conn, err := grpc.Dial(target, opts...)
 	if err != nil {
+		m.AddError(metrics.HighSeverity)
 		return errors.Errorf("unable to to dial grpc: %v", err)
 	}
 	r.conn = conn
@@ -124,16 +139,19 @@ func (r *Router) Start() error {
 	reqInfo := &lnrpc.GetInfoRequest{}
 	respInfo, err := r.client.GetInfo(context.Background(), reqInfo)
 	if err != nil {
+		m.AddError(metrics.HighSeverity)
 		return errors.Errorf("unable get lnd node info: %v", err)
 	}
 
+	log.Infof("Init lnd router with pub key: %v", respInfo.IdentityPubkey)
 	r.nodeAddr = respInfo.IdentityPubkey
+
 
 	r.listenLocalTopologyUpdates()
 	r.listenForwardingUpdates()
 	r.listenInvoiceUpdates()
 
-	log.Info("lnd router started")
+	log.Info("Lnd router started")
 	return nil
 }
 
@@ -170,6 +188,10 @@ func (r *Router) SendPayment(userID router.UserID, amount router.BalanceUnit) er
 //
 // NOTE: Part of the router.Router interface.
 func (r *Router) OpenChannel(id router.UserID, funds router.BalanceUnit) error {
+	m := crypto.NewMetric(r.cfg.Asset, "OpenChannel",
+		r.cfg.MetricsBackend)
+	defer m.Finish()
+
 	req := &lnrpc.OpenChannelRequest{
 		NodePubkeyString:   string(id),
 		LocalFundingAmount: int64(funds),
@@ -197,13 +219,22 @@ func (r *Router) OpenChannel(id router.UserID, funds router.BalanceUnit) error {
 //
 // NOTE: Part of the router.Router interface.
 func (r *Router) CloseChannel(id router.ChannelID) error {
+	m := crypto.NewMetric(r.cfg.Asset, "CloseChannel",
+		r.cfg.MetricsBackend)
+	defer m.Finish()
+
 	parts := strings.Split(string(id), ":")
 	if len(parts) != 2 {
-		return errors.New("unable decode channel id")
+		m.AddError(metrics.HighSeverity)
+		log.Error("unable to split chan point("+
+			"%v) on funding tx id and output index", id)
+		return errors.New("unable decode channel point")
 	}
 
 	index, err := strconv.ParseUint(parts[1], 10, 32)
 	if err != nil {
+		m.AddError(metrics.HighSeverity)
+		log.Error("unable to parse index", parts[1])
 		return errors.Errorf("unable decode tx index: %v", err)
 	}
 
@@ -220,6 +251,8 @@ func (r *Router) CloseChannel(id router.ChannelID) error {
 	}
 
 	if _, err = r.client.CloseChannel(context.Background(), req); err != nil {
+		m.AddError(metrics.HighSeverity)
+		log.Errorf("unable close the channel: %v", err)
 		return err
 	}
 
@@ -263,12 +296,17 @@ func (r *Router) RegisterOnUpdates() *router.Receiver {
 //
 // NOTE: Part of the router.Router interface.
 func (r *Router) Network() ([]*router.Channel, error) {
+	m := crypto.NewMetric(r.cfg.Asset, "Network", r.cfg.MetricsBackend)
+	defer m.Finish()
+
 	var channels []*router.Channel
 
 	{
 		req := &lnrpc.PendingChannelsRequest{}
 		resp, err := r.client.PendingChannels(context.Background(), req)
 		if err != nil {
+			m.AddError(metrics.HighSeverity)
+			log.Errorf("unable to fetch pending channels: %v", err)
 			return nil, err
 		}
 
@@ -307,6 +345,8 @@ func (r *Router) Network() ([]*router.Channel, error) {
 		req := &lnrpc.ListChannelsRequest{}
 		resp, err := r.client.ListChannels(context.Background(), req)
 		if err != nil {
+			m.AddError(metrics.HighSeverity)
+			log.Errorf("unable to fetch open channels: %v", err)
 			return nil, err
 		}
 
@@ -328,9 +368,14 @@ func (r *Router) Network() ([]*router.Channel, error) {
 //
 // NOTE: Part of the router.Router interface.
 func (r *Router) FreeBalance() (router.BalanceUnit, error) {
+	m := crypto.NewMetric(r.cfg.Asset, "FreeBalance", r.cfg.MetricsBackend)
+	defer m.Finish()
+
 	req := &lnrpc.WalletBalanceRequest{}
 	resp, err := r.client.WalletBalance(context.Background(), req)
 	if err != nil {
+		m.AddError(metrics.HighSeverity)
+		log.Errorf("unable to get wallet balance channels: %v", err)
 		return 0, err
 	}
 
@@ -342,9 +387,14 @@ func (r *Router) FreeBalance() (router.BalanceUnit, error) {
 //
 // NOTE: Part of the router.Router interface.
 func (r *Router) PendingBalance() (router.BalanceUnit, error) {
+	m := crypto.NewMetric(r.cfg.Asset, "PendingBalance", r.cfg.MetricsBackend)
+	defer m.Finish()
+
 	req := &lnrpc.PendingChannelsRequest{}
 	resp, err := r.client.PendingChannels(context.Background(), req)
 	if err != nil {
+		m.AddError(metrics.HighSeverity)
+		log.Errorf("unable to fetch pending channels: %v", err)
 		return 0, err
 	}
 
