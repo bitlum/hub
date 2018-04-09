@@ -90,7 +90,7 @@ func (b Broadcaster) Write(v interface{}) {
 type Receiver struct {
 	broadcasts chan Broadcast
 	quit       chan struct{}
-	sync.Mutex
+	mutex sync.Mutex
 }
 
 // Read a value that has been broadcast, waiting until one is available if
@@ -102,8 +102,8 @@ func (r *Receiver) Read() chan interface{} {
 	c := make(chan interface{})
 
 	go func() {
-		r.Lock()
-		defer r.Unlock()
+		r.mutex.Lock()
+		defer r.mutex.Unlock()
 
 		// Take the broadcast element for the channel, such action services as the
 		// mutex, because other receivers on this stage are waiting for the element
