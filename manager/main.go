@@ -15,6 +15,9 @@ import (
 	"net"
 	"time"
 	"github.com/bitlum/hub/manager/router/lnd"
+	"github.com/bitlum/hub/manager/metrics"
+	"context"
+	"github.com/bitlum/hub/manager/metrics/crypto"
 )
 
 var (
@@ -42,6 +45,21 @@ func backendMain() error {
 		return errors.Errorf("update log file should be specified")
 	}
 
+	// Initialise prometheus endpoint handler listening for incoming prometheus
+	// scraping.
+	mainLog.Infof("Initialise prometheus endpoint on %v:%v",
+		config.Prometheus.ListenHost, config.Prometheus.ListenPort)
+	addr := net.JoinHostPort(config.Prometheus.ListenHost, config.Prometheus.ListenPort)
+	server := metrics.StartServer(addr)
+
+	// TODO(andrew.shvv) add simnet to config and check in lnd that we
+	// connect to client with proper net
+	metricsBackend, err := crypto.InitMetricsBackend("simnet")
+	if err != nil {
+		return errors.Errorf("unable to init metrics backend for lnd: %v"+
+			"", err)
+	}
+
 	// Create router and connect to emulation or real network,
 	// and subscribe on topology updates which will transformed and written
 	// in the file, so that third-party optimisation program could read it
@@ -59,11 +77,12 @@ func backendMain() error {
 	case "lnd":
 		mainLog.Infof("Initialise lnd router...")
 		lndConfig := &lnd.Config{
-			Asset:       "BTC",
-			Host:        config.LND.Host,
-			Port:        config.LND.Port,
-			TlsCertPath: config.LND.TlsCert,
-			DB:          &lnd.InMemory{},
+			Asset:          "BTC",
+			Host:           config.LND.Host,
+			Port:           config.LND.Port,
+			TlsCertPath:    config.LND.TlsCert,
+			DB:             &lnd.InMemory{},
+			MetricsBackend: metricsBackend,
 		}
 
 		lndRouter, err := lnd.NewRouter(lndConfig)
@@ -115,6 +134,7 @@ func backendMain() error {
 	addInterruptHandler(shutdownChannel, func() {
 		close(errChan)
 		grpcServer.Stop()
+		server.Shutdown(context.Background())
 	})
 
 	select {
