@@ -24,6 +24,9 @@ const (
 	defaultLogLevel       = "info"
 	defaultConfigFilename = "hubmanager.conf"
 	defaultLogFilename    = "hubmanager.log"
+
+	defaultPrometheusHost = "0.0.0.0"
+	defaultPrometheusPort = "19999"
 )
 
 var (
@@ -45,9 +48,10 @@ type config struct {
 	Emulator *emulateRouterConfig `group:"Emulator" namespace:"emulator"`
 	LND      *lndRouterConfig     `group:"Lnd" namespace:"lnd"`
 
-	Hub *hubConfig `group:"Hub" namespace:"hub"`
+	Prometheus *prometheusConfig `group:"Prometheus" namespace:"prometheus"`
+	Hub        *hubConfig        `group:"Hub" namespace:"hub"`
 
-	ConfigFile string `long:"configfile" description:"Path to configuration file"`
+	ConfigFile string `long:"config" description:"Path to configuration file"`
 	LogDir     string `long:"logdir" description:"Directory to log output."`
 	DebugLevel string `long:"debuglevel" description:"Logging level for all subsystems {trace, debug, info, warn, error, critical} -- You may also specify <subsystem>=<level>,<subsystem2>=<level>,... to set the log level for individual subsystems -- Use show to list available subsystems"`
 }
@@ -74,6 +78,11 @@ type lndRouterConfig struct {
 	Host    string `long:"host" description:"Host on which LND is working"`
 }
 
+type prometheusConfig struct {
+	ListenHost string `long:"listenhost" description:"The host of the prometheus metrics endpoint, from which metric server is trying to fetch metrics"`
+	ListenPort string `long:"listenport" description:"The port of the prometheus metrics endpoint, from which metric server is trying to fetch metrics"`
+}
+
 // getDefaultConfig return default version of service config.
 func getDefaultConfig() config {
 	return config{
@@ -83,6 +92,10 @@ func getDefaultConfig() config {
 		Hub: &hubConfig{
 			Port: defaultHubPort,
 			Host: defaultHubHost,
+		},
+		Prometheus: &prometheusConfig{
+			ListenHost: defaultPrometheusHost,
+			ListenPort: defaultPrometheusPort,
 		},
 
 		Backend: "emulator",
