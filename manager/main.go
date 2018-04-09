@@ -71,9 +71,15 @@ func backendMain() error {
 			return errors.Errorf("unable to init lnd router: %v", err)
 		}
 
-		lndRouter.Start()
+
+		if err := lndRouter.Start(); err != nil {
+			return errors.Errorf("unable to start lnd router: %v", err)
+		}
+
 		defer lndRouter.Stop("shutdown")
 		r = lndRouter
+	default:
+		return errors.Errorf("unhandled backend name: '%v'", config.Backend)
 	}
 
 	go updateLogFileGoroutine(r, config.UpdateLogFile, errChan)
