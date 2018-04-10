@@ -40,6 +40,18 @@
   revision = "84c8d2346e9fc8c7b947e243b9c24e6df9fd206a"
 
 [[projects]]
+  name = "github.com/coreos/bbolt"
+  packages = ["."]
+  revision = "583e8937c61f1af6513608ccc75c97b6abdf4ff9"
+  version = "v1.3.0"
+
+[[projects]]
+  name = "github.com/davecgh/go-spew"
+  packages = ["spew"]
+  revision = "346938d642f2ec3594ed81d874461961cd0faa76"
+  version = "v1.1.0"
+
+[[projects]]
   name = "github.com/go-errors/errors"
   packages = ["."]
   revision = "a6af135bd4e28680facf08a3d206b454abc877a4"
@@ -76,18 +88,6 @@
   name = "github.com/jrick/logrotate"
   packages = ["rotator"]
   revision = "a93b200c26cbae3bb09dd0dc2c7c7fe1468a034a"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/kr/pretty"
-  packages = ["."]
-  revision = "cfb55aafdaf3ec08f0db22699ab822c50091b1c4"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/kr/text"
-  packages = ["."]
-  revision = "7cafcd837844e784b526369c9bce262804aebc60"
 
 [[projects]]
   name = "github.com/lightningnetwork/lnd"
@@ -157,6 +157,12 @@
   revision = "ae89d30ce0c63142b652837da33d782e2b0a9b25"
 
 [[projects]]
+  branch = "master"
+  name = "golang.org/x/sys"
+  packages = ["unix"]
+  revision = "3b87a42e500a6dc65dae1a55d0b641295971163e"
+
+[[projects]]
   name = "golang.org/x/text"
   packages = [
     "collate",
@@ -209,6 +215,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "da1d0316e929edb5265cacb54e2333df5a869237a1b41cf7b75f7c9888271af5"
+  inputs-digest = "f6934c12d0c4abfa674ad9e7fb30abd6b14ffdc169f41e4cb13594f64422a86c"
   solver-name = "gps-cdcl"
   solver-version = 1
