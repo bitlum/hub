@@ -1,4 +1,4 @@
-package router
+package stats
 
 import "github.com/btcsuite/btclog"
 
