@@ -68,6 +68,7 @@ type Channel struct {
 	UserBalance   BalanceUnit
 	RouterBalance BalanceUnit
 	IsPending     bool
+	IsActive      bool
 }
 
 type UpdateChannelClosing struct {

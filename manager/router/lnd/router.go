@@ -146,7 +146,6 @@ func (r *Router) Start() error {
 	log.Infof("Init lnd router with pub key: %v", respInfo.IdentityPubkey)
 	r.nodeAddr = respInfo.IdentityPubkey
 
-
 	r.listenLocalTopologyUpdates()
 	r.listenForwardingUpdates()
 	r.listenInvoiceUpdates()
@@ -357,6 +356,7 @@ func (r *Router) Network() ([]*router.Channel, error) {
 				UserBalance:   router.BalanceUnit(c.RemoteBalance),
 				RouterBalance: router.BalanceUnit(c.LocalBalance),
 				IsPending:     false,
+				IsActive:      c.Active,
 			})
 		}
 	}
