@@ -92,11 +92,6 @@ func backendMain() error {
 			return errors.Errorf("unable to init lnd router: %v", err)
 		}
 
-		if err := lndRouter.Start(); err != nil {
-			return errors.Errorf("unable to start lnd router: %v", err)
-		}
-		defer lndRouter.Stop("shutdown")
-
 		// TODO(andrew.shvv) add simnet to config and check in lnd that we
 		// connect to client with proper net
 		statsBackend, err := network.InitMetricsBackend("simnet")
@@ -109,7 +104,17 @@ func backendMain() error {
 		statsGatherer.Start()
 		defer statsGatherer.Stop()
 
+		// Start router after the stats gatherer so that if lnd has any new
+		// payment updates stats gatherer wouldn't lost them,
+		// because of the late notification subscription.
+		if err := lndRouter.Start(); err != nil {
+			return errors.Errorf("unable to start lnd router: %v", err)
+		}
+		defer lndRouter.Stop("shutdown")
 		r = lndRouter
+
+		// Start maintaining the balance of funds locked with users.
+		enableChannelBalancing(lndRouter)
 
 	default:
 		return errors.Errorf("unhandled backend name: '%v'", config.Backend)
