@@ -6,8 +6,8 @@ import (
 	"os"
 	"context"
 	"fmt"
-	"github.com/AndrewSamokhvalov/go-spew/spew"
 	"time"
+	"github.com/davecgh/go-spew/spew"
 )
 
 func main() {
