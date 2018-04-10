@@ -160,6 +160,7 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 			// but instead notify another subsystem about error,
 			// so that it might be written in log for example an later examined.
 			n.broadcaster.Write(&router.UpdatePayment{
+				Type:     router.Incoming,
 				Status:   router.InsufficientFunds,
 				Sender:   router.UserID(req.Sender),
 				Receiver: router.UserID(req.Receiver),
@@ -171,6 +172,7 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 	}
 
 	n.broadcaster.Write(&router.UpdatePayment{
+		Type:     router.Incoming,
 		Status:   router.Successful,
 		Sender:   router.UserID(req.Sender),
 		Receiver: router.UserID(req.Receiver),

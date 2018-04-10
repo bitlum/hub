@@ -340,6 +340,7 @@ func (r *Router) syncForwardingUpdate() {
 		}
 
 		update := &router.UpdatePayment{
+			Type:     router.Forward,
 			Status:   router.Successful,
 			Sender:   router.UserID(sender),
 			Receiver: router.UserID(receiver),
@@ -508,6 +509,7 @@ func (r *Router) listenInvoiceUpdates() {
 
 			amount := btcutil.Amount(invoiceUpdate.Value)
 			update := &router.UpdatePayment{
+				Type:   router.Incoming,
 				Status: router.Successful,
 
 				// TODO(andrew.shvv) Need to add sender chan id in lnd,

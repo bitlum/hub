@@ -161,7 +161,8 @@ type UpdateChannelOpened struct {
 }
 
 type UpdatePayment struct {
-	Status string
+	Status PaymentStatus
+	Type   PaymentType
 
 	Sender   UserID
 	Receiver UserID
@@ -180,16 +181,31 @@ type UpdateLinkAverageUpdateDuration struct {
 	AverageUpdateDuration time.Duration
 }
 
+type PaymentStatus string
+
 const (
-	Successful = "successful"
+	Successful PaymentStatus = "successful"
 
 	// InsufficientFunds means that router haven't posses/locked enough funds
 	// with receiver user to route through the payment.
-	InsufficientFunds = "insufficient_funds"
+	InsufficientFunds PaymentStatus = "insufficient_funds"
 
 	// ExternalFail means that receiver failed to receive payment because of
 	// the unknown to us reason.
-	ExternalFail = "external_fail"
+	ExternalFail PaymentStatus = "external_fail"
+)
+
+type PaymentType string
+
+const (
+	// Outgoing is the payment which was sent from the router.
+	Outgoing PaymentType = "outgoing"
+
+	// Incoming is the payment which was sent from user to router.
+	Incoming PaymentType = "incoming"
+
+	// Forward is the payment which was send from uer to user.
+	Forward  PaymentType = "forward"
 )
 
 const (
