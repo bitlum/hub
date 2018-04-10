@@ -18,6 +18,8 @@ import (
 	"github.com/bitlum/hub/manager/metrics"
 	"context"
 	"github.com/bitlum/hub/manager/metrics/crypto"
+	"github.com/bitlum/hub/manager/metrics/network"
+	"github.com/bitlum/hub/manager/router/stats"
 )
 
 var (
@@ -90,13 +92,25 @@ func backendMain() error {
 			return errors.Errorf("unable to init lnd router: %v", err)
 		}
 
-
 		if err := lndRouter.Start(); err != nil {
 			return errors.Errorf("unable to start lnd router: %v", err)
 		}
-
 		defer lndRouter.Stop("shutdown")
+
+		// TODO(andrew.shvv) add simnet to config and check in lnd that we
+		// connect to client with proper net
+		statsBackend, err := network.InitMetricsBackend("simnet")
+		if err != nil {
+			return errors.Errorf("unable to init metrics backend for lnd: %v"+
+				"", err)
+		}
+
+		statsGatherer := stats.NewNetworkStatsGatherer(lndRouter, statsBackend)
+		statsGatherer.Start()
+		defer statsGatherer.Stop()
+
 		r = lndRouter
+
 	default:
 		return errors.Errorf("unhandled backend name: '%v'", config.Backend)
 	}
