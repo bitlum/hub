@@ -372,3 +372,7 @@ func (r *RouterEmulation) SetFee(fee uint64) error {
 	r.fee = fee
 	return nil
 }
+
+func (r *RouterEmulation) Asset() string {
+	return "BTC"
+}

@@ -50,6 +50,9 @@ type Router interface {
 	// Done returns error if router stopped working for some reason,
 	// and nil if it was stopped.
 	Done() chan error
+
+	// Asset returns asset with which corresponds to this router.
+	Asset() string
 }
 
 // ChannelID uniquely identifies the channel in the lightning network.

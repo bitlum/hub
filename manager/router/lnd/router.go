@@ -422,3 +422,10 @@ func (r *Router) Done() chan error {
 	// TODO(andrew.shvv) Implement
 	return nil
 }
+
+// Asset returns asset with which corresponds to this router.
+//
+// NOTE: Part of the router.Router interface.
+func (r *Router) Asset() string {
+	return r.cfg.Asset
+}
