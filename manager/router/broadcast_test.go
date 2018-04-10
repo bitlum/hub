@@ -3,6 +3,7 @@ package router
 import (
 	"testing"
 	"time"
+	"fmt"
 )
 
 func TestBroadcasterOrder(t *testing.T) {

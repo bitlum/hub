@@ -57,6 +57,7 @@ func NewBroadcaster() Broadcaster {
 				cmd.resp <- &Receiver{
 					broadcasts: lastElem,
 					quit:       make(chan struct{}),
+					exit:       make(chan struct{}),
 				}
 			}
 		}
@@ -90,42 +91,63 @@ func (b Broadcaster) Write(v interface{}) {
 type Receiver struct {
 	broadcasts chan Broadcast
 	quit       chan struct{}
-	mutex sync.Mutex
+	mutex      sync.Mutex
+	exit chan struct{}
 }
 
 // Read a value that has been broadcast, waiting until one is available if
 // necessary.
 //
-// NOTE: Value of the broadcast element might be accessed only by one of the
+// NOTE: Be aware that is this function executed in the cycle with
+// select and receiver hasn't received the value,
+// than goroutine will be waiting for at least one element to be pushed
+// Value of
+// the broadcast element might be accessed only by one of the
 // receivers, so this operation is thread-safe.
+//
 func (r *Receiver) Read() chan interface{} {
 	c := make(chan interface{})
 
 	go func() {
-		r.mutex.Lock()
-		defer r.mutex.Unlock()
+		select {
+		case r.exit <- struct{}{}:
+			// Send exit to the previous receiver reader to avoid goroutine
+			// overflow
+		default:
+		}
 
 		// Take the broadcast element for the channel, such action services as the
 		// mutex, because other receivers on this stage are waiting for the element
 		// to be in channel.
-		b := <-r.broadcasts
-		v := b.value
 
-		// Put element again in the channel, so that other receiver could take it,
-		// if they want.
-		r.broadcasts <- b
-
-		// Move to the next object only if receiver has received it,
-		// otherwise we believe that read was abandoned for some reason.
 		select {
-		case c <- v:
-			// Update channel with the next, if this channel contains the broadcast
-			// element than it will be taken on the next read.
-			r.broadcasts = b.next
 		case <-r.quit:
 			close(c)
-		default:
+		case <-r.exit:
+			// Look like this read was abandon, and new read goroutine was
+			// spawned, this might happen if read executed in cycle with
+			// select and timers.
 			close(c)
+			return
+		case b := <-r.broadcasts:
+			v := b.value
+
+			// Put element again in the channel, so that other receiver could take it,
+			// if they want.
+			r.broadcasts <- b
+
+			// Move to the next object only if receiver has received it,
+			// otherwise we believe that read was abandoned for some reason.
+			select {
+			case c <- v:
+				// Update channel with the next, if this channel contains the broadcast
+				// element than it will be taken on the next read.
+				r.broadcasts = b.next
+			case <-r.quit:
+				close(c)
+			default:
+				close(c)
+			}
 		}
 	}()
 
