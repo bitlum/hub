@@ -12,6 +12,7 @@ import (
 	"github.com/jrick/logrotate/rotator"
 	"github.com/bitlum/hub/manager/router/emulation"
 	"github.com/bitlum/hub/manager/router/lnd"
+	"github.com/bitlum/hub/manager/router/stats"
 )
 
 // logWriter implements an io.Writer that outputs to both standard output and
@@ -50,12 +51,14 @@ var (
 	mainLog     = backendLog.Logger("MAIN")
 	emulatorLog = backendLog.Logger("EMULATOR")
 	lndLog      = backendLog.Logger("LND")
+	netStatsLog = backendLog.Logger("NSTATS")
 )
 
 // Initialize package-global logger variables.
 func init() {
 	emulation.UseLogger(emulatorLog)
 	lnd.UseLogger(lndLog)
+	stats.UseLogger(netStatsLog)
 }
 
 // subsystemLoggers maps each subsystem identifier to its associated logger.
@@ -63,6 +66,7 @@ var subsystemLoggers = map[string]btclog.Logger{
 	"BACKEND":  mainLog,
 	"EMULATOR": emulatorLog,
 	"LND":      lndLog,
+	"NSTATS":   netStatsLog,
 }
 
 // initLogRotator initializes the logging rotator to write logs to logFile and
