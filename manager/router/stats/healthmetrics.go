@@ -112,7 +112,7 @@ func (m *NetworkStatsGatherer) Start() {
 
 			case update := <-receiver.Read():
 				switch u := update.(type) {
-				case router.UpdatePayment:
+				case *router.UpdatePayment:
 					if u.Type == router.Forward {
 						asset := m.router.Asset()
 						m.metricsBackend.AddSuccessfulForwardingPayment(asset)
