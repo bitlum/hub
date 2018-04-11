@@ -20,6 +20,7 @@ import (
 	"github.com/bitlum/hub/manager/metrics/crypto"
 	"github.com/bitlum/hub/manager/metrics/network"
 	"github.com/bitlum/hub/manager/router/stats"
+	"github.com/bitlum/hub/manager/db"
 )
 
 var (
@@ -77,13 +78,22 @@ func backendMain() error {
 		defer emulationRouter.Stop()
 		r = emulationRouter
 	case "lnd":
+		// Create or open database file to host the last state of
+		// synchronization.
+		mainLog.Info("Opening BoltDB database, path: '%v'", config.LND.DataDir)
+
+		database, err := db.Open(config.LND.DataDir, "lnd")
+		if err != nil {
+			return errors.Errorf("unable to open database: %v", err)
+		}
+
 		mainLog.Infof("Initialise lnd router...")
 		lndConfig := &lnd.Config{
 			Asset:          "BTC",
 			Host:           config.LND.Host,
 			Port:           config.LND.Port,
 			TlsCertPath:    config.LND.TlsCert,
-			DB:             &lnd.InMemory{},
+			DB:             database,
 			MetricsBackend: metricsBackend,
 		}
 
