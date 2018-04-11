@@ -39,6 +39,11 @@ type Config struct {
 
 	// MetricsBackend...
 	MetricsBackend crypto.MetricsBackend
+
+	// Net is the blockchain network which hub should operate on,
+	// if hub trying to connect to the lnd with different network,
+	// than init should fail.
+	Net string
 }
 
 func (c *Config) validate() error {
@@ -64,6 +69,10 @@ func (c *Config) validate() error {
 
 	if c.MetricsBackend == nil {
 		return errors.Errorf("metrics backend should be specified")
+	}
+
+	if c.Net == "" {
+		return errors.Errorf("net should be specified")
 	}
 
 	return nil
@@ -143,8 +152,22 @@ func (r *Router) Start() error {
 		return errors.Errorf("unable get lnd node info: %v", err)
 	}
 
-	log.Infof("Init lnd router with pub key: %v", respInfo.IdentityPubkey)
+	// TODO(andrew.shvv) not working for mainnet, as far response don't have
+	// a mainnet param.
+	lndNet := "simnet"
+	if respInfo.Testnet {
+		lndNet = "testnet"
+	}
+
+	if lndNet != r.cfg.Net {
+		return errors.Errorf("hub net is '%v', but config net is '%v'",
+			r.cfg.Net, lndNet)
+	}
+
+	log.Infof("Init lnd router working with '%v' net", lndNet)
+
 	r.nodeAddr = respInfo.IdentityPubkey
+	log.Infof("Init lnd router with pub key: %v", respInfo.IdentityPubkey)
 
 	r.listenLocalTopologyUpdates()
 	r.listenForwardingUpdates()
