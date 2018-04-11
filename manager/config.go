@@ -27,6 +27,8 @@ const (
 
 	defaultPrometheusHost = "0.0.0.0"
 	defaultPrometheusPort = "19999"
+
+	defaultDbPath = "/tmp"
 )
 
 var (
@@ -73,6 +75,7 @@ type emulateRouterConfig struct {
 }
 
 type lndRouterConfig struct {
+	DataDir string `long:"dbpath" description:"Path to dir where BoltDB will be stored"`
 	TlsCert string `long:"tlscert" description:"Path to the LND certificate"`
 	Port    string `long:"port" description:"Port on which LND is working"`
 	Host    string `long:"host" description:"Host on which LND is working"`
@@ -96,6 +99,10 @@ func getDefaultConfig() config {
 		Prometheus: &prometheusConfig{
 			ListenHost: defaultPrometheusHost,
 			ListenPort: defaultPrometheusPort,
+		},
+
+		LND: &lndRouterConfig{
+			DataDir: defaultDbPath,
 		},
 
 		Backend: "emulator",
