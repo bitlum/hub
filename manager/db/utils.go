@@ -11,7 +11,7 @@ import (
 func MakeTestDB() (*DB, func(), error) {
 	// First, create a temporary directory to be used for the duration of
 	// this test.
-	tempDirName, err := ioutil.TempDir("", "channeldb")
+	tempDirName, err := ioutil.TempDir("", "db")
 	if err != nil {
 		return nil, nil, err
 	}
