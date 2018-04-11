@@ -146,12 +146,6 @@ func (r *Router) syncTopologyUpdates() {
 	log.Infof("(topology updates) Broadcast %v topology updates",
 		len(updates))
 
-	for _, update := range updates {
-		log.Debugf("(topology updates) Send topology update: %v",
-			spew.Sdump(update))
-		r.broadcaster.Write(update)
-	}
-
 	// Try to save new state until it will be successful,
 	// otherwise we might send the same notifications.
 	for {
@@ -170,6 +164,15 @@ func (r *Router) syncTopologyUpdates() {
 		}
 
 		break
+	}
+
+	// Send updates only after database has changed. In the time of program
+	// crushes updates might not be sent, but if we sent them before the
+	// database flush, than they might be sent several times which is worse.
+	for _, update := range updates {
+		log.Debugf("(topology updates) Send topology update: %v",
+			spew.Sdump(update))
+		r.broadcaster.Write(update)
 	}
 }
 

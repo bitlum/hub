@@ -1,14 +1,22 @@
 package lnd
 
 type DB interface {
-	StartUpdate()
-	Flush()
-
+	// PutLastForwardingIndex is used to save last forward pagination index
+	// which was used for getting forwarding events. With this we avoid
+	// processing of the same forwarding events twice.
 	PutLastForwardingIndex(uint32) error
+
+	// LastForwardingIndex return last lnd forwarding pagination index of
+	// which were preceded by the hub.
 	LastForwardingIndex() (uint32, error)
 
-	ChannelsState() (map[string]string, error)
+	// PutChannelsState is used to save the local topology of the router,
+	// in order to later determine what has changed.
 	PutChannelsState(map[string]string) error
+
+	// ChannelsState is used to return previously saved local topology of the
+	// router.
+	ChannelsState() (map[string]string, error)
 }
 
 type InMemory struct {
