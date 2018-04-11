@@ -95,6 +95,7 @@ func backendMain() error {
 			TlsCertPath:    config.LND.TlsCert,
 			DB:             database,
 			MetricsBackend: metricsBackend,
+			Net:            config.LND.Net,
 		}
 
 		lndRouter, err := lnd.NewRouter(lndConfig)
