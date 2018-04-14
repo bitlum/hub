@@ -7,6 +7,10 @@ current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_path, '../'))
 
 
+# Formation of the vector of locked balances that users must have for
+# the execution of generated transactions.
+
+
 def balances_gen(file_name_inlet):
     with open(file_name_inlet) as f:
         inlet = json.load(f)
@@ -29,6 +33,8 @@ def balances_gen(file_name_inlet):
             if len(transmatr[i][j]) > 0:
                 for k in range(len(transmatr[i][j])):
                     balances[-1]['balance'] += transmatr[i][j][k]
+
+    # write the vector of locked balances into a file
 
     with open(inlet['balances_file_name'], 'w') as f:
         json.dump({'balances': balances}, f, sort_keys=True, indent=4 * ' ')

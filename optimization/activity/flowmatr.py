@@ -9,6 +9,9 @@ current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_path, '../'))
 
 
+# Deploy flow vector in flow matrix using random factors and
+# accounting gates and recipient.
+
 def flowmatr_gen(file_name_inlet):
     with open(file_name_inlet) as f:
         inlet = json.load(f)
@@ -28,6 +31,8 @@ def flowmatr_gen(file_name_inlet):
                                                  inlet['max_mult'])
             elif i == j or not receivers[j]:
                 flowmatr[i][j] = None
+
+    # write flow matrix into a file
 
     with open(inlet['flowmatr_file_name'], 'w') as f:
         json.dump({'flowmatr': flowmatr}, f, sort_keys=True,

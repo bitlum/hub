@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='rpc.proto',
   package='emulation',
   syntax='proto3',
-  serialized_pb=_b('\n\trpc.proto\x12\temulation\"F\n\x12SendPaymentRequest\x12\x0e\n\x06sender\x18\x01 \x01(\x04\x12\x10\n\x08receiver\x18\x02 \x01(\x04\x12\x0e\n\x06\x61mount\x18\x04 \x01(\x04\"\x15\n\x13SendPaymentResponse\"=\n\x12OpenChannelRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\x04\x12\x16\n\x0elocked_by_user\x18\x02 \x01(\x04\"&\n\x13OpenChannelResponse\x12\x0f\n\x07\x63han_id\x18\x03 \x01(\x04\"&\n\x13\x43loseChannelRequest\x12\x0f\n\x07\x63han_id\x18\x03 \x01(\x04\"\x16\n\x14\x43loseChannelResponse\".\n\x1aSetBlockGenDurationRequest\x12\x10\n\x08\x64uration\x18\x03 \x01(\x03\"\x1d\n\x1bSetBlockGenDurationResponse2\xdd\x02\n\x08\x45mulator\x12L\n\x0bSendPayment\x12\x1d.emulation.SendPaymentRequest\x1a\x1e.emulation.SendPaymentResponse\x12L\n\x0bOpenChannel\x12\x1d.emulation.OpenChannelRequest\x1a\x1e.emulation.OpenChannelResponse\x12O\n\x0c\x43loseChannel\x12\x1e.emulation.CloseChannelRequest\x1a\x1f.emulation.CloseChannelResponse\x12\x64\n\x13SetBlockGenDuration\x12%.emulation.SetBlockGenDurationRequest\x1a&.emulation.SetBlockGenDurationResponseb\x06proto3')
+  serialized_pb=_b('\n\trpc.proto\x12\temulation\"F\n\x12SendPaymentRequest\x12\x0e\n\x06sender\x18\x01 \x01(\t\x12\x10\n\x08receiver\x18\x02 \x01(\t\x12\x0e\n\x06\x61mount\x18\x04 \x01(\x04\"\x15\n\x13SendPaymentResponse\"=\n\x12OpenChannelRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x16\n\x0elocked_by_user\x18\x02 \x01(\x04\")\n\x13OpenChannelResponse\x12\x12\n\nchannel_id\x18\x03 \x01(\t\")\n\x13\x43loseChannelRequest\x12\x12\n\nchannel_id\x18\x03 \x01(\t\"\x16\n\x14\x43loseChannelResponse\".\n\x1aSetBlockGenDurationRequest\x12\x10\n\x08\x64uration\x18\x03 \x01(\x03\"\x1d\n\x1bSetBlockGenDurationResponse2\xdd\x02\n\x08\x45mulator\x12L\n\x0bSendPayment\x12\x1d.emulation.SendPaymentRequest\x1a\x1e.emulation.SendPaymentResponse\x12L\n\x0bOpenChannel\x12\x1d.emulation.OpenChannelRequest\x1a\x1e.emulation.OpenChannelResponse\x12O\n\x0c\x43loseChannel\x12\x1e.emulation.CloseChannelRequest\x1a\x1f.emulation.CloseChannelResponse\x12\x64\n\x13SetBlockGenDuration\x12%.emulation.SetBlockGenDurationRequest\x1a&.emulation.SetBlockGenDurationResponseb\x06proto3')
 )
 
 
@@ -34,15 +34,15 @@ _SENDPAYMENTREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='sender', full_name='emulation.SendPaymentRequest.sender', index=0,
-      number=1, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='receiver', full_name='emulation.SendPaymentRequest.receiver', index=1,
-      number=2, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
@@ -103,8 +103,8 @@ _OPENCHANNELREQUEST = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='user_id', full_name='emulation.OpenChannelRequest.user_id', index=0,
-      number=1, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
@@ -140,9 +140,9 @@ _OPENCHANNELRESPONSE = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='chan_id', full_name='emulation.OpenChannelResponse.chan_id', index=0,
-      number=3, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
+      name='channel_id', full_name='emulation.OpenChannelResponse.channel_id', index=0,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
@@ -159,7 +159,7 @@ _OPENCHANNELRESPONSE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=182,
-  serialized_end=220,
+  serialized_end=223,
 )
 
 
@@ -171,9 +171,9 @@ _CLOSECHANNELREQUEST = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='chan_id', full_name='emulation.CloseChannelRequest.chan_id', index=0,
-      number=3, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
+      name='channel_id', full_name='emulation.CloseChannelRequest.channel_id', index=0,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
@@ -189,8 +189,8 @@ _CLOSECHANNELREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=222,
-  serialized_end=260,
+  serialized_start=225,
+  serialized_end=266,
 )
 
 
@@ -213,8 +213,8 @@ _CLOSECHANNELRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=262,
-  serialized_end=284,
+  serialized_start=268,
+  serialized_end=290,
 )
 
 
@@ -244,8 +244,8 @@ _SETBLOCKGENDURATIONREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=286,
-  serialized_end=332,
+  serialized_start=292,
+  serialized_end=338,
 )
 
 
@@ -268,8 +268,8 @@ _SETBLOCKGENDURATIONRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=334,
-  serialized_end=363,
+  serialized_start=340,
+  serialized_end=369,
 )
 
 DESCRIPTOR.message_types_by_name['SendPaymentRequest'] = _SENDPAYMENTREQUEST
@@ -346,8 +346,8 @@ _EMULATOR = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   options=None,
-  serialized_start=366,
-  serialized_end=715,
+  serialized_start=372,
+  serialized_end=721,
   methods=[
   _descriptor.MethodDescriptor(
     name='SendPayment',
