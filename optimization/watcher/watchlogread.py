@@ -97,9 +97,10 @@ class WatchLogRead(PatternMatchingEventHandler):
                 self.pos_cur += 2
                 self.smart_log.append(self.read_message())
                 self.pos_cur += self.size_message_cur
+                # TODO handle defaults:
                 dict_massege = protobuf_to_dict(
                     self.smart_log.messages[-1],
-                    including_default_value_fields=True)
+                    including_default_value_fields=False)
                 dict_massege['date'] = datetime.datetime.fromtimestamp(
                     self.smart_log.messages[-1].time * 1e-9).__str__()
                 print_massege(dict_massege)

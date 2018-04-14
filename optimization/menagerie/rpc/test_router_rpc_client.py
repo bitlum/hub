@@ -18,9 +18,9 @@ class ActivityGenerator:
 
     def __init__(self, users_number, min_amount, max_amount):
         self.users_number = users_number
-        self.users_id = [users_id + 1 for users_id in range(0, users_number)]
+        self.users_id = [str(i + 1) for i in range(0, users_number)]
         # TODO such chans_id is tmp
-        self.chans_id = [users_id + 1 for users_id in range(0, users_number)]
+        self.chans_id = [str(i + 1) for i in range(0, users_number)]
         self.min_amount = min_amount
         self.max_amount = max_amount
         self.ind_sender = 0
@@ -49,7 +49,7 @@ class ActivityGenerator:
         return request
 
     def set_channel_id(self, ind_user, response_):
-        self.chans_id[ind_user] = response_.chan_id
+        self.chans_id[ind_user] = response_.channel_id
         print('channel_id for user_id ', self.users_id[ind_user], ' is set ',
               self.chans_id[ind_user], '\n')
 
@@ -71,8 +71,8 @@ class ActivityGenerator:
 if __name__ == '__main__':
     users_num = 3
     trans_num = 1
-    min_am = 100
-    max_am = 200
+    min_am = 1
+    max_am = 2
 
     sleep_time = 2
 
@@ -89,9 +89,9 @@ if __name__ == '__main__':
         response = stub.OpenChannel(generator.open_channel_request(user_ind))
         generator.set_channel_id(user_ind, response)
 
-    # for _ in range(trans_num):
-    #     time.sleep(sleep_time)
-    #     stub.SendPayment(generator.send_payment_request())
+    for _ in range(trans_num):
+        time.sleep(sleep_time)
+        stub.SendPayment(generator.send_payment_request())
     #
     # for ind in range(users_num):
     #     time.sleep(sleep_time)
