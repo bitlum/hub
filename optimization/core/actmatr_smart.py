@@ -9,6 +9,11 @@ sys.path.append(os.path.join(current_path, '../'))
 from samples.smartsample import SmartSample
 
 
+# Calculating the statistical characteristics of transaction sizes and
+# time periods between transactions using the previously created class
+# SmartSample and previously computed transaction size sequence matrix and
+# transaction time sequence matrix
+
 def actmatr_smart_gen(file_name_inlet):
     with open(file_name_inlet) as f:
         inlet = json.load(f)
@@ -42,6 +47,8 @@ def actmatr_smart_gen(file_name_inlet):
                      inlet['trans_cut_frac']).mean if len(
             transmatr_calc[i][j][1:]) > 0 else None for j in
          range(len(transmatr_calc[i]))] for i in range(len(transmatr_calc))]
+
+    # write the statistical characteristics matrices into files
 
     with open(inlet['periodmatr_mean_file_name'], 'w') as f:
         json.dump({'periodmatr_mean': periodmatr_mean}, f, sort_keys=True,

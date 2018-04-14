@@ -8,6 +8,11 @@ current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_path, '../'))
 
 
+# Formation of transaction size sequence matrix and transaction time sequence
+# matrix using random gauss based on matrixes of mean values (mean) and
+# root-mean-square deviations (stdev) of time periods between transactions and
+# size transactions respectively.
+
 def actmatr_gen(file_name_inlet):
     with open(file_name_inlet) as f:
         inlet = json.load(f)
@@ -50,8 +55,12 @@ def actmatr_gen(file_name_inlet):
                 for k in range(1, len(timematr[i][j])):
                     timematr[i][j][k] += timematr[i][j][k - 1]
 
+    # write transaction size sequence matrix into a file
+
     with open(inlet['timematr_file_name'], 'w') as f:
         json.dump({'timematr': timematr}, f, sort_keys=True, indent=4 * ' ')
+
+    # write transaction time sequence matrix into a file
 
     with open(inlet['transmatr_file_name'], 'w') as f:
         json.dump({'transmatr': transmatr}, f, sort_keys=True, indent=4 * ' ')

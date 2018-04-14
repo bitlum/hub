@@ -9,6 +9,9 @@ current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_path, '../'))
 
 
+# Formation of matrixes of mean values (mean) and root-mean-square
+# deviations (stdev) of time periods between transactions using random gauss.
+
 def periodmatr_gen(file_name_inlet):
     with open(file_name_inlet) as f:
         inlet = json.load(f)
@@ -41,9 +44,13 @@ def periodmatr_gen(file_name_inlet):
                 periodmatr_mean[i][j] = None
                 periodmatr_stdev[i][j] = None
 
+    # write mean period matrix into a file
+
     with open(inlet['periodmatr_mean_file_name'], 'w') as f:
         json.dump({'periodmatr_mean': periodmatr_mean}, f, sort_keys=True,
                   indent=4 * ' ')
+
+    # write stdev period matrix into a file
 
     with open(inlet['periodmatr_stdev_file_name'], 'w') as f:
         json.dump({'periodmatr_stdev': periodmatr_stdev}, f, sort_keys=True,

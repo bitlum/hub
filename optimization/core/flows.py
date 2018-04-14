@@ -9,6 +9,10 @@ current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_path, '../'))
 
 
+# Calculating incoming and outgoing user funds flows by means of
+# the statistical characteristics of transaction sizes and time periods
+# between transactions.
+
 def flows_calc(file_name_inlet):
     with open(file_name_inlet) as f:
         inlet = json.load(f)
@@ -35,13 +39,19 @@ def flows_calc(file_name_inlet):
                 flowvect_out_calc[i] += flowmatr_calc[i][j]
                 flowvect_in_calc[j] += flowmatr_calc[i][j]
 
+    # write flow matrix into a file
+
     with open(inlet['flowmatr_calc_file_name'], 'w') as f:
         json.dump({'flowmatr_calc': flowmatr_calc}, f, sort_keys=True,
                   indent=4 * ' ')
 
+    # write flow outlet vector into a file
+
     with open(inlet['flowvect_out_calc_file_name'], 'w') as f:
         json.dump({'flowvect_out_calc': flowvect_out_calc}, f, sort_keys=True,
                   indent=4 * ' ')
+
+    # write flow inlet vector into a file
 
     with open(inlet['flowvect_in_calc_file_name'], 'w') as f:
         json.dump({'flowvect_in_calc': flowvect_in_calc}, f, sort_keys=True,

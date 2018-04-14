@@ -8,6 +8,11 @@ current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_path, '../'))
 
 
+# Calculation of user id list and transaction size sequence matrix and
+# transaction period (and time) sequence matrix by means of a general
+# time-ordered transaction stream.  Transaction stream element structure:
+# time, sender_id, receiver_id, trans.
+
 def actmatr_calc(file_name_inlet):
     with open(file_name_inlet) as f:
         inlet = json.load(f)
@@ -50,17 +55,25 @@ def actmatr_calc(file_name_inlet):
                 for k in range(len(periodmatr_calc[i][j]) - 1, 0, -1):
                     periodmatr_calc[i][j][k] -= periodmatr_calc[i][j][k - 1]
 
+    # write user id dict into a file
+
     with open(inlet['users_id_calc_file_name'], 'w') as f:
         json.dump({'users_id_calc': user_id_calc}, f, sort_keys=True,
                   indent=4 * ' ')
+
+    # write transaction time sequence matrix into a file
 
     with open(inlet['timematr_calc_file_name'], 'w') as f:
         json.dump({'timematr_calc': timematr_calc}, f, sort_keys=True,
                   indent=4 * ' ')
 
+    # write transaction period sequence matrix into a file
+
     with open(inlet['periodmatr_calc_file_name'], 'w') as f:
         json.dump({'periodmatr_calc': periodmatr_calc}, f, sort_keys=True,
                   indent=4 * ' ')
+
+    # write transaction size sequence matrix into a file
 
     with open(inlet['transmatr_calc_file_name'], 'w') as f:
         json.dump({'transmatr_calc': transmatr_calc}, f, sort_keys=True,

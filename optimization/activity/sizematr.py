@@ -9,6 +9,10 @@ current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_path, '../'))
 
 
+# Formation of matrixes of mean values (mean) and root-mean-square
+# deviations (stdev) of transactions size using random gauss.
+
+
 def sizematr_gen(file_name_inlet):
     with open(file_name_inlet) as f:
         inlet = json.load(f)
@@ -39,9 +43,13 @@ def sizematr_gen(file_name_inlet):
                 sizematr_mean[i][j] = None
                 sizematr_stdev[i][j] = None
 
+    # write mean size matrix into a file
+
     with open(inlet['sizematr_mean_file_name'], 'w') as f:
         json.dump({'sizematr_mean': sizematr_mean}, f, sort_keys=True,
                   indent=4 * ' ')
+
+    # write stdev size matrix into a file
 
     with open(inlet['sizematr_stdev_file_name'], 'w') as f:
         json.dump({'sizematr_stdev': sizematr_stdev}, f, sort_keys=True,
