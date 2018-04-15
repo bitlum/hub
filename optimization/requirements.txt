@@ -1,5 +1,5 @@
-protobuf3_to_dict==0.1.5
-grpcio==1.10.0
-watchdog==0.8.3
 sortedcontainers==1.5.9
+watchdog==0.8.3
+six==1.11.0
+grpcio==1.11.0
 protobuf==3.5.2.post1

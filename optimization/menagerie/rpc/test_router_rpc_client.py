@@ -89,9 +89,9 @@ if __name__ == '__main__':
         response = stub.OpenChannel(generator.open_channel_request(user_ind))
         generator.set_channel_id(user_ind, response)
 
-    for _ in range(trans_num):
-        time.sleep(sleep_time)
-        stub.SendPayment(generator.send_payment_request())
+    # for _ in range(trans_num):
+    #     time.sleep(sleep_time)
+    #     stub.SendPayment(generator.send_payment_request())
     #
     # for ind in range(users_num):
     #     time.sleep(sleep_time)
