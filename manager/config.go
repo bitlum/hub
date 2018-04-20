@@ -25,8 +25,9 @@ const (
 	defaultConfigFilename = "hubmanager.conf"
 	defaultLogFilename    = "hubmanager.log"
 
-	defaultPrometheusHost = "0.0.0.0"
-	defaultPrometheusPort = "19999"
+	defaultPrometheusHost     = "0.0.0.0"
+	defaultPrometheusPort     = "19999"
+	defaultUpdatesLogFileName = "log.protobuf"
 
 	defaultDbPath = "/tmp"
 	defaultNet    = "simnet"
@@ -91,9 +92,11 @@ type prometheusConfig struct {
 // getDefaultConfig return default version of service config.
 func getDefaultConfig() config {
 	return config{
-		ConfigFile: defaultConfigFile,
-		LogDir:     defaultLogDir,
-		DebugLevel: defaultLogLevel,
+		ConfigFile:    defaultConfigFile,
+		LogDir:        defaultLogDir,
+		DebugLevel:    defaultLogLevel,
+		UpdateLogFile: defaultUpdatesLogFileName,
+
 		Hub: &hubConfig{
 			Port: defaultHubPort,
 			Host: defaultHubHost,
