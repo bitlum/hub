@@ -1,0 +1,20 @@
+version: "3.4"
+services:
+
+  hub:
+    container_name: hub
+    build:
+      context: ./hub/
+    image: bitlum/hub
+    volumes:
+      - "db:/db"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "12m"
+        max-file: "500"
+    restart: always
+    network_mode: "host"
+
+volumes:
+  db:
