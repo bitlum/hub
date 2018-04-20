@@ -77,7 +77,7 @@ type emulateRouterConfig struct {
 }
 
 type lndRouterConfig struct {
-	Net     string `long:"net" description:"Blockchain network which should be used" choice:"simnet" choice:"testnet" choice:"mainnet"`
+	Network string `long:"network" description:"Blockchain network which should be used" choice:"simnet" choice:"testnet" choice:"mainnet"`
 	DataDir string `long:"dbpath" description:"Path to dir where BoltDB will be stored"`
 	TlsCert string `long:"tlscert" description:"Path to the LND certificate"`
 	Port    string `long:"port" description:"Port on which LND is working"`
@@ -107,7 +107,7 @@ func getDefaultConfig() config {
 		},
 
 		LND: &lndRouterConfig{
-			Net:     defaultNet,
+			Network: defaultNet,
 			DataDir: defaultDbPath,
 		},
 

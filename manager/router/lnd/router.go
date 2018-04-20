@@ -160,7 +160,7 @@ func (r *Router) Start() error {
 	}
 
 	if lndNet != r.cfg.Net {
-		return errors.Errorf("hub net is '%v', but config net is '%v'",
+		return errors.Errorf("hub net is '%v', but config network is '%v'",
 			r.cfg.Net, lndNet)
 	}
 
