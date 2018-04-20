@@ -1,2 +1,3 @@
 lnd-tls.cert
-connector
+hub
+hub.conf
