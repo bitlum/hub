@@ -80,7 +80,8 @@ func backendMain() error {
 	case "lnd":
 		// Create or open database file to host the last state of
 		// synchronization.
-		mainLog.Info("Opening BoltDB database, path: '%v'", config.LND.DataDir)
+		mainLog.Infof("Opening BoltDB database, path: '%v'",
+			config.LND.DataDir)
 
 		database, err := db.Open(config.LND.DataDir, "lnd")
 		if err != nil {
