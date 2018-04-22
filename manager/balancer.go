@@ -21,6 +21,7 @@ func enableChannelBalancing(r router.Router) {
 			channels, err := r.Network()
 			if err != nil {
 				mainLog.Errorf("unable to fetch network: %v", err)
+				<-time.After(time.Second * 10)
 				continue
 			}
 
