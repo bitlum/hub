@@ -164,7 +164,8 @@ func (r *Router) Start() error {
 			r.cfg.Net, lndNet)
 	}
 
-	log.Infof("Init lnd router working with '%v' net", lndNet)
+
+	log.Infof("Init lnd router working with network(%v) alias(%v) ", lndNet, respInfo.Alias)
 
 	r.nodeAddr = respInfo.IdentityPubkey
 	log.Infof("Init lnd router with pub key: %v", respInfo.IdentityPubkey)
