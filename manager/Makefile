@@ -50,8 +50,8 @@ end-testnet-notification:
 simnet-build-compose:
 		@$(call print, "Activating simnet.connector.bitlum.io machine && building...")
 
-		cp ./docker/hub/configs/simnet/hub.conf ./docker/hub/hub.conf
-		cp ./docker/hub/configs/simnet/lnd-tls.cert  ./docker/hub/lnd-tls.cert
+		cp ./docker/hub/simnet/hub.conf ./docker/hub/hub.conf
+		cp ./docker/hub/simnet/lnd-tls.cert  ./docker/hub/lnd-tls.cert
 
 		eval `docker-machine env simnet.connector.bitlum.io` && \
 		docker-compose -f ./docker/docker-compose.yml up --build -d
@@ -64,8 +64,8 @@ simnet-build-compose:
 testnet-build-compose:
 		@$(call print, "Activating testnet.connector.bitlum.io machine && building...")
 
-		cp ./docker/hub/configs/testnet/hub.conf ./docker/hub/hub.conf
-		cp ./docker/hub/configs/testnet/lnd-tls.cert  ./docker/hub/lnd-tls.cert
+		cp ./docker/hub/testnet/hub.conf ./docker/hub/hub.conf
+		cp ./docker/hub/testnet/lnd-tls.cert  ./docker/hub/lnd-tls.cert
 
 		eval `docker-machine env testnet.connector.bitlum.io` && \
 		docker-compose -f ./docker/docker-compose.yml up --build -d
