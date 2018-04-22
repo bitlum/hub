@@ -123,7 +123,9 @@ testnet-deploy: \
 		end-testnet-notification
 endif
 
-.PHONY: deploy \
+.PHONY: \
+		simnet-deploy \
+		testnet-deploy \
 		simnet-logs \
 		testnet-logs \
 		build \
