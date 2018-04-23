@@ -55,14 +55,6 @@ func backendMain() error {
 	addr := net.JoinHostPort(config.Prometheus.ListenHost, config.Prometheus.ListenPort)
 	server := metrics.StartServer(addr)
 
-	// TODO(andrew.shvv) add simnet to config and check in lnd that we
-	// connect to client with proper net
-	metricsBackend, err := crypto.InitMetricsBackend("simnet")
-	if err != nil {
-		return errors.Errorf("unable to init metrics backend for lnd: %v"+
-			"", err)
-	}
-
 	// Create router and connect to emulation or real network,
 	// and subscribe on topology updates which will transformed and written
 	// in the file, so that third-party optimisation program could read it
@@ -88,6 +80,12 @@ func backendMain() error {
 			return errors.Errorf("unable to open database: %v", err)
 		}
 
+		metricsBackend, err := crypto.InitMetricsBackend(config.LND.Network)
+		if err != nil {
+			return errors.Errorf("unable to init metrics backend for lnd: %v"+
+				"", err)
+		}
+
 		mainLog.Infof("Initialise lnd router...")
 		lndConfig := &lnd.Config{
 			Asset:          "BTC",
@@ -104,9 +102,7 @@ func backendMain() error {
 			return errors.Errorf("unable to init lnd router: %v", err)
 		}
 
-		// TODO(andrew.shvv) add simnet to config and check in lnd that we
-		// connect to client with proper net
-		statsBackend, err := network.InitMetricsBackend("simnet")
+		statsBackend, err := network.InitMetricsBackend(config.LND.Network)
 		if err != nil {
 			return errors.Errorf("unable to init metrics backend for lnd: %v"+
 				"", err)
