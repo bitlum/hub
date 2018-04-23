@@ -38,7 +38,7 @@ func (r *channelUpdate) GenerateActions(oldState []*Channel,
 	newStateMap := listToMap(newState)
 
 	var actions []Defer
-	for chanID, _ := range oldStateMap {
+	for chanID, oldChan := range oldStateMap {
 		// Fixing bug whith chanID
 		// when it was in actions = append(... return r.UpdateChannel(chanID...
 		// This bug led to to the fact that
@@ -47,9 +47,15 @@ func (r *channelUpdate) GenerateActions(oldState []*Channel,
 		if newChan, ok := newStateMap[chanID]; ok {
 			// If new channel in the old channel map,
 			// than the router balance has change.
-			actions = append(actions, func(r Router) error {
-				return r.UpdateChannel(chanIDCur, newChan.RouterBalance)
-			})
+
+			// Fixing bug with channel pending if that channel
+			// has not changed. This allowed to re-create
+			// the channels in a row, without waiting duration time.
+			if newChan != oldChan {
+				actions = append(actions, func(r Router) error {
+					return r.UpdateChannel(chanIDCur, newChan.RouterBalance)
+				})
+			}
 		} else {
 			// If new channel not in the old channel map, that channel was
 			// removed.
