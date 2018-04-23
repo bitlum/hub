@@ -39,17 +39,18 @@ func (r *channelUpdate) GenerateActions(oldState []*Channel,
 
 	var actions []Defer
 	for chanID, _ := range oldStateMap {
+		chanIDCur := chanID
 		if newChan, ok := newStateMap[chanID]; ok {
 			// If new channel in the old channel map,
 			// than the router balance has change.
 			actions = append(actions, func(r Router) error {
-				return r.UpdateChannel(chanID, newChan.RouterBalance)
+				return r.UpdateChannel(chanIDCur, newChan.RouterBalance)
 			})
 		} else {
 			// If new channel not in the old channel map, that channel was
 			// removed.
 			actions = append(actions, func(r Router) error {
-				return r.CloseChannel(chanID)
+				return r.CloseChannel(chanIDCur)
 			})
 		}
 	}
