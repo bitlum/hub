@@ -63,7 +63,7 @@ class ActivityGenerator:
     @staticmethod
     def set_block_gen_duration_request(duration):
         request = proto.SetBlockGenDurationRequest()
-        request.duration = int(duration * 1E+6)
+        request.duration = int(duration)
         print('SetBlockGenDurationRequest:', request, sep='\n')
         return request
 
