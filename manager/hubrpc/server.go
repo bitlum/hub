@@ -42,11 +42,15 @@ func (h *Hub) UpdateLink(_ context.Context,
 	for i, c := range currentNetwork {
 
 		// TODO(andrew.shvv) Add work with multiple channels
+		// Fixing bug with RouterBalance: router.BalanceUnit:
+		// it was c.RouterBalance instead req.RouterBalance.
+		// This bug led to to the fact that
+		// RouterBalance did not set.
 		if c.UserID == router.UserID(req.UserId) {
 			equilibriumNetwork[i] = &router.Channel{
 				ChannelID:     router.ChannelID(c.ChannelID),
 				UserID:        router.UserID(req.UserId),
-				RouterBalance: router.BalanceUnit(c.RouterBalance),
+				RouterBalance: router.BalanceUnit(req.RouterBalance),
 				UserBalance:   router.BalanceUnit(c.UserBalance),
 			}
 		} else {
