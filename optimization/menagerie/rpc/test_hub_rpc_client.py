@@ -32,7 +32,7 @@ class OptimisationGenerator(ActivityGenerator):
 
 
 if __name__ == '__main__':
-    users_num = 3
+    users_num = 2
     sleep_time = 1
 
     generator = OptimisationGenerator(users_num)
@@ -41,16 +41,10 @@ if __name__ == '__main__':
 
     stub = proto_rpc_hub.ManagerStub(channel)
 
-    # for i in range(users_num):
-    #     time.sleep(sleep_time)
-    #     stub.UpdateLink(
-    #         generator.set_update_link_request(ind_user=i,
-    #                                         router_balance=i + 1))
-
     for i in range(users_num):
         try:
             stub.UpdateLink(
                 generator.set_update_link_request(ind_user=i,
-                                                  router_balance=i + 1))
+                                                  router_balance=i + 3))
         except grpc._channel._Rendezvous as er:
             print(er, ' is skiped\n')
