@@ -44,7 +44,7 @@ class ActivityGenerator:
         self.ind_user = ind_user
         request = proto.OpenChannelRequest()
         request.user_id = self.users_id[self.ind_user]
-        request.locked_by_user = 1000000
+        request.locked_by_user = 7
         print('open:', request, sep='\n')
         return request
 
@@ -63,18 +63,18 @@ class ActivityGenerator:
     @staticmethod
     def set_block_gen_duration_request(duration):
         request = proto.SetBlockGenDurationRequest()
-        request.duration = duration
+        request.duration = int(duration)
         print('SetBlockGenDurationRequest:', request, sep='\n')
         return request
 
 
 if __name__ == '__main__':
-    users_num = 3
+    users_num = 2
     trans_num = 1
     min_am = 1
     max_am = 2
 
-    sleep_time = 2
+    sleep_time = 1
 
     generator = ActivityGenerator(users_num, min_am, max_am)
 
@@ -82,16 +82,18 @@ if __name__ == '__main__':
 
     stub = proto_rpc.EmulatorStub(channel)
 
-    # stub.OpenChannel(generator.set_block_gen_duration_request(duration=100))
-
     for user_ind in range(users_num):
         time.sleep(sleep_time)
         response = stub.OpenChannel(generator.open_channel_request(user_ind))
         generator.set_channel_id(user_ind, response)
 
-    for _ in range(trans_num):
-        time.sleep(sleep_time)
-        stub.SendPayment(generator.send_payment_request())
+    stub.SetBlockGenDuration(
+        generator.set_block_gen_duration_request(duration=300))
+    # 
+    #
+    # for _ in range(trans_num):
+    #     time.sleep(sleep_time)
+    #     stub.SendPayment(generator.send_payment_request())
     #
     # for ind in range(users_num):
     #     time.sleep(sleep_time)

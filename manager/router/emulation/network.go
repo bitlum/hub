@@ -334,9 +334,9 @@ func (n *emulationNetwork) SetBlockGenDuration(_ context.Context,
 	n.Lock()
 	defer n.Unlock()
 
-	n.blockGeneration = time.Duration(req.Duration)
-	d := time.Millisecond * n.blockGeneration
-	if err := n.blockNotifier.SetBlockGenDuration(d); err != nil {
+	n.blockGeneration = time.Millisecond * time.Duration(req.Duration)
+
+	if err := n.blockNotifier.SetBlockGenDuration(n.blockGeneration); err != nil {
 		return nil, errors.Errorf("unable set block generation duration: %v", err)
 	}
 

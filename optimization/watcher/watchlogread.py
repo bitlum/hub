@@ -10,29 +10,34 @@ sys.path.append(os.path.join(current_path, '../'))
 
 import protobuffer.log_pb2 as proto
 
-from protobuf_to_dict import protobuf_to_dict
+from protobuffer.protobuf3_to_dict_patch import protobuf_to_dict
 
 
 def print_massege(massege, nesting=-4):
     if type(massege) == dict:
         print('')
         nesting += 4
-        for key in SortedDict(massege):
+
+        keys = list(SortedDict(massege).keys())
+        for key in keys:
+            if key == 'time':
+                keys.remove(key)
+                keys.insert(0, key)
+        for key in keys:
+            if key == 'date':
+                keys.remove(key)
+                keys.insert(0, key)
+
+        for key in keys:
             print(nesting * ' ', end='')
             print(key, end=': ')
-            if key == 'type':
-                if massege[key] == 0:
+
+            if massege[key] == 0:
+                if key == 'type':
                     massege[key] = 'openning'
-                elif massege[key] == 1:
-                    massege[key] = 'opened'
-                elif massege[key] == 2:
-                    massege[key] = 'closing'
-                elif massege[key] == 3:
-                    massege[key] = 'closed'
-                elif massege[key] == 4:
-                    massege[key] = 'udpating'
-                elif massege[key] == 5:
-                    massege[key] = 'udpated'
+                elif key == 'status':
+                    massege[key] = 'null'
+
             print_massege(massege[key], nesting)
     elif type(massege) == list:
         print('')
@@ -97,10 +102,13 @@ class WatchLogRead(PatternMatchingEventHandler):
                 self.pos_cur += 2
                 self.smart_log.append(self.read_message())
                 self.pos_cur += self.size_message_cur
+
                 # TODO handle defaults:
+
                 dict_massege = protobuf_to_dict(
                     self.smart_log.messages[-1],
-                    including_default_value_fields=False)
+                    use_enum_labels=True,
+                    including_default_value_fields=True)
                 dict_massege['date'] = datetime.datetime.fromtimestamp(
                     self.smart_log.messages[-1].time * 1e-9).__str__()
                 print_massege(dict_massege)
