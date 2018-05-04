@@ -1,11 +1,11 @@
 {
-    "users_number": 7,
-    "flow_mean": 100,
+    "users_number": 4,
+    "flow_mean": 3,
     "flow_stdev": 0.6,
-    "receivers_frac": 0.7,
-    "gates_frac": 0.2,
-    "gates_min_mult": 7,
-    "gates_max_mult": 10,
+    "receivers_frac": 0.75,
+    "gates_frac": 0.25,
+    "gates_min_mult": 3,
+    "gates_max_mult": 4,
     "flowvect_file_name": "outlet/flowvect.json",
     "users_id_file_name": "outlet/users_id.json",
     "channels_id_file_name": "outlet/channels_id.json"
