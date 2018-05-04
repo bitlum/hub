@@ -22,9 +22,9 @@ def flowvect_gen(file_name_inlet):
 
     # Initial flow vector
 
-    users_id = {i: i + 1 for i in range(inlet['users_number'])}
+    users_id = {i: str(i + 1) for i in range(inlet['users_number'])}
 
-    channels_id = {i: i + 1 for i in range(inlet['users_number'])}
+    channels_id = {i: str(i + 1) for i in range(inlet['users_number'])}
 
     flowvect = generate_sample(inlet['users_number'], inlet['flow_mean'],
                                inlet['flow_mean'] * inlet['flow_stdev'])
