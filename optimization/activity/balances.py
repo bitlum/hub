@@ -24,15 +24,14 @@ def balances_gen(file_name_inlet):
     with open(inlet['transmatr_file_name']) as f:
         transmatr = json.load(f)['transmatr']
 
-    balances = []
+    balances = dict()
     for i in range(len(transmatr)):
-        balances.append(
-            dict(user_id=users_id[str(i)], channel_id=channels_id[str(i)],
-                 balance=0.))
+        sum = 0.
         for j in range(len(transmatr[i])):
             if len(transmatr[i][j]) > 0:
                 for k in range(len(transmatr[i][j])):
-                    balances[-1]['balance'] += transmatr[i][j][k]
+                    sum += transmatr[i][j][k]
+        balances[str(i)] = round(sum)
 
     # write the vector of locked balances into a file
 

@@ -1,24 +1,8 @@
 {
-    "balances": [
-        {
-            "balance": 1400.5257960617953,
-            "channel_id": 1,
-            "user_id": 1
-        },
-        {
-            "balance": 1638.3492077543062,
-            "channel_id": 2,
-            "user_id": 2
-        },
-        {
-            "balance": 1292.2487651792708,
-            "channel_id": 3,
-            "user_id": 3
-        },
-        {
-            "balance": 832.6184291241115,
-            "channel_id": 4,
-            "user_id": 4
-        }
-    ]
+    "balances": {
+        "0": 2117,
+        "1": 1298,
+        "2": 2196,
+        "3": 1889
+    }
 }
