@@ -24,8 +24,6 @@ def flowvect_gen(file_name_inlet):
 
     users_id = {i: str(i + 1) for i in range(inlet['users_number'])}
 
-    channels_id = {i: str(i + 1) for i in range(inlet['users_number'])}
-
     flowvect = generate_sample(inlet['users_number'], inlet['flow_mean'],
                                inlet['flow_mean'] * inlet['flow_stdev'])
 
@@ -64,12 +62,6 @@ def flowvect_gen(file_name_inlet):
 
     with open(inlet['users_id_file_name'], 'w') as f:
         json.dump({'users_id': users_id}, f,
-                  sort_keys=True, indent=4 * ' ')
-
-    # write channel id dict into a file
-
-    with open(inlet['channels_id_file_name'], 'w') as f:
-        json.dump({'channels_id': channels_id}, f,
                   sort_keys=True, indent=4 * ' ')
 
     # write flow vector into a file
