@@ -18,6 +18,8 @@ def actrpc_gen(file_name_inlet):
     with open(file_name_inlet) as f:
         inlet = json.load(f)
 
+    duration = inlet['duration']
+
     with open(inlet['users_id_file_name']) as f:
         users_id = json.load(f)['users_id']
 
@@ -32,14 +34,11 @@ def actrpc_gen(file_name_inlet):
     stub = proto_rpc.EmulatorStub(channel)
 
     request = proto.SetBlockGenDurationRequest()
-    request.duration = int(300)
+    request.duration = duration
     stub.SetBlockGenDuration(request)
-
-    sleep_time = 1
 
     channels_id = dict()
     for key, user_id in users_id.items():
-        time.sleep(sleep_time)
         request = proto.OpenChannelRequest()
         request.user_id = user_id
         request.locked_by_user = balances[key]
@@ -47,6 +46,7 @@ def actrpc_gen(file_name_inlet):
         channels_id[key] = response.channel_id
 
     print(channels_id)
+
 
 if __name__ == '__main__':
     actrpc_gen(file_name_inlet='actrpc_inlet.json')
