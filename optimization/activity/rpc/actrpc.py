@@ -21,9 +21,6 @@ def actrpc_gen(file_name_inlet):
     with open(inlet['users_id_file_name']) as f:
         users_id = json.load(f)['users_id']
 
-    with open(inlet['channels_id_file_name']) as f:
-        channels_id_old = json.load(f)['channels_id']
-
     with open(inlet['balances_file_name']) as f:
         balances = json.load(f)['balances']
 
@@ -50,8 +47,6 @@ def actrpc_gen(file_name_inlet):
         channels_id[key] = response.channel_id
 
     print(channels_id)
-    print(channels_id_old)
-
 
 if __name__ == '__main__':
     actrpc_gen(file_name_inlet='actrpc_inlet.json')

@@ -15,12 +15,6 @@ def balances_gen(file_name_inlet):
     with open(file_name_inlet) as f:
         inlet = json.load(f)
 
-    with open(inlet['users_id_file_name']) as f:
-        users_id = json.load(f)['users_id']
-
-    with open(inlet['channels_id_file_name']) as f:
-        channels_id = json.load(f)['channels_id']
-
     with open(inlet['transmatr_file_name']) as f:
         transmatr = json.load(f)['transmatr']
 

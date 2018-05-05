@@ -7,6 +7,5 @@
     "gates_min_mult": 3,
     "gates_max_mult": 4,
     "flowvect_file_name": "outlet/flowvect.json",
-    "users_id_file_name": "outlet/users_id.json",
-    "channels_id_file_name": "outlet/channels_id.json"
+    "users_id_file_name": "outlet/users_id.json"
 }
