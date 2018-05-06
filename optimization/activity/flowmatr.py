@@ -26,10 +26,10 @@ def flowmatr_gen(file_name_inlet):
 
     for i in range(len(flowmatr)):
         for j in range(len(flowmatr[i])):
-            if receivers[j]:
+            if receivers[j] and i != j:
                 flowmatr[i][j] *= random.uniform(inlet['min_mult'],
                                                  inlet['max_mult'])
-            elif i == j or not receivers[j]:
+            else:
                 flowmatr[i][j] = None
 
     # write flow matrix into a file
