@@ -16,6 +16,14 @@ import protobuffer.hubrpc_pb2 as proto_hub
 import protobuffer.hubrpc_pb2_grpc as proto_rpc_hub
 
 
+def update_link(user_id, stub, router_balance):
+    request_update = proto_hub.UpdateLinkRequest()
+    request_update.time = int(time.time() * 1E9)
+    request_update.user_id = user_id
+    request_update.router_balance = router_balance
+    stub.UpdateLink(request_update)
+
+
 def acthubrpc_gen(file_name_inlet):
     with open(file_name_inlet) as f:
         inlet = json.load(f)
@@ -26,12 +34,12 @@ def acthubrpc_gen(file_name_inlet):
     with open(inlet['channels_id_file_name']) as f:
         channels_id = json.load(f)['channels_id']
 
-    # rpc_channel = grpc.insecure_channel('localhost:8686')
-    # 
-    # stub = proto_rpc_hub.ManagerStub(rpc_channel)
+    rpc_channel = grpc.insecure_channel('localhost:8686')
+
+    stub = proto_rpc_hub.ManagerStub(rpc_channel)
 
     for _, user_id in users_id.items():
-        print(user_id)
+        update_link(user_id, stub, 1)
 
 
 if __name__ == '__main__':
