@@ -1,6 +1,7 @@
 from __future__ import print_function
 import time
 import json
+from threading import Thread
 
 import grpc
 
@@ -31,6 +32,27 @@ def open_channels(users_id, balances, stub):
     return channels_id
 
 
+def create_stub():
+    rpc_channel = grpc.insecure_channel('localhost:9393')
+    return proto_rpc.EmulatorStub(rpc_channel)
+
+
+class TransactionThread(Thread):
+    def __init__(self, stub, init_time, transaction):
+        Thread.__init__(self)
+        self.stub = stub
+        self.init_time = init_time
+        self.transaction = transaction
+        self.request = proto.SendPaymentRequest()
+
+    def run(self):
+        time.sleep(self.transaction['time'] - self.init_time)
+        self.request.sender = self.transaction['sender_id']
+        self.request.receiver = self.transaction['receiver_id']
+        self.request.amount = round(self.transaction['trans'])
+        self.stub.SendPayment(self.request)
+
+
 def actrpc_gen(file_name_inlet):
     with open(file_name_inlet) as f:
         inlet = json.load(f)
@@ -46,12 +68,13 @@ def actrpc_gen(file_name_inlet):
     with open(inlet['transstream_file_name']) as f:
         transstream = json.load(f)['transstream']
 
-    channel = grpc.insecure_channel('localhost:9393')
-    stub = proto_rpc.EmulatorStub(channel)
+    stub = create_stub()
 
     set_duration(duration, stub)
 
     channels_id = open_channels(users_id, balances, stub)
+
+    # TransactionThread(stub, 0, transstream[0]).start()
 
     with open(inlet['channels_id_file_name'], 'w') as f:
         json.dump({'channels_id': channels_id}, f,
