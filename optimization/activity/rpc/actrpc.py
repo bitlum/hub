@@ -51,6 +51,7 @@ class TransactionThread(Thread):
         self.request.receiver = self.transaction['receiver_id']
         self.request.amount = round(self.transaction['trans'])
         self.stub.SendPayment(self.request)
+        print(self.transaction)
 
 
 def actrpc_gen(file_name_inlet):
@@ -72,13 +73,15 @@ def actrpc_gen(file_name_inlet):
 
     set_duration(duration, stub)
 
-    channels_id = open_channels(users_id, balances, stub)
+    # channels_id = open_channels(users_id, balances, stub)
 
-    # TransactionThread(stub, 0, transstream[0]).start()
+    for trans in transstream:
+        TransactionThread(stub, 0, trans).start()
 
-    with open(inlet['channels_id_file_name'], 'w') as f:
-        json.dump({'channels_id': channels_id}, f,
-                  sort_keys=True, indent=4 * ' ')
+
+    # with open(inlet['channels_id_file_name'], 'w') as f:
+    #     json.dump({'channels_id': channels_id}, f,
+    #               sort_keys=True, indent=4 * ' ')
 
 
 if __name__ == '__main__':
