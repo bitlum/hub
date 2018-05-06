@@ -45,7 +45,9 @@ def actrpc_gen(file_name_inlet):
         response = stub.OpenChannel(request)
         channels_id[key] = response.channel_id
 
-    print(channels_id)
+    with open(inlet['channels_id_file_name'], 'w') as f:
+        json.dump({'channels_id': channels_id}, f,
+                  sort_keys=True, indent=4 * ' ')
 
 
 if __name__ == '__main__':
