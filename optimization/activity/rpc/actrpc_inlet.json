@@ -2,5 +2,6 @@
     "duration": 300,
     "transstream_file_name": "../outlet/transstream.json",
     "users_id_file_name": "../outlet/users_id.json",
-    "balances_file_name": "../outlet/balances.json"
+    "balances_file_name": "../outlet/balances.json",
+    "channels_id_file_name": "channels_id.json"
 }

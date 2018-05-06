@@ -1,0 +1,4 @@
+{
+    "users_id_file_name": "../../activity/outlet/users_id.json",
+    "channels_id_file_name": "../../activity/rpc/channels_id.json"
+}
