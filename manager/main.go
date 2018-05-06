@@ -65,7 +65,7 @@ func backendMain() error {
 	switch config.Backend {
 	case "emulator":
 		mainLog.Infof("Initialise emulator router...")
-		emulationRouter := emulation.NewRouter(10, 200*time.Millisecond)
+		emulationRouter := emulation.NewRouter(10E+7, 200*time.Millisecond)
 		emulationRouter.Start(config.Emulator.ListenHost, config.Emulator.ListenPort)
 		defer emulationRouter.Stop()
 		r = emulationRouter

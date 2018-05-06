@@ -25,7 +25,7 @@ type Router interface {
 
 	// SetFee updates the fee which router takes for routing the users
 	// payments.
-	SetFee(fee uint64) error
+	SetFee(feeMin uint64, feeFrac float64) error
 
 	// RegisterOnUpdates returns register which returns updates about router
 	// local network topology changes, about attempts of propagating the payment
@@ -72,6 +72,8 @@ type Channel struct {
 	RouterBalance BalanceUnit
 	IsPending     bool
 	IsActive      bool
+	FeeMin        BalanceUnit
+	FeeFrac       float64
 }
 
 type UpdateChannelClosing struct {
@@ -81,7 +83,8 @@ type UpdateChannelClosing struct {
 	// Fee which was taken by blockchain decentralised computer / mainers or
 	// some other form of smart contract manager from initiator of the
 	// channel. By initiator we means the side which created the channel.
-	Fee BalanceUnit
+	FeeMin BalanceUnit
+	FeeFrac float64
 }
 
 type UpdateChannelClosed struct {
@@ -91,7 +94,8 @@ type UpdateChannelClosed struct {
 	// Fee which was taken by blockchain decentralised computer / mainers or
 	// some other form of smart contract manager from initiator of the
 	// channel. By initiator we means the side which created the channel.
-	Fee BalanceUnit
+	FeeMin BalanceUnit
+	FeeFrac float64
 }
 
 // UpdateChannelUpdating is used to notify that one of the participants
@@ -110,7 +114,8 @@ type UpdateChannelUpdating struct {
 	// Fee which was taken by blockchain decentralised computer / mainers or
 	// some other form of smart contract manager from initiator of the
 	// channel. By initiator we means the side which created the channel.
-	Fee BalanceUnit
+	FeeMin BalanceUnit
+	FeeFrac float64
 }
 
 // UpdateChannelUpdated is used to notify that one of the participants
@@ -129,7 +134,8 @@ type UpdateChannelUpdated struct {
 	// Fee which was taken by blockchain decentralised computer / mainers or
 	// some other form of smart contract manager from initiator of the
 	// channel. By initiator we means the side which created the channel.
-	Fee BalanceUnit
+	FeeMin BalanceUnit
+	FeeFrac float64
 }
 
 // UpdateChannelOpening is used as notifications from router or network that
@@ -143,7 +149,8 @@ type UpdateChannelOpening struct {
 	// Fee which was taken by blockchain decentralised computer / mainers or
 	// some other form of smart contract manager from initiator of the
 	// channel. By initiator we means the side which created the channel.
-	Fee BalanceUnit
+	FeeMin BalanceUnit
+	FeeFrac float64
 }
 
 // UpdateChannelOpened is used as notifications from router or network that
@@ -157,7 +164,8 @@ type UpdateChannelOpened struct {
 	// Fee which was taken by blockchain decentralised computer / mainers or
 	// some other form of smart contract manager from initiator of the
 	// channel. By initiator we means the side which created the channel.
-	Fee BalanceUnit
+	FeeMin BalanceUnit
+	FeeFrac float64
 }
 
 type UpdatePayment struct {

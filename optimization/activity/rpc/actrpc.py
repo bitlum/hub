@@ -71,8 +71,8 @@ def actrpc_gen(file_name_inlet):
 
     stub = create_stub()
 
-    set_duration(duration, stub)
-
+    # set_duration(duration, stub)
+    #
     # channels_id = open_channels(users_id, balances, stub)
 
     for trans in transstream:

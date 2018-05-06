@@ -144,12 +144,16 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 				channel.ChannelID)
 		}
 
-		channel.RouterBalance -= router.BalanceUnit(req.Amount - n.router.fee)
-		channel.UserBalance += router.BalanceUnit(req.Amount - n.router.fee)
+		fee := uint64(float64(req.Amount) * n.router.feeFrac)
+		if  fee == 0 {
+			fee = n.router.feeMin
+		}
+		channel.RouterBalance -= router.BalanceUnit(req.Amount - fee)
+		channel.UserBalance += router.BalanceUnit(req.Amount - fee)
 		defer func() {
 			if paymentFailed {
-				channel.RouterBalance += router.BalanceUnit(req.Amount + n.router.fee)
-				channel.UserBalance -= router.BalanceUnit(req.Amount + n.router.fee)
+				channel.RouterBalance += router.BalanceUnit(req.Amount + fee)
+				channel.UserBalance -= router.BalanceUnit(req.Amount + fee)
 			}
 		}()
 
@@ -211,6 +215,8 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 		UserBalance:   router.BalanceUnit(req.LockedByUser),
 		RouterBalance: 0,
 		IsPending:     true,
+		FeeMin:        router.BalanceUnit(0),
+		FeeFrac:       float64(0),
 	}
 
 	n.users[userID] = c
@@ -223,7 +229,8 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 		RouterBalance: router.BalanceUnit(c.RouterBalance),
 
 		// TODO(andrew.shvv) Add work with fee
-		Fee: 0,
+		FeeMin: router.BalanceUnit(0),
+		FeeFrac: 0.0,
 	})
 
 	log.Tracef("User(%v) opened channel(%v) with router", userID, chanID)
@@ -249,7 +256,8 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 			RouterBalance: router.BalanceUnit(c.RouterBalance),
 
 			// TODO(andrew.shvv) Add work with fee
-			Fee: 0,
+			FeeMin: c.FeeMin,
+			FeeFrac: c.FeeFrac,
 		})
 
 		log.Tracef("Channel(%v) with user(%v) unlocked", chanID, userID)
@@ -286,7 +294,8 @@ func (n *emulationNetwork) CloseChannel(_ context.Context, req *CloseChannelRequ
 		ChannelID: channel.ChannelID,
 
 		// TODO(andrew.shvv) Add work with fee
-		Fee: 0,
+		FeeMin:  channel.FeeMin,
+		FeeFrac: channel.FeeFrac,
 	})
 
 	log.Tracef("User(%v) closed channel(%v)", channel.UserID, channel.ChannelID)
@@ -309,7 +318,8 @@ func (n *emulationNetwork) CloseChannel(_ context.Context, req *CloseChannelRequ
 			ChannelID: channel.ChannelID,
 
 			// TODO(andrew.shvv) Add work with fee
-			Fee: 0,
+			FeeMin:  channel.FeeMin,
+			FeeFrac: channel.FeeFrac,
 		})
 
 		delete(n.channels, chanID)

@@ -14,7 +14,8 @@ type RouterEmulation struct {
 	freeBalance    router.BalanceUnit
 	pendingBalance router.BalanceUnit
 	network        *emulationNetwork
-	fee            uint64
+	feeMin            uint64
+	feeFrac           float64
 }
 
 // Runtime check that RouterEmulation implements router.Router interface.
@@ -97,7 +98,8 @@ func (r *RouterEmulation) OpenChannel(userID router.UserID,
 		RouterBalance: router.BalanceUnit(c.RouterBalance),
 
 		// TODO(andrew.shvv) Add work with fee
-		Fee: 0,
+		FeeMin: router.BalanceUnit(0),
+		FeeFrac: 0.0,
 	})
 
 	log.Tracef("Router opened channel(%v) with user(%v)", chanID, userID)
@@ -123,7 +125,8 @@ func (r *RouterEmulation) OpenChannel(userID router.UserID,
 			RouterBalance: router.BalanceUnit(c.RouterBalance),
 
 			// TODO(andrew.shvv) Add work with fee
-			Fee: 0,
+			FeeMin: router.BalanceUnit(0),
+			FeeFrac: 0.0,
 		})
 
 		log.Tracef("Channel(%v) with user(%v) unlocked", chanID, userID)
@@ -159,7 +162,8 @@ func (r *RouterEmulation) CloseChannel(id router.ChannelID) error {
 				ChannelID: id,
 
 				// TODO(andrew.shvv) Add work with fee
-				Fee: 0,
+				FeeMin: router.BalanceUnit(0),
+				FeeFrac: 0.0,
 			})
 
 			log.Tracef("Router closed channel(%v)", id)
@@ -188,7 +192,8 @@ func (r *RouterEmulation) CloseChannel(id router.ChannelID) error {
 					ChannelID: id,
 
 					// TODO(andrew.shvv) Add work with fee
-					Fee: 0,
+					FeeMin: router.BalanceUnit(0),
+					FeeFrac: 0.0,
 				})
 
 				log.Tracef("Router received %v money previously locked in"+
@@ -258,7 +263,8 @@ func (r *RouterEmulation) UpdateChannel(id router.ChannelID,
 		RouterBalance: channel.RouterBalance,
 
 		// TODO(andrew.shvv) Add work with fee
-		Fee: 0,
+		FeeMin: channel.FeeMin,
+		FeeFrac: channel.FeeFrac,
 	})
 
 	// Subscribe on block notification and return funds when block is
@@ -301,7 +307,8 @@ func (r *RouterEmulation) UpdateChannel(id router.ChannelID,
 			RouterBalance: channel.RouterBalance,
 
 			// TODO(andrew.shvv) Add work with fee
-			Fee: 0,
+			FeeMin: channel.FeeMin,
+			FeeFrac: channel.FeeFrac,
 		})
 	}()
 
@@ -365,11 +372,12 @@ func (r *RouterEmulation) AverageChangeUpdateDuration() (time.Duration, error) {
 	return r.network.blockGeneration, nil
 }
 
-func (r *RouterEmulation) SetFee(fee uint64) error {
+func (r *RouterEmulation) SetFee(feeMin uint64, feeFrac float64) error {
 	r.network.Lock()
 	defer r.network.Unlock()
 
-	r.fee = fee
+	r.feeMin = feeMin
+	r.feeFrac = feeFrac
 	return nil
 }
 
