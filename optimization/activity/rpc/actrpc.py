@@ -14,6 +14,23 @@ import protobuffer.rpc_pb2 as proto
 import protobuffer.rpc_pb2_grpc as proto_rpc
 
 
+def set_duration(duration, stub):
+    duration_request = proto.SetBlockGenDurationRequest()
+    duration_request.duration = duration
+    stub.SetBlockGenDuration(duration_request)
+
+
+def open_channels(users_id, balances, stub):
+    channels_id = dict()
+    open_request = proto.OpenChannelRequest()
+    for key, user_id in users_id.items():
+        open_request.user_id = user_id
+        open_request.locked_by_user = balances[key]
+        open_response = stub.OpenChannel(open_request)
+        channels_id[key] = open_response.channel_id
+    return channels_id
+
+
 def actrpc_gen(file_name_inlet):
     with open(file_name_inlet) as f:
         inlet = json.load(f)
@@ -30,20 +47,11 @@ def actrpc_gen(file_name_inlet):
         transstream = json.load(f)['transstream']
 
     channel = grpc.insecure_channel('localhost:9393')
-
     stub = proto_rpc.EmulatorStub(channel)
 
-    request = proto.SetBlockGenDurationRequest()
-    request.duration = duration
-    stub.SetBlockGenDuration(request)
+    set_duration(duration, stub)
 
-    channels_id = dict()
-    for key, user_id in users_id.items():
-        request = proto.OpenChannelRequest()
-        request.user_id = user_id
-        request.locked_by_user = balances[key]
-        response = stub.OpenChannel(request)
-        channels_id[key] = response.channel_id
+    channels_id = open_channels(users_id, balances, stub)
 
     with open(inlet['channels_id_file_name'], 'w') as f:
         json.dump({'channels_id': channels_id}, f,
