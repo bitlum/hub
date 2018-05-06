@@ -41,12 +41,14 @@ def actmatr_gen(file_name_inlet):
                 for _ in range(
                         int(inlet['time_period'] / periodmatr_mean[i][j])):
                     timematr[i][j].append(random.gauss(periodmatr_mean[i][j],
+                                                       periodmatr_mean[i][j] *
                                                        periodmatr_stdev[i][j]))
 
                     if timematr[i][j][-1] <= 0:
                         timematr[i][j][-1] = periodmatr_mean[i][j]
 
                     transmatr[i][j].append(random.gauss(sizematr_mean[i][j],
+                                                        sizematr_mean[i][j] *
                                                         sizematr_stdev[i][j]))
 
                     if transmatr[i][j][-1] <= 0:
