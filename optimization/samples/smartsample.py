@@ -43,12 +43,12 @@ class SmartSample:
         self.mean = statistics.mean(self.value)
         self.minimum = min(self.value)
         self.maximum = max(self.value)
-        if len(self.value) > 1:
-            self.stdev = statistics.stdev(self.value)
-            self.variance = statistics.variance(self.value)
-        else:
+        if self.number == 1:
             self.stdev = 0
             self.variance = 0
+        else:
+            self.stdev = statistics.stdev(self.value)
+            self.variance = statistics.variance(self.value)
         self.erfcut()
 
     def calcsum(self):
@@ -57,7 +57,7 @@ class SmartSample:
             self.sum += self.value[i]
 
     def erfcut(self):
-        if self.stdev > 0:
+        if self.stdev != 0:
             self.cut = erfcut.erf_cut_calc(self.prob_cut,
                                            self.mean, self.stdev,
                                            erfcut.Method.newton, 1.E-5)
