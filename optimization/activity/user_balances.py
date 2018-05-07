@@ -11,7 +11,7 @@ sys.path.append(os.path.join(current_path, '../'))
 # the execution of generated transactions.
 
 
-def balances_gen(file_name_inlet):
+def user_balances_gen(file_name_inlet):
     with open(file_name_inlet) as f:
         inlet = json.load(f)
 
@@ -29,9 +29,9 @@ def balances_gen(file_name_inlet):
 
     # write the vector of locked balances into a file
 
-    with open(inlet['balances_file_name'], 'w') as f:
+    with open(inlet['user_balances_file_name'], 'w') as f:
         json.dump({'balances': balances}, f, sort_keys=True, indent=4 * ' ')
 
 
 if __name__ == '__main__':
-    balances_gen(file_name_inlet='inlet/balances_inlet.json')
+    user_balances_gen(file_name_inlet='inlet/user_balances_inlet.json')

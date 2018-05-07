@@ -71,8 +71,8 @@ def actrpc_gen(file_name_inlet):
     with open(inlet['users_id_file_name']) as f:
         users_id = json.load(f)['users_id']
 
-    with open(inlet['balances_file_name']) as f:
-        balances = json.load(f)['balances']
+    with open(inlet['user_balances_file_name']) as f:
+        user_balances = json.load(f)['balances']
 
     with open(inlet['transstream_file_name']) as f:
         transstream = json.load(f)['transstream']
@@ -81,9 +81,9 @@ def actrpc_gen(file_name_inlet):
 
     set_duration(duration, stub)
 
-    channels_id = open_channels(users_id, balances, stub)
+    channels_id = open_channels(users_id, user_balances, stub)
 
-    acthubrpc_gen(file_name_inlet='../../core/rpc/acthubrpc_inlet.json')
+    # acthubrpc_gen(file_name_inlet='../../core/rpc/acthubrpc_inlet.json')
 
     sent_transactions(stub, transstream)
 
