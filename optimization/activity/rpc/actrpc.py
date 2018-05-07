@@ -57,8 +57,9 @@ class TransactionThread(Thread):
 
 
 def sent_transactions(stub, transstream):
+    time_init = time.time()
     for trans in transstream:
-        TransactionThread(stub, 0, trans).start()
+        TransactionThread(stub, time.time() - time_init, trans).start()
 
 
 def actrpc_gen(file_name_inlet):
