@@ -17,7 +17,7 @@ def router_balance_calc(file_name_inlet):
         inlet = json.load(f)
 
     with open(inlet['periodmatr_mean_calc_file_name']) as f:
-        periodmatr_mean = json.load(f)['periodmatr_mean_calc']
+        periodmatr_mean_calc = json.load(f)['periodmatr_mean_calc']
 
     with open(inlet['flowmatr_calc_file_name']) as f:
         flowmatr_calc = json.load(f)['flowmatr_calc']
@@ -44,13 +44,19 @@ def router_balance_calc(file_name_inlet):
         for balance in router_balances:
             balance *= 2
 
+    print('FIRST STEP router_balances: ', router_balances, '\n')
+
     # SECOND STEP
     # Limiting channel idle time due to re-creation.
 
+    balance_p_lim = [0 for _ in range(users_number)]
     for i in range(len(router_balances)):
-        balance_cur_lim = flowvect_out_calc[i] * time_p / alpha_p
-        if router_balances[i] < balance_cur_lim:
-            router_balances[i] = balance_cur_lim
+        balance_p_lim[i] = flowvect_out_calc[i] * time_p / alpha_p
+        if router_balances[i] < balance_p_lim[i]:
+            router_balances[i] = balance_p_lim[i]
+
+    print('SECOND STEP balance_p_lim: ', balance_p_lim)
+    print('SECOND STEP router_balances: ', router_balances, '\n')
 
     # THIRD STEP:
     # Matching the characteristic times of re-creation of channels
@@ -58,21 +64,30 @@ def router_balance_calc(file_name_inlet):
 
     periods_max = [0 for _ in range(users_number)]
     for i in range(users_number):
-        for period_mean in periodmatr_mean[i]:
+        for period_mean in periodmatr_mean_calc[i]:
             if period_mean is not None:
                 if periods_max[i] < period_mean:
                     periods_max[i] = period_mean
 
+    balance_T_lim = [0 for _ in range(users_number)]
     for i in range(len(router_balances)):
-        balance_cur_lim = alpha_T * flowvect_out_calc[i] * periods_max[i]
-        if router_balances[i] < balance_cur_lim:
-            router_balances[i] = balance_cur_lim
+        balance_T_lim[i] = alpha_T * flowvect_out_calc[i] * periods_max[i]
+
+    for i in range(len(router_balances)):
+        if router_balances[i] < balance_T_lim[i]:
+            router_balances[i] = balance_T_lim[i]
+
+    print('THIRD STEP balance_T_lim: ', balance_T_lim)
+    print('THIRD STEP periods_max: ', periods_max)
+    print('THIRD STEP router_balances: ', router_balances, '\n')
 
     # FOURTH STEP
     # Calculation of channel re-creation frequencies for outlet transactions.
 
     freqs_out = [flowvect_out_calc[i] / router_balances[i] for i in
                  range(users_number)]
+
+    print('FOURTH STEP freqs_out: ', freqs_out, '\n')
 
     # FIFTH STEP
     # Calculation of channel re-creation frequencies for inlet transactions.
@@ -85,15 +100,33 @@ def router_balance_calc(file_name_inlet):
                 if freqs_in[j] > freqs_out[i]:
                     freqs_in[j] = freqs_out[i]
 
-    # SIXTH AND SEVENTH STEP
+    print('FIFTH STEP freqs_in: ', freqs_in, '\n')
+
+    # SIXTH AND SEVENTH STEPS
     # Calculation of the final channels re-creation frequencies to ensure
     # all transactions.
+
+    balance_lim = [0 for _ in range(users_number)]
+    for i in range(len(router_balances)):
+        if balance_T_lim[i] >= balance_p_lim[i]:
+            balance_lim[i] = balance_T_lim[i]
+        else:
+            balance_lim[i] = balance_p_lim[i]
+
     freqs = copy.deepcopy(freqs_out)
     for i in range(users_number):
         flow_delta_cur = flowvect_in_calc[i] - flowvect_out_calc[i]
-        balance_delta_cur = flow_delta_cur / freqs_in[i]
-        router_balances[i] = balance_delta_cur if flow_delta_cur > 0 else 0.
+        balance_cur = flow_delta_cur / freqs_in[i]
+
+        if balance_cur < balance_lim[i]:
+            router_balances[i] = balance_lim[i]
+        else:
+            router_balances[i] = balance_cur
+
         freqs[i] = freqs_in[i] if flow_delta_cur > 0 else freqs_out[i]
+
+    print('SIXTH AND SEVENTH STEPS balance_lim: ', balance_lim)
+    print('SIXTH AND SEVENTH STEPS freqs: ', freqs)
 
     # write router-locked funds into a file
 
