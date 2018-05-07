@@ -83,7 +83,7 @@ def actrpc_gen(file_name_inlet):
 
     channels_id = open_channels(users_id, user_balances, stub)
 
-    # acthubrpc_gen(file_name_inlet='../../core/rpc/acthubrpc_inlet.json')
+    acthubrpc_gen(file_name_inlet='../../core/rpc/acthubrpc_inlet.json')
 
     sent_transactions(stub, transstream)
 
