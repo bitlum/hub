@@ -34,11 +34,14 @@ def acthubrpc_gen(file_name_inlet):
     with open(inlet['users_id_file_name']) as f:
         users_id = json.load(f)['users_id']
 
+    with open(inlet['router_balances_file_name']) as f:
+        router_balances = json.load(f)['router_balances']
+
     stub = create_stub()
 
     time.sleep(1)
-    for _, user_id in users_id.items():
-        update_link(user_id, stub, int(1E+5))
+    for key, user_id in users_id.items():
+        update_link(user_id, stub, int(router_balances[key]))
 
 
 if __name__ == '__main__':

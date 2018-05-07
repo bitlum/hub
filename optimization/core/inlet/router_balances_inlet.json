@@ -6,8 +6,8 @@
 	"income": true,
 	"penalty": 0.1,
 	"commission": 0.01,
-	"time_p": 0.01,
-	"alpha_p": 0.4,
+	"time_p": 0.003,
+	"alpha_p": 0.1,
 	"alpha_T": 2,
 	"freqs_file_name": "outlet/freqs.json",
 	"router_balances_file_name": "outlet/router_balances.json"
