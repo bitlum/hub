@@ -10,5 +10,5 @@
 	"alpha_p": 0.4,
 	"alpha_T": 2,
 	"freqs_file_name": "outlet/freqs.json",
-	"balances_file_name": "outlet/balances.json"
+	"router_balances_file_name": "outlet/router_balances.json"
 }

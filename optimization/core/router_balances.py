@@ -12,7 +12,7 @@ sys.path.append(os.path.join(current_path, '../'))
 # flow inlet vector.
 
 
-def balance_calc(file_name_inlet):
+def router_balance_calc(file_name_inlet):
     with open(file_name_inlet) as f:
         inlet = json.load(f)
 
@@ -39,18 +39,18 @@ def balance_calc(file_name_inlet):
     # FIRST STEP
     # The simplest yield extremum.
 
-    balances = [penalty / commission for _ in range(users_number)]
+    router_balances = [penalty / commission for _ in range(users_number)]
     if income:
-        for balance in balances:
+        for balance in router_balances:
             balance *= 2
 
     # SECOND STEP
     # Limiting channel idle time due to re-creation.
 
-    for i in range(len(balances)):
+    for i in range(len(router_balances)):
         balance_cur_lim = flowvect_out_calc[i] * time_p / alpha_p
-        if balances[i] < balance_cur_lim:
-            balances[i] = balance_cur_lim
+        if router_balances[i] < balance_cur_lim:
+            router_balances[i] = balance_cur_lim
 
     # THIRD STEP:
     # Matching the characteristic times of re-creation of channels
@@ -63,15 +63,15 @@ def balance_calc(file_name_inlet):
                 if periods_max[i] < period_mean:
                     periods_max[i] = period_mean
 
-    for i in range(len(balances)):
+    for i in range(len(router_balances)):
         balance_cur_lim = alpha_T * flowvect_out_calc[i] * periods_max[i]
-        if balances[i] < balance_cur_lim:
-            balances[i] = balance_cur_lim
+        if router_balances[i] < balance_cur_lim:
+            router_balances[i] = balance_cur_lim
 
     # FOURTH STEP
     # Calculation of channel re-creation frequencies for outlet transactions.
 
-    freqs_out = [flowvect_out_calc[i] / balances[i] for i in
+    freqs_out = [flowvect_out_calc[i] / router_balances[i] for i in
                  range(users_number)]
 
     # FIFTH STEP
@@ -92,7 +92,7 @@ def balance_calc(file_name_inlet):
     for i in range(users_number):
         flow_delta_cur = flowvect_in_calc[i] - flowvect_out_calc[i]
         balance_delta_cur = flow_delta_cur / freqs_in[i]
-        balances[i] = balance_delta_cur if flow_delta_cur > 0 else 0.
+        router_balances[i] = balance_delta_cur if flow_delta_cur > 0 else 0.
         freqs[i] = freqs_in[i] if flow_delta_cur > 0 else freqs_out[i]
 
     # write router-locked funds into a file
@@ -103,10 +103,10 @@ def balance_calc(file_name_inlet):
 
     # write frequencies of channels re-creation into a file
 
-    with open(inlet['balances_file_name'], 'w') as f:
-        json.dump({'balances': balances}, f, sort_keys=True,
+    with open(inlet['router_balances_file_name'], 'w') as f:
+        json.dump({'router_balances': router_balances}, f, sort_keys=True,
                   indent=4 * ' ')
 
 
 if __name__ == '__main__':
-    balance_calc(file_name_inlet='inlet/balances_inlet.json')
+    router_balance_calc(file_name_inlet='inlet/router_balances_inlet.json')
