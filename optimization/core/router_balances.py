@@ -16,8 +16,8 @@ def router_balance_calc(file_name_inlet):
     with open(file_name_inlet) as f:
         inlet = json.load(f)
 
-    with open(inlet['periodmatr_mean_file_name']) as f:
-        periodmatr_mean = json.load(f)['periodmatr_mean']
+    with open(inlet['periodmatr_mean_calc_file_name']) as f:
+        periodmatr_mean = json.load(f)['periodmatr_mean_calc']
 
     with open(inlet['flowmatr_calc_file_name']) as f:
         flowmatr_calc = json.load(f)['flowmatr_calc']

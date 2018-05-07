@@ -17,18 +17,18 @@ def flows_calc(file_name_inlet):
     with open(file_name_inlet) as f:
         inlet = json.load(f)
 
-    with open(inlet['transmatr_mean_file_name']) as f:
-        transmatr_mean = json.load(f)['transmatr_mean']
+    with open(inlet['transmatr_mean_calc_file_name']) as f:
+        transmatr_mean_calc = json.load(f)['transmatr_mean_calc']
 
-    with open(inlet['periodmatr_mean_file_name']) as f:
-        periodmatr_mean = json.load(f)['periodmatr_mean']
+    with open(inlet['periodmatr_mean_calc_file_name']) as f:
+        periodmatr_mean_calc = json.load(f)['periodmatr_mean_calc']
 
-    flowmatr_calc = copy.deepcopy(transmatr_mean)
+    flowmatr_calc = copy.deepcopy(transmatr_mean_calc)
 
     for i in range(len(flowmatr_calc)):
         for j in range(len(flowmatr_calc[i])):
             if flowmatr_calc[i][j] is not None:
-                flowmatr_calc[i][j] /= periodmatr_mean[i][j]
+                flowmatr_calc[i][j] /= periodmatr_mean_calc[i][j]
 
     flowvect_out_calc = [0 for _ in range(len(flowmatr_calc))]
     flowvect_in_calc = [0 for _ in range(len(flowmatr_calc))]

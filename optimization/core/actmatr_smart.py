@@ -36,13 +36,13 @@ def actmatr_smart_gen(file_name_inlet):
             transmatr_calc[i][j][1:]) > 0 else None for j in
          range(len(transmatr_calc[i]))] for i in range(len(transmatr_calc))]
 
-    periodmatr_mean = [
+    periodmatr_mean_calc = [
         [SmartSample(periodmatr_calc[i][j],
                      inlet['period_cut_frac']).mean if len(
             periodmatr_calc[i][j]) > 0 else None for j in
          range(len(periodmatr_calc[i]))] for i in range(len(periodmatr_calc))]
 
-    transmatr_mean = [
+    transmatr_mean_calc = [
         [SmartSample(transmatr_calc[i][j],
                      inlet['trans_cut_frac']).mean if len(
             transmatr_calc[i][j]) > 0 else None for j in
@@ -50,13 +50,13 @@ def actmatr_smart_gen(file_name_inlet):
 
     # write the statistical characteristics matrices into files
 
-    with open(inlet['periodmatr_mean_file_name'], 'w') as f:
-        json.dump({'periodmatr_mean': periodmatr_mean}, f, sort_keys=True,
-                  indent=4 * ' ')
+    with open(inlet['periodmatr_mean_calc_file_name'], 'w') as f:
+        json.dump({'periodmatr_mean_calc': periodmatr_mean_calc}, f,
+                  sort_keys=True, indent=4 * ' ')
 
-    with open(inlet['transmatr_mean_file_name'], 'w') as f:
-        json.dump({'transmatr_mean': transmatr_mean}, f, sort_keys=True,
-                  indent=4 * ' ')
+    with open(inlet['transmatr_mean_calc_file_name'], 'w') as f:
+        json.dump({'transmatr_mean_calc': transmatr_mean_calc}, f,
+                  sort_keys=True, indent=4 * ' ')
 
 
 if __name__ == '__main__':
