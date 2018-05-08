@@ -1,11 +1,11 @@
 {
     "users_number": 4,
-    "flow_mean": 3000,
+    "flow_mean": 5,
     "flow_stdev": 0.6,
     "receivers_frac": 0.75,
     "gates_frac": 0.25,
-    "gates_min_mult": 1,
-    "gates_max_mult": 2,
+    "gates_min_mult": 2,
+    "gates_max_mult": 3,
     "flowvect_file_name": "outlet/flowvect.json",
     "users_id_file_name": "outlet/users_id.json"
 }

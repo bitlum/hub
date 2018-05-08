@@ -13,8 +13,13 @@ sys.path.append(os.path.join(current_path, '../'))
 
 
 def router_balance_calc(file_name_inlet):
+    green = '\33[92m'
+    reset_color = '\033[0m'
+
     with open(file_name_inlet) as f:
         inlet = json.load(f)
+
+    router_balances_mult = inlet['router_balances_mult']
 
     with open(inlet['periodmatr_mean_calc_file_name']) as f:
         periodmatr_mean_calc = json.load(f)['periodmatr_mean_calc']
@@ -41,10 +46,11 @@ def router_balance_calc(file_name_inlet):
 
     router_balances = [penalty / commission for _ in range(users_number)]
     if income:
-        for balance in router_balances:
-            balance *= 2
+        for i in range(len(router_balances)):
+            router_balances[i] *= 2
 
-    print('FIRST STEP router_balances: ', router_balances, '\n')
+    print('FIRST STEP:')
+    print(green + 'router_balances: ', router_balances, '\n' + reset_color)
 
     # SECOND STEP
     # Limiting channel idle time due to re-creation.
@@ -55,8 +61,9 @@ def router_balance_calc(file_name_inlet):
         if router_balances[i] < balance_p_lim[i]:
             router_balances[i] = balance_p_lim[i]
 
-    print('SECOND STEP balance_p_lim: ', balance_p_lim)
-    print('SECOND STEP router_balances: ', router_balances, '\n')
+    print('SECOND STEP:')
+    print('balance_p_lim:   ', balance_p_lim)
+    print(green + 'router_balances: ', router_balances, '\n' + reset_color)
 
     # THIRD STEP:
     # Matching the characteristic times of re-creation of channels
@@ -77,9 +84,10 @@ def router_balance_calc(file_name_inlet):
         if router_balances[i] < balance_T_lim[i]:
             router_balances[i] = balance_T_lim[i]
 
-    print('THIRD STEP balance_T_lim: ', balance_T_lim)
-    print('THIRD STEP periods_max: ', periods_max)
-    print('THIRD STEP router_balances: ', router_balances, '\n')
+    print('THIRD STEP:')
+    print('balance_T_lim:   ', balance_T_lim)
+    print('periods_max:     ', periods_max)
+    print(green + 'router_balances: ', router_balances, '\n' + reset_color)
 
     # FOURTH STEP
     # Calculation of channel re-creation frequencies for outlet transactions.
@@ -87,20 +95,22 @@ def router_balance_calc(file_name_inlet):
     freqs_out = [flowvect_out_calc[i] / router_balances[i] for i in
                  range(users_number)]
 
-    print('FOURTH STEP freqs_out: ', freqs_out, '\n')
+    print('FOURTH STEP:')
+    print('freqs_out:       ', freqs_out, '\n')
 
     # FIFTH STEP
     # Calculation of channel re-creation frequencies for inlet transactions.
 
+    # TODO > or < ?
     freqs_in = copy.deepcopy(freqs_out)
-
     for i in range(len(flowmatr_calc)):
         for j in range(len(flowmatr_calc[i])):
             if flowmatr_calc[i][j] is not None:
-                if freqs_in[j] > freqs_out[i]:
+                if freqs_in[j] < freqs_out[i]:
                     freqs_in[j] = freqs_out[i]
 
-    print('FIFTH STEP freqs_in: ', freqs_in, '\n')
+    print('FIFTH STEP:')
+    print('freqs_in:        ', freqs_in, '\n')
 
     # SIXTH AND SEVENTH STEPS
     # Calculation of the final channels re-creation frequencies to ensure
@@ -113,6 +123,7 @@ def router_balance_calc(file_name_inlet):
         else:
             balance_lim[i] = balance_p_lim[i]
 
+    wanes = [False for _ in range(users_number)]
     freqs = copy.deepcopy(freqs_out)
     for i in range(users_number):
         flow_delta_cur = flowvect_in_calc[i] - flowvect_out_calc[i]
@@ -123,22 +134,48 @@ def router_balance_calc(file_name_inlet):
         else:
             router_balances[i] = balance_cur
 
-        freqs[i] = freqs_in[i] if flow_delta_cur > 0 else freqs_out[i]
+        if flow_delta_cur >= 0:
+            wanes[i] = True
+            freqs[i] = freqs_in[i]
+        else:
+            freqs_out[i]
 
-    print('SIXTH AND SEVENTH STEPS balance_lim: ', balance_lim)
-    print('SIXTH AND SEVENTH STEPS freqs: ', freqs)
+    print('SIXTH AND SEVENTH STEPS:')
+    print('balance_lim:     ', balance_lim)
+    print(green + 'router_balances: ', router_balances, '' + reset_color)
+    print('wane:            ', wanes)
+    print('freqs:           ', freqs, '\n')
 
-    # write router-locked funds into a file
+    # EIGHTH STEP
+    # multiply router-locked funds
 
-    with open(inlet['freqs_file_name'], 'w') as f:
-        json.dump({'freqs': freqs}, f, sort_keys=True,
-                  indent=4 * ' ')
+    for i in range(len(router_balances)):
+        router_balances[i] *= router_balances_mult
+
+    print('EIGHTH STEP:')
+    print(green + 'router_balances: ', router_balances, '' + reset_color)
 
     # write frequencies of channels re-creation into a file
 
-    with open(inlet['router_balances_file_name'], 'w') as f:
-        json.dump({'router_balances': router_balances}, f, sort_keys=True,
+    freqs_dict = {i: freqs[i] for i in range(len(freqs))}
+    with open(inlet['freqs_file_name'], 'w') as f:
+        json.dump({'freqs': freqs_dict}, f, sort_keys=True,
                   indent=4 * ' ')
+
+    # write wane into a file
+
+    wanes_dict = {i: wanes[i] for i in range(len(wanes))}
+    with open(inlet['wanes_file_name'], 'w') as f:
+        json.dump({'wanes': wanes_dict}, f, sort_keys=True,
+                  indent=4 * ' ')
+
+    # write multiplied router-locked funds into a file
+
+    router_balances_dict = {i: round(router_balances[i]) for i in
+                            range(len(router_balances))}
+    with open(inlet['router_balances_file_name'], 'w') as f:
+        json.dump({'router_balances': router_balances_dict}, f,
+                  sort_keys=True, indent=4 * ' ')
 
 
 if __name__ == '__main__':

@@ -27,13 +27,13 @@ def actmatr_smart_gen(file_name_inlet):
     periodmatr_smart = [
         [SmartSample(periodmatr_calc[i][j],
                      inlet['period_cut_frac']) if len(
-            periodmatr_calc[i][j][1:]) > 0 else None for j in
+            periodmatr_calc[i][j]) > 0 else None for j in
          range(len(periodmatr_calc[i]))] for i in range(len(periodmatr_calc))]
 
     transmatr_smart = [
         [SmartSample(transmatr_calc[i][j],
                      inlet['trans_cut_frac']) if len(
-            transmatr_calc[i][j][1:]) > 0 else None for j in
+            transmatr_calc[i][j]) > 0 else None for j in
          range(len(transmatr_calc[i]))] for i in range(len(transmatr_calc))]
 
     periodmatr_mean_calc = [

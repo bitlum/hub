@@ -32,7 +32,7 @@ def transstream_gen(file_name_inlet):
                         dict(time=timematr[i][j][k],
                              sender_id=users_id[str(i)],
                              receiver_id=users_id[str(j)],
-                             trans=transmatr[i][j][k]))
+                             trans=round(transmatr[i][j][k])))
 
     def take_time(trans):
         return trans['time']
