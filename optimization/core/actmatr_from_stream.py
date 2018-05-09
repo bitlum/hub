@@ -22,8 +22,8 @@ def actmatr_calc(file_name_inlet):
 
     users_id_rep_calc = []
     for i in range(len(transstream)):
-        users_id_rep_calc.append(transstream[i]['sender_id'])
-        users_id_rep_calc.append(transstream[i]['receiver_id'])
+        users_id_rep_calc.append(transstream[i]["payment"]['sender'])
+        users_id_rep_calc.append(transstream[i]["payment"]['receiver'])
     users_id_list_calc = sorted(list(set(users_id_rep_calc)))
 
     user_id_calc = {i: users_id_list_calc[i] for i in
@@ -39,13 +39,13 @@ def actmatr_calc(file_name_inlet):
                       range(len(users_id_list_calc))]
 
     for i in range(len(transstream)):
-        timematr_calc[users_ind_calc[transstream[i]['sender_id']]][
-            users_ind_calc[transstream[i]['receiver_id']]].append(
-            transstream[i]['time'])
+        timematr_calc[users_ind_calc[transstream[i]["payment"]['sender']]][
+            users_ind_calc[transstream[i]["payment"]['receiver']]].append(
+            1.E-9 * (transstream[i]['time'] - transstream[0]['time']))
 
-        transmatr_calc[users_ind_calc[transstream[i]['sender_id']]][
-            users_ind_calc[transstream[i]['receiver_id']]].append(
-            transstream[i]['trans'])
+        transmatr_calc[users_ind_calc[transstream[i]["payment"]['sender']]][
+            users_ind_calc[transstream[i]["payment"]['receiver']]].append(
+            transstream[i]["payment"]['amount'])
 
     periodmatr_calc = copy.deepcopy(timematr_calc)
 

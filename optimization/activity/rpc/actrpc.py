@@ -40,18 +40,18 @@ def create_stub():
 
 
 class TransactionThread(Thread):
-    def __init__(self, stub, init_time, transaction):
+    def __init__(self, stub, time_shift, transaction):
         Thread.__init__(self)
         self.stub = stub
-        self.init_time = init_time
+        self.time_shift = time_shift
         self.transaction = transaction
         self.request = proto.SendPaymentRequest()
 
     def run(self):
-        time.sleep(self.transaction['time'] - self.init_time)
-        self.request.sender = self.transaction['sender_id']
-        self.request.receiver = self.transaction['receiver_id']
-        self.request.amount = round(self.transaction['trans'])
+        time.sleep(1.E-9 * self.transaction['time'] - self.time_shift)
+        self.request.sender = self.transaction['payment']['sender']
+        self.request.receiver = self.transaction['payment']['receiver']
+        self.request.amount = round(self.transaction['payment']['amount'])
         self.stub.SendPayment(self.request)
         print(self.request)
 

@@ -29,10 +29,10 @@ def transstream_gen(file_name_inlet):
             if len(timematr[i][j]) > 0:
                 for k in range(len(timematr[i][j])):
                     transstream_unsort.append(
-                        dict(time=timematr[i][j][k],
-                             sender_id=users_id[str(i)],
-                             receiver_id=users_id[str(j)],
-                             trans=round(transmatr[i][j][k])))
+                        dict(time=1.E9 * timematr[i][j][k],
+                             payment=dict(sender=users_id[str(i)],
+                                          receiver=users_id[str(j)],
+                                          amount=round(transmatr[i][j][k]))))
 
     def take_time(trans):
         return trans['time']
