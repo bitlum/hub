@@ -21,6 +21,7 @@ import (
 	"github.com/bitlum/hub/manager/metrics/network"
 	"github.com/bitlum/hub/manager/router/stats"
 	"github.com/bitlum/hub/manager/db"
+	"github.com/bitlum/hub/manager/graphql"
 )
 
 var (
@@ -70,6 +71,24 @@ func backendMain() error {
 		defer emulationRouter.Stop()
 		r = emulationRouter
 	case "lnd":
+
+		mainLog.Infof("Start GraphQL server serving on: %v",
+			net.JoinHostPort(config.GraphQL.ListenHost, config.GraphQL.ListenPort))
+		graphQLServer, err := graphql.NewServer(graphql.Config{
+			ListenIP:         config.GraphQL.ListenHost,
+			ListenPort:       config.GraphQL.ListenPort,
+			SecureListenPort: config.GraphQL.SecureListenPort,
+			PublicHost:       config.LND.Host,
+			Network:          config.LND.Network,
+		})
+		if err != nil {
+			return errors.New("unable to create GraphQL server: " +
+				err.Error())
+		}
+
+		graphQLServer.Start()
+		defer graphQLServer.Stop()
+
 		// Create or open database file to host the last state of
 		// synchronization.
 		mainLog.Infof("Opening BoltDB database, path: '%v'",
@@ -141,7 +160,7 @@ func backendMain() error {
 
 	go func() {
 		addr := net.JoinHostPort(config.Hub.Host, config.Hub.Port)
-		mainLog.Infof("Start listening on: %v", addr)
+		mainLog.Infof("Start gRPC listening on: %v", addr)
 		lis, err := net.Listen("tcp", addr)
 		if err != nil {
 			fail(errChan, "gRPC server unable to listen on %s", addr)
