@@ -27,6 +27,10 @@ def print_massege(massege, nesting=-4):
             if key == 'date':
                 keys.remove(key)
                 keys.insert(0, key)
+        for key in keys:
+            if key == 'message_type':
+                keys.remove(key)
+                keys.insert(0, key)
 
         for key in keys:
             print(nesting * ' ', end='')
@@ -61,6 +65,7 @@ class WatchLogRead(PatternMatchingEventHandler):
         self.size_message_cur = 0
         self.size_file = 0
         self.file = None
+        self.message_names = ['payment', 'state', 'channel_change']
 
     def process(self, event):
         # print(event.event_type, datetime.datetime.now())
@@ -111,6 +116,12 @@ class WatchLogRead(PatternMatchingEventHandler):
                     including_default_value_fields=True)
                 dict_massege['date'] = datetime.datetime.fromtimestamp(
                     self.smart_log.messages[-1].time * 1e-9).__str__()
+
+                dict_massege['message_type'] = 'unknown'
+                for name in self.message_names:
+                    if self.smart_log.messages[-1].HasField(name):
+                        dict_massege['message_type'] = name
+
                 print_massege(dict_massege)
 
 
