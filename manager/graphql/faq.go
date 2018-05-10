@@ -1,33 +1,6 @@
 package graphql
 
-import (
-	"bytes"
-	"fmt"
-	htmlTemplate "html/template"
-	"text/template"
-)
-
-type faqRenderParams struct {
-	QueryPath        string
-	Addr             string
-}
-
-func renderFAQ(p faqRenderParams) (string, error) {
-	page, err := template.New("FAQ").Parse(faqTemplate)
-	if err != nil {
-		return "", fmt.Errorf("unable to parse template: %v", err)
-	}
-
-	var buf bytes.Buffer
-	err = page.Execute(&buf, p)
-	if err != nil {
-		return "", fmt.Errorf("unable to execute template: %v", err)
-	}
-
-	return htmlTemplate.JSEscapeString(buf.String()), nil
-}
-
-const faqTemplate = `# FAQ
+const faq = `# FAQ
 
 # Q: What is hub?
 # A: Hub is a lightning network node which has two primarial goals:

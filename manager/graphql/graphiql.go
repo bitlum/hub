@@ -7,12 +7,8 @@ import (
 )
 
 type graphiQLParams struct {
-	QueryPath        string
-	SubsPath         string
-	PublicHost       string
-	ListenPort       string
-	SecureListenPort string
-	FAQ              string
+	QueryPath string
+	FAQ       string
 }
 
 func renderGraphiQL(p graphiQLParams) ([]byte, error) {
@@ -56,17 +52,6 @@ const graphiQlTemplate = `<!DOCTYPE html>
 </head>
 <body>
   <script>
-    var wsProto = "ws"
-	var wsPort = "{{ .ListenPort }}"
-    if (location.protocol === 'https:') {
-       wsProto = "wss"
-       wsPort = "{{ .SecureListenPort }}"
-    }
-
-    if (wsPort !== "") {
-       wsPort = ":"+wsPort
-    }
-
     // Defines a GraphQL fetcher using the fetch API.
     function graphQLHttpFetcher(graphQLParams) {
       return fetch('{{ .QueryPath }}', {

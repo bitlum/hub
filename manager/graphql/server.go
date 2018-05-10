@@ -5,12 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net"
 	"net/http"
 	"sync"
 	"time"
 	"github.com/graphql-go/graphql"
 	"sync/atomic"
+	"html/template"
 )
 
 // Server is a zigzag graphQL server.
@@ -48,32 +48,9 @@ func NewServer(c Config) (*Server, error) {
 		queryPath = "/query"
 	)
 
-	addr := c.PublicHost
-	if c.ListenPort != "80" {
-		addr = net.JoinHostPort(addr, c.ListenPort)
-	}
-
-	faqRenderParams := faqRenderParams{
-		QueryPath: queryPath,
-		Addr:      addr,
-	}
-
-	switch c.Network {
-	case "testnet":
-	}
-
-	faq, err := renderFAQ(faqRenderParams)
-	if err != nil {
-		return nil, errors.New("unable to generate graphiQL FAQ: " +
-			err.Error())
-	}
-
 	graphiQLPage, err := renderGraphiQL(graphiQLParams{
-		QueryPath:        queryPath,
-		PublicHost:       c.PublicHost,
-		ListenPort:       c.ListenPort,
-		SecureListenPort: c.SecureListenPort,
-		FAQ:              faq,
+		QueryPath: queryPath,
+		FAQ:       template.JSEscapeString(faq),
 	})
 	if err != nil {
 		return nil, err
