@@ -17,6 +17,10 @@ const (
 	defaultHubPort = "8686"
 	defaultHubHost = "localhost"
 
+	defaultGraphQLHost       = "0.0.0.0"
+	defaultGraphQLPort       = "3000"
+	defaultGraphQLSecurePort = "3443"
+
 	defaultEmulateNetworkPort = "9393"
 	defaultEmulateNetworkHost = "localhost"
 
@@ -32,6 +36,12 @@ const (
 	defaultDbPath = "/tmp"
 	defaultNet    = "simnet"
 )
+
+type graphqlConfig struct {
+	ListenHost       string `long:"listenhost" description:"The host on which GraphQL will listen for incoming requests"`
+	ListenPort       string `long:"listenport" description:"The port on which GraphQL will listen for incoming requests"`
+	SecureListenPort string `long:"securelistenport" description:"The secure port on which GraphQL will listen for incoming requests"`
+}
 
 var (
 	homeDir           = btcutil.AppDataDir("hubmanager", false)
@@ -54,6 +64,7 @@ type config struct {
 
 	Prometheus *prometheusConfig `group:"Prometheus" namespace:"prometheus"`
 	Hub        *hubConfig        `group:"Hub" namespace:"hub"`
+	GraphQL    *graphqlConfig    `group:"GraphQL" namespace:"graphql"`
 
 	ConfigFile string `long:"config" description:"Path to configuration file"`
 	LogDir     string `long:"logdir" description:"Directory to log output."`
@@ -111,6 +122,11 @@ func getDefaultConfig() config {
 			DataDir: defaultDbPath,
 		},
 
+		GraphQL: &graphqlConfig{
+			ListenHost:       defaultGraphQLHost,
+			ListenPort:       defaultGraphQLPort,
+			SecureListenPort: defaultGraphQLSecurePort,
+		},
 		Backend: "emulator",
 		Emulator: &emulateRouterConfig{
 			ListenPort: defaultEmulateNetworkPort,
