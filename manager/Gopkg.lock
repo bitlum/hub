@@ -2,12 +2,6 @@
 
 
 [[projects]]
-  name = "github.com/AndrewSamokhvalov/go-spew"
-  packages = ["spew"]
-  revision = "346938d642f2ec3594ed81d874461961cd0faa76"
-  version = "v1.1.0"
-
-[[projects]]
   branch = "master"
   name = "github.com/beorn7/perks"
   packages = ["quantile"]
@@ -42,8 +36,7 @@
 [[projects]]
   name = "github.com/coreos/bbolt"
   packages = ["."]
-  revision = "583e8937c61f1af6513608ccc75c97b6abdf4ff9"
-  version = "v1.3.0"
+  revision = "4f5275f4ebbf6fe7cb772de987fa96ee674460a7"
 
 [[projects]]
   name = "github.com/davecgh/go-spew"
@@ -67,6 +60,24 @@
     "ptypes/struct"
   ]
   revision = "bbd03ef6da3a115852eaf24c8a1c46aeb39aa175"
+
+[[projects]]
+  name = "github.com/graphql-go/graphql"
+  packages = [
+    ".",
+    "gqlerrors",
+    "language/ast",
+    "language/kinds",
+    "language/lexer",
+    "language/location",
+    "language/parser",
+    "language/printer",
+    "language/source",
+    "language/typeInfo",
+    "language/visitor"
+  ]
+  revision = "1e23489041ba90a66f317fe0deccb236a2fff3cb"
+  version = "v0.7.5"
 
 [[projects]]
   name = "github.com/grpc-ecosystem/grpc-gateway"
@@ -215,6 +226,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f6934c12d0c4abfa674ad9e7fb30abd6b14ffdc169f41e4cb13594f64422a86c"
+  inputs-digest = "a239eca95ec674ea2055d2a50ecabbf0995cde3dc2997671b0fcc84f5ec6d5b8"
   solver-name = "gps-cdcl"
   solver-version = 1
