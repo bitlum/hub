@@ -125,9 +125,9 @@ class WatchLogRead(PatternMatchingEventHandler):
 
                 self.smart_log.append(dict_massege)
 
-                # print(self.smart_log)
+                print(self.smart_log)
 
-                print_massege(dict_massege)
+                # print_massege(dict_massege)
 
 
 def split_path_name(file_name):
