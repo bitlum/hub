@@ -15,6 +15,7 @@ import (
 	"github.com/bitlum/hub/manager/metrics/crypto"
 	"github.com/bitlum/hub/manager/metrics"
 	"github.com/bitlum/hub/manager/router"
+	"github.com/bitlum/hub/manager/router/broadcast"
 )
 
 // Config is a connector config.
@@ -94,7 +95,7 @@ type Router struct {
 
 	// broadcaster is used to broadcast router updates in the non-blocking
 	// manner. If one of receiver would not read te update write wouldn't stuck.
-	broadcaster router.Broadcaster
+	broadcaster *broadcast.Broadcaster
 }
 
 // Runtime check to ensure that Connector implements common.LightningConnector
@@ -109,7 +110,7 @@ func NewRouter(cfg *Config) (*Router, error) {
 	return &Router{
 		cfg:         cfg,
 		quit:        make(chan struct{}),
-		broadcaster: router.NewBroadcaster(),
+		broadcaster: broadcast.NewBroadcaster(),
 	}, nil
 }
 
@@ -310,8 +311,8 @@ func (r *Router) SetFee(fee uint64) error {
 // router, about fee changes etc.
 //
 // NOTE: Part of the router.Router interface.
-func (r *Router) RegisterOnUpdates() *router.Receiver {
-	return r.broadcaster.Listen()
+func (r *Router) RegisterOnUpdates() *broadcast.Receiver {
+	return r.broadcaster.Subscribe()
 }
 
 // Network returns the information about the current local network router
@@ -430,7 +431,6 @@ func (r *Router) PendingBalance() (router.BalanceUnit, error) {
 //
 // NOTE: Part of the router.Router interface.
 func (r *Router) AverageChangeUpdateDuration() (time.Duration, error) {
-
 	// TODO(andrew.shvv) Implement
 	// This hook would require us to make some channel update registry,
 	// probably this would require to write data in some persistent storage.

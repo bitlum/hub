@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 	"strconv"
+	"github.com/bitlum/hub/manager/router/broadcast"
 )
 
 // emulationNetwork is used to emulate activity of users in router local
@@ -20,7 +21,7 @@ type emulationNetwork struct {
 
 	channels     map[router.ChannelID]*router.Channel
 	users        map[router.UserID]*router.Channel
-	broadcaster  router.Broadcaster
+	broadcaster  *broadcast.Broadcaster
 	channelIndex uint64
 	grpcServer   *grpc.Server
 	errChan      chan error
@@ -35,7 +36,7 @@ func newEmulationNetwork(blockGeneration time.Duration) *emulationNetwork {
 	network := &emulationNetwork{
 		channels:        make(map[router.ChannelID]*router.Channel),
 		users:           make(map[router.UserID]*router.Channel),
-		broadcaster:     router.NewBroadcaster(),
+		broadcaster:     broadcast.NewBroadcaster(),
 		errChan:         make(chan error),
 		grpcServer:      grpcServer,
 		blockNotifier:   newBlockNotifier(blockGeneration),
@@ -230,7 +231,7 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 
 	// Subscribe on block notification and update channel when block is
 	// generated.
-	l := n.blockNotifier.Listen()
+	l := n.blockNotifier.Subscribe()
 
 	// Channel is able to operate only after block is generated.
 	// Send update that channel is opened only after it is unlocked.
@@ -293,7 +294,7 @@ func (n *emulationNetwork) CloseChannel(_ context.Context, req *CloseChannelRequ
 
 	// Subscribe on block notification and return funds when block is
 	// generated.
-	l := n.blockNotifier.Listen()
+	l := n.blockNotifier.Subscribe()
 
 	// Update router free balance only after block is mined and increase
 	// router balance on amount which we locked on our side in this channel.

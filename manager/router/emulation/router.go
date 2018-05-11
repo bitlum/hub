@@ -5,6 +5,7 @@ import (
 	"github.com/go-errors/errors"
 	"time"
 	"strconv"
+	"github.com/bitlum/hub/manager/router/broadcast"
 )
 
 // RouterEmulation is an implementation of router. Router interface which
@@ -104,7 +105,7 @@ func (r *RouterEmulation) OpenChannel(userID router.UserID,
 
 	// Subscribe on block notification and update channel when block is
 	// generated.
-	l := r.network.blockNotifier.Listen()
+	l := r.network.blockNotifier.Subscribe()
 
 	// Channel is able to operate only after block is generated.
 	// Send update that channel is opened only after it is unlocked.
@@ -166,7 +167,7 @@ func (r *RouterEmulation) CloseChannel(id router.ChannelID) error {
 
 			// Subscribe on block notification and return funds when block is
 			// generated.
-			l := r.network.blockNotifier.Listen()
+			l := r.network.blockNotifier.Subscribe()
 
 			// Update router free balance only after block is mined and increase
 			// router balance on amount which we locked on our side in this channel.
@@ -263,7 +264,7 @@ func (r *RouterEmulation) UpdateChannel(id router.ChannelID,
 
 	// Subscribe on block notification and return funds when block is
 	// generated.
-	l := r.network.blockNotifier.Listen()
+	l := r.network.blockNotifier.Subscribe()
 
 	// Update router free balance only after block is mined and increase
 	// router balance on amount which we locked on our side in this channel.
@@ -312,11 +313,11 @@ func (r *RouterEmulation) UpdateChannel(id router.ChannelID,
 // RegisterOnUpdates returns updates about router local network topology
 // changes, about attempts of propagating the payment through the
 // router, about fee changes etc.
-func (r *RouterEmulation) RegisterOnUpdates() *router.Receiver {
+func (r *RouterEmulation) RegisterOnUpdates() *broadcast.Receiver {
 	r.network.Lock()
 	defer r.network.Unlock()
 
-	return r.network.broadcaster.Listen()
+	return r.network.broadcaster.Subscribe()
 }
 
 // Network returns the information about the current local network router

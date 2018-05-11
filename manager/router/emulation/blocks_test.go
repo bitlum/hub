@@ -12,7 +12,7 @@ func TestNotification(t *testing.T) {
 	go notifier.Start()
 	defer notifier.Stop()
 
-	l := notifier.Listen()
+	l := notifier.Subscribe()
 	defer l.Stop()
 
 	select {
@@ -33,7 +33,7 @@ func TestSetDuration(t *testing.T) {
 		t.Fatalf("unable to set block gen duration: %v", err)
 	}
 
-	l := notifier.Listen()
+	l := notifier.Subscribe()
 	defer l.Stop()
 
 	select {
@@ -49,7 +49,7 @@ func TestMine(t *testing.T) {
 	go notifier.Start()
 	defer notifier.Stop()
 
-	l := notifier.Listen()
+	l := notifier.Subscribe()
 	defer l.Stop()
 
 	notifier.MineBlock()

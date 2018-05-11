@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"errors"
-	"github.com/bitlum/hub/manager/router"
+	"github.com/bitlum/hub/manager/router/broadcast"
 )
 
 // blockNotifier is used to mock the block generation notifications,
@@ -14,7 +14,7 @@ type blockNotifier struct {
 	sync.Mutex
 	quit chan struct{}
 
-	router.Broadcaster
+	*broadcast.Broadcaster
 
 	blockTicker *time.Ticker
 	commands    chan interface{}
@@ -22,7 +22,7 @@ type blockNotifier struct {
 
 func newBlockNotifier(blockGenDuration time.Duration) *blockNotifier {
 	return &blockNotifier{
-		Broadcaster: router.NewBroadcaster(),
+		Broadcaster: broadcast.NewBroadcaster(),
 		blockTicker: time.NewTicker(blockGenDuration),
 		quit:        make(chan struct{}),
 		commands:    make(chan interface{}, 1),

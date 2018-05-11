@@ -8,6 +8,7 @@ import (
 	"time"
 	"google.golang.org/grpc"
 	"github.com/go-errors/errors"
+	"github.com/bitlum/hub/manager/router/broadcast"
 )
 
 func TestStartNetwork(t *testing.T) {
@@ -32,7 +33,7 @@ func TestEmulationNetwork(t *testing.T) {
 
 	// This subscription is used to understand when new block has been
 	// generated.
-	l := r.network.blockNotifier.Listen()
+	l := r.network.blockNotifier.Subscribe()
 
 	if _, err := r.network.OpenChannel(context.Background(), &OpenChannelRequest{
 		UserId:       "1",
@@ -333,7 +334,7 @@ func TestSimpleStrategy(t *testing.T) {
 
 }
 
-func checkUpdate(receiver *router.Receiver, obj interface{}) error {
+func checkUpdate(receiver *broadcast.Receiver, obj interface{}) error {
 	desiredType := reflect.TypeOf(obj)
 
 	select {

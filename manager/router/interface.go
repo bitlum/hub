@@ -1,6 +1,9 @@
 package router
 
-import "time"
+import (
+	"time"
+	"github.com/bitlum/hub/manager/router/broadcast"
+)
 
 // Router aka payment provider, aka hub, aka lightning network node.
 // This interface gives as unified way of managing different implementations of
@@ -30,7 +33,7 @@ type Router interface {
 	// RegisterOnUpdates returns register which returns updates about router
 	// local network topology changes, about attempts of propagating the payment
 	// through the router, about fee changes etc.
-	RegisterOnUpdates() *Receiver
+	RegisterOnUpdates() *broadcast.Receiver
 
 	// Network returns the information about the current local network router
 	// topology.
