@@ -58,8 +58,10 @@ class TransactionThread(Thread):
 
 def sent_transactions(stub, transstream):
     time_init = time.time()
-    for trans in transstream:
-        TransactionThread(stub, time.time() - time_init, trans).start()
+    # for i in range(40):
+    for i in range(len(transstream)):
+        TransactionThread(stub, time.time() - time_init,
+                          transstream[i]).start()
 
 
 def actrpc_gen(file_name_inlet):
@@ -83,7 +85,9 @@ def actrpc_gen(file_name_inlet):
 
     channels_id = open_channels(users_id, user_balances, stub)
 
+    time.sleep(1)
     acthubrpc_gen(file_name_inlet='../../core/rpc/acthubrpc_inlet.json')
+    time.sleep(2)
 
     sent_transactions(stub, transstream)
 
