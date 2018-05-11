@@ -110,5 +110,5 @@ enum ChannelChangeType {
 
     // Udpated is used when one of the participants decides to update its
     // channel balance.
-    udpated = 5;
+    updated = 5;
 }
