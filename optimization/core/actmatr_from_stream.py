@@ -35,7 +35,7 @@ def actmatr_calc(file_name_inlet):
     timematr_calc = [[[] for _ in range(len(users_id_list_calc))] for _ in
                      range(len(users_id_list_calc))]
 
-    transmatr_calc = [[[] for _ in range(len(users_id_list_calc))] for _ in
+    amountmatr_calc = [[[] for _ in range(len(users_id_list_calc))] for _ in
                       range(len(users_id_list_calc))]
 
     for i in range(len(transstream)):
@@ -43,7 +43,7 @@ def actmatr_calc(file_name_inlet):
             users_ind_calc[transstream[i]["payment"]['receiver']]].append(
             1.E-9 * (transstream[i]['time'] - transstream[0]['time']))
 
-        transmatr_calc[users_ind_calc[transstream[i]["payment"]['sender']]][
+        amountmatr_calc[users_ind_calc[transstream[i]["payment"]['sender']]][
             users_ind_calc[transstream[i]["payment"]['receiver']]].append(
             transstream[i]["payment"]['amount'])
 
@@ -75,8 +75,8 @@ def actmatr_calc(file_name_inlet):
 
     # write transaction size sequence matrix into a file
 
-    with open(inlet['transmatr_calc_file_name'], 'w') as f:
-        json.dump({'transmatr_calc': transmatr_calc}, f, sort_keys=True,
+    with open(inlet['amountmatr_calc_file_name'], 'w') as f:
+        json.dump({'amountmatr_calc': amountmatr_calc}, f, sort_keys=True,
                   indent=4 * ' ')
 
 

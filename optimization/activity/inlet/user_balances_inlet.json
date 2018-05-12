@@ -1,5 +1,5 @@
 {
     "user_balances_mult": 1.2,
     "user_balances_file_name": "outlet/user_balances.json",
-    "transmatr_file_name": "outlet/transmatr.json"
+    "amountmatr_file_name": "outlet/amountmatr.json"
 }

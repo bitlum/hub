@@ -1,6 +1,6 @@
 {
     "timematr_file_name": "outlet/timematr.json",
-    "transmatr_file_name": "outlet/transmatr.json",
+    "amountmatr_file_name": "outlet/amountmatr.json",
     "transstream_file_name": "outlet/transstream.json",
     "users_id_file_name": "outlet/users_id.json"
 }

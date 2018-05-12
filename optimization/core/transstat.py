@@ -25,7 +25,7 @@ class TransStat(TransSample):
         self.smart_period = [[SmartSample(period) for period in periodvect] for
                              periodvect in self.periodmatr]
         self.smart_amount = [[SmartSample(amount) for amount in amountvect] for
-                             amountvect in self.transmatr]
+                             amountvect in self.amountmatr]
 
         for i in range(self.users_number):
             for j in range(self.users_number):

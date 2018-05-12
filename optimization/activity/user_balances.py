@@ -17,16 +17,16 @@ def user_balances_gen(file_name_inlet):
 
     user_balances_mult = inlet['user_balances_mult']
 
-    with open(inlet['transmatr_file_name']) as f:
-        transmatr = json.load(f)['transmatr']
+    with open(inlet['amountmatr_file_name']) as f:
+        amountmatr = json.load(f)['amountmatr']
 
     balances = dict()
-    for i in range(len(transmatr)):
+    for i in range(len(amountmatr)):
         sum = 0.
-        for j in range(len(transmatr[i])):
-            if len(transmatr[i][j]) > 0:
-                for k in range(len(transmatr[i][j])):
-                    sum += user_balances_mult * transmatr[i][j][k]
+        for j in range(len(amountmatr[i])):
+            if len(amountmatr[i][j]) > 0:
+                for k in range(len(amountmatr[i][j])):
+                    sum += user_balances_mult * amountmatr[i][j][k]
         balances[str(i)] = round(sum)
 
     # write the vector of locked balances into a file

@@ -20,8 +20,8 @@ def transstream_gen(file_name_inlet):
     with open(inlet['timematr_file_name']) as f:
         timematr = json.load(f)['timematr']
 
-    with open(inlet['transmatr_file_name']) as f:
-        transmatr = json.load(f)['transmatr']
+    with open(inlet['amountmatr_file_name']) as f:
+        amountmatr = json.load(f)['amountmatr']
 
     transstream_unsort = []
     for i in range(len(timematr)):
@@ -32,7 +32,7 @@ def transstream_gen(file_name_inlet):
                         dict(time=1.E9 * timematr[i][j][k],
                              payment=dict(sender=users_id[str(i)],
                                           receiver=users_id[str(j)],
-                                          amount=round(transmatr[i][j][k]))))
+                                          amount=round(amountmatr[i][j][k]))))
 
     def take_time(trans):
         return trans['time']

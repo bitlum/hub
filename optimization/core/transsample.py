@@ -14,14 +14,14 @@ class TransSample(UsersSample):
     def __init__(self, transstream):
         super().__init__(transstream)
         self.timematr = list()
-        self.transmatr = list()
+        self.amountmatr = list()
         self.periodmatr = list()
         self.trans_number = int()
 
     def calc_matr_data(self):
 
         self.timematr.clear()
-        self.transmatr.clear()
+        self.amountmatr.clear()
         self.periodmatr.clear()
 
         self.trans_number = len(self.transstream)
@@ -29,7 +29,7 @@ class TransSample(UsersSample):
         self.timematr = [[list() for _ in range(self.users_number)] for _ in
                          range(self.users_number)]
 
-        self.transmatr = [[list() for _ in range(self.users_number)] for _ in
+        self.amountmatr = [[list() for _ in range(self.users_number)] for _ in
                           range(self.users_number)]
 
         for i in range(len(self.transstream)):
@@ -41,7 +41,7 @@ class TransSample(UsersSample):
             self.timematr[sender][receiver].append(1.E-9 * delta)
 
             amount = payment['amount']
-            self.transmatr[sender][receiver].append(amount)
+            self.amountmatr[sender][receiver].append(amount)
 
         self.periodmatr = copy.deepcopy(self.timematr)
 
@@ -74,7 +74,7 @@ if __name__ == '__main__':
     print()
 
     print('trans_number ', trans_sample.trans_number)
-    print('transmatr ', trans_sample.transmatr)
+    print('amountmatr ', trans_sample.amountmatr)
     print('timematr ', trans_sample.timematr)
     print('periodmatr ', trans_sample.periodmatr)
     print()

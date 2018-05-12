@@ -17,13 +17,13 @@ def flows_calc(file_name_inlet):
     with open(file_name_inlet) as f:
         inlet = json.load(f)
 
-    with open(inlet['transmatr_mean_calc_file_name']) as f:
-        transmatr_mean_calc = json.load(f)['transmatr_mean_calc']
+    with open(inlet['amountmatr_mean_calc_file_name']) as f:
+        amountmatr_mean_calc = json.load(f)['amountmatr_mean_calc']
 
     with open(inlet['periodmatr_mean_calc_file_name']) as f:
         periodmatr_mean_calc = json.load(f)['periodmatr_mean_calc']
 
-    flowmatr_calc = copy.deepcopy(transmatr_mean_calc)
+    flowmatr_calc = copy.deepcopy(amountmatr_mean_calc)
 
     for i in range(len(flowmatr_calc)):
         for j in range(len(flowmatr_calc[i])):

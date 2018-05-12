@@ -1,8 +1,0 @@
-{
-    "mean_stdev_size": 0.8,
-    "stdev_stdev_size": 0.8,
-    "flowmatr_file_name": "outlet/flowmatr.json",
-    "periodmatr_mean_file_name": "outlet/periodmatr_mean.json",
-    "sizematr_mean_file_name": "outlet/sizematr_mean.json",
-    "sizematr_stdev_file_name": "outlet/sizematr_stdev.json"
-}
