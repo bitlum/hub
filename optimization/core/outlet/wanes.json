@@ -2,7 +2,7 @@
     "wanes": {
         "0": false,
         "1": false,
-        "2": true,
-        "3": false
+        "2": false,
+        "3": true
     }
 }
