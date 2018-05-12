@@ -6,7 +6,7 @@ current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_path, '../'))
 
 
-class UsersStat:
+class UsersSample:
     def __init__(self, transstream):
         self.transstream = transstream
         self.users_id = dict()
@@ -41,7 +41,7 @@ if __name__ == '__main__':
     with open(inlet['transstream_file_name']) as f:
         transstream = json.load(f)['transstream']
 
-    trans_stat = UsersStat(transstream)
+    trans_stat = UsersSample(transstream)
     trans_stat.calc_users_data()
 
     print('users_number ', trans_stat.users_number)

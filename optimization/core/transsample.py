@@ -3,13 +3,13 @@ import os
 import copy
 import json
 
-from core.usersstat import UsersStat
+from core.userssample import UsersSample
 
 current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_path, '../'))
 
 
-class TransStat(UsersStat):
+class TransSample(UsersSample):
 
     def __init__(self, transstream):
         super().__init__(transstream)
@@ -65,7 +65,7 @@ if __name__ == '__main__':
     with open(inlet['transstream_file_name']) as f:
         transstream = json.load(f)['transstream']
 
-    trans_stat = TransStat(transstream)
+    trans_stat = TransSample(transstream)
     trans_stat.calc_stat()
 
     print('users_number ', trans_stat.users_number)
