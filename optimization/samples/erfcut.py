@@ -124,7 +124,7 @@ class Method(Enum):
     newton = 2
 
 
-def erf_cut_calc(probability, mean, stdev, method, accuracy):
+def erfcut_calc(probability, mean, stdev, method, accuracy):
     x_init = mean
     shooting_step = stdev * 0.1
     if method == Method.shooting:
@@ -146,8 +146,8 @@ if __name__ == '__main__':
 
     print('shooting_method: ',
           '{:.3f}'.format(
-              erf_cut_calc(prob_, mean_, stdev_, Method.shooting, accur_)))
+              erfcut_calc(prob_, mean_, stdev_, Method.shooting, accur_)))
 
     print('newton_method: ',
           '{:.3f}'.format(
-              erf_cut_calc(prob_, mean_, stdev_, Method.newton, accur_)))
+              erfcut_calc(prob_, mean_, stdev_, Method.newton, accur_)))

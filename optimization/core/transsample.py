@@ -26,11 +26,11 @@ class TransSample(UsersSample):
 
         self.trans_number = len(self.transstream)
 
-        matr_template = [[list() for _ in range(self.users_number)] for _ in
+        self.timematr = [[list() for _ in range(self.users_number)] for _ in
                          range(self.users_number)]
 
-        self.timematr = copy.deepcopy(matr_template)
-        self.transmatr = copy.deepcopy(matr_template)
+        self.transmatr = [[list() for _ in range(self.users_number)] for _ in
+                          range(self.users_number)]
 
         for i in range(len(self.transstream)):
             payment = self.transstream[i]["payment"]
@@ -51,7 +51,7 @@ class TransSample(UsersSample):
                     for i in range(len(payments) - 1, 0, -1):
                         payments[i] -= payments[i - 1]
 
-    def calc_stat(self):
+    def calc_data(self):
         self.calc_users_data()
         self.calc_matr_data()
 
@@ -65,16 +65,16 @@ if __name__ == '__main__':
     with open(inlet['transstream_file_name']) as f:
         transstream = json.load(f)['transstream']
 
-    trans_stat = TransSample(transstream)
-    trans_stat.calc_stat()
+    trans_sample = TransSample(transstream)
+    trans_sample.calc_data()
 
-    print('users_number ', trans_stat.users_number)
-    print('users_id ', trans_stat.users_id)
-    print('users_ind ', trans_stat.users_ind)
+    print('users_number ', trans_sample.users_number)
+    print('users_id ', trans_sample.users_id)
+    print('users_ind ', trans_sample.users_ind)
     print()
 
-    print('trans_number ', trans_stat.trans_number)
-    print('transmatr ', trans_stat.transmatr)
-    print('timematr ', trans_stat.timematr)
-    print('periodmatr ', trans_stat.periodmatr)
+    print('trans_number ', trans_sample.trans_number)
+    print('transmatr ', trans_sample.transmatr)
+    print('timematr ', trans_sample.timematr)
+    print('periodmatr ', trans_sample.periodmatr)
     print()

@@ -24,29 +24,25 @@ def actmatr_smart_gen(file_name_inlet):
     with open(inlet['transmatr_calc_file_name']) as f:
         transmatr_calc = json.load(f)['transmatr_calc']
 
-    periodmatr_smart = [
-        [SmartSample(periodmatr_calc[i][j],
-                     inlet['period_cut_frac']) if len(
-            periodmatr_calc[i][j]) > 0 else None for j in
-         range(len(periodmatr_calc[i]))] for i in range(len(periodmatr_calc))]
+    periodmatr_smart = [[SmartSample(period) for period in periodvect] for
+                        periodvect in periodmatr_calc]
 
-    transmatr_smart = [
-        [SmartSample(transmatr_calc[i][j],
-                     inlet['trans_cut_frac']) if len(
-            transmatr_calc[i][j]) > 0 else None for j in
-         range(len(transmatr_calc[i]))] for i in range(len(transmatr_calc))]
+    transmatr_smart = [[SmartSample(amount) for amount in amountvect] for
+                       amountvect in transmatr_calc]
 
-    periodmatr_mean_calc = [
-        [SmartSample(periodmatr_calc[i][j],
-                     inlet['period_cut_frac']).mean if len(
-            periodmatr_calc[i][j]) > 0 else None for j in
-         range(len(periodmatr_calc[i]))] for i in range(len(periodmatr_calc))]
+    for period_vect in periodmatr_smart:
+        for period in period_vect:
+            period.calc_stat(inlet['period_cut_frac'])
 
-    transmatr_mean_calc = [
-        [SmartSample(transmatr_calc[i][j],
-                     inlet['trans_cut_frac']).mean if len(
-            transmatr_calc[i][j]) > 0 else None for j in
-         range(len(transmatr_calc[i]))] for i in range(len(transmatr_calc))]
+    for amount_vect in transmatr_smart:
+        for amount in amount_vect:
+            amount.calc_stat(inlet['trans_cut_frac'])
+
+    periodmatr_mean_calc = [[period.mean for period in periodvect] for
+                            periodvect in periodmatr_smart]
+
+    transmatr_mean_calc = [[amount.mean for amount in amountvect] for
+                           amountvect in transmatr_smart]
 
     # write the statistical characteristics matrices into files
 
