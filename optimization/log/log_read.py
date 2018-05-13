@@ -8,7 +8,7 @@ sys.path.append(os.path.join(current_path, '../'))
 
 from samples.protolog import ProtoLog
 from samples.smartlog import SmartLog
-from watcher.watchlogread import WatchLogRead
+from watcher.watcher import Watcher
 from watcher.protologutills import split_path_name
 
 proto_log = ProtoLog()
@@ -17,7 +17,7 @@ smart_log = SmartLog()
 log_file = '/Users/bigelk/data/tmp/manager/test.log'
 
 obser = Observer()
-watch_log_read = WatchLogRead(
+watch_log_read = Watcher(
     split_path_name(log_file)['path'] + split_path_name(log_file)['name'],
     proto_log, smart_log)
 obser.schedule(watch_log_read, split_path_name(log_file)['path'])
