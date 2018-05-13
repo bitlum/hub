@@ -16,14 +16,15 @@ class TransStat(TransSample):
 
         self.smart_period = list()
         self.smart_amount = list()
-        self.period_mean = list()
-        self.amount_mean = list()
 
     def calc_stat(self, prob_cut=0.5):
         self.calc_data()
 
+        self.smart_period.clear()
         self.smart_period = [[SmartSample(period) for period in periodvect] for
                              periodvect in self.periodmatr]
+
+        self.smart_amount.clear()
         self.smart_amount = [[SmartSample(amount) for amount in amountvect] for
                              amountvect in self.amountmatr]
 
