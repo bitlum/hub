@@ -35,12 +35,7 @@ class TransStat(TransSample):
 
 
 if __name__ == '__main__':
-    file_inlet = 'inlet/actmatr_from_stream_inlet.json'
-
-    with open(file_inlet) as f:
-        inlet = json.load(f)
-
-    with open(inlet['transstream_file_name']) as f:
+    with open('../activity/outlet/transstream.json') as f:
         transstream = json.load(f)['transstream']
 
     prob_cut = 0.5

@@ -9,7 +9,7 @@
 	"time_p": 0.003,
 	"alpha_p": 0.1,
 	"alpha_T": 2,
-	"router_balances_mult": 1.2,
+	"router_balances_mult": 1,
 	"freqs_file_name": "outlet/freqs.json",
 	"wanes_file_name": "outlet/wanes.json",
 	"router_balances_file_name": "outlet/router_balances.json"

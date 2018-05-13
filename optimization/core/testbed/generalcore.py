@@ -2,12 +2,12 @@ import sys
 import os
 
 current_path = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(current_path, '../'))
+sys.path.append(os.path.join(current_path, '../../'))
 
-from core.actmatr_from_stream import actmatr_calc
-from core.actmatr_smart import actmatr_smart_gen
-from core.flows import flows_calc
-from core.router_balances import router_balance_calc
+from core.testbed.actmatr_from_stream import actmatr_calc
+from core.testbed.actmatr_smart import actmatr_smart_gen
+from core.testbed.flows import flows_calc
+from core.testbed.router_balances import router_balance_calc
 
 # Call all the functions of core optimization.
 

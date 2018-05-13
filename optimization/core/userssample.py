@@ -33,12 +33,7 @@ class UsersSample:
 
 
 if __name__ == '__main__':
-    file_inlet = 'inlet/actmatr_from_stream_inlet.json'
-
-    with open(file_inlet) as f:
-        inlet = json.load(f)
-
-    with open(inlet['transstream_file_name']) as f:
+    with open('../activity/outlet/transstream.json') as f:
         transstream = json.load(f)['transstream']
 
     trans_stat = UsersSample(transstream)
@@ -48,5 +43,3 @@ if __name__ == '__main__':
     print('users_id ', trans_stat.users_id)
     print('users_ind ', trans_stat.users_ind)
     print()
-
-

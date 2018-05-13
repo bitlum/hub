@@ -30,7 +30,7 @@ class TransSample(UsersSample):
                          range(self.users_number)]
 
         self.amountmatr = [[list() for _ in range(self.users_number)] for _ in
-                          range(self.users_number)]
+                           range(self.users_number)]
 
         for i in range(len(self.transstream)):
             payment = self.transstream[i]["payment"]
@@ -57,12 +57,7 @@ class TransSample(UsersSample):
 
 
 if __name__ == '__main__':
-    file_inlet = 'inlet/actmatr_from_stream_inlet.json'
-
-    with open(file_inlet) as f:
-        inlet = json.load(f)
-
-    with open(inlet['transstream_file_name']) as f:
+    with open('../activity/outlet/transstream.json') as f:
         transstream = json.load(f)['transstream']
 
     trans_sample = TransSample(transstream)

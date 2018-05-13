@@ -5,7 +5,7 @@ import sys
 import os
 
 current_path = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(current_path, '../'))
+sys.path.append(os.path.join(current_path, '../../'))
 
 
 # Calculation of user id list and transaction size sequence matrix and

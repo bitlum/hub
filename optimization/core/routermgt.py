@@ -123,7 +123,7 @@ class RouterMgt(FlowStat):
 
 
 if __name__ == '__main__':
-    file_inlet = 'inlet/router_balances_inlet.json'
+    file_inlet = 'inlet/routermgt_inlet.json'
 
     with open(file_inlet) as f:
         inlet = json.load(f)

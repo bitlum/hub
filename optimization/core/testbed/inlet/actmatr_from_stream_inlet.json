@@ -3,5 +3,5 @@
     "timematr_calc_file_name": "outlet/timematr_calc.json",
     "periodmatr_calc_file_name": "outlet/periodmatr_calc.json",
     "amountmatr_calc_file_name": "outlet/amountmatr_calc.json",
-    "transstream_file_name": "../activity/outlet/transstream.json"
+    "transstream_file_name": "../../activity/outlet/transstream.json"
 }
