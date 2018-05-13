@@ -1,57 +1,14 @@
 from watchdog.events import PatternMatchingEventHandler
 import datetime
-from sortedcontainers import SortedDict
-
 import sys
 import os
+import protobuffer.log_pb2 as proto
+from protobuffer.protobuf3_to_dict_patch import protobuf_to_dict
 
 current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_path, '../'))
 
-import protobuffer.log_pb2 as proto
-
-from protobuffer.protobuf3_to_dict_patch import protobuf_to_dict
-
-
-def print_massege(massege, nesting=-4):
-    if type(massege) == dict:
-        print('')
-        nesting += 4
-
-        keys = list(SortedDict(massege).keys())
-        for key in keys:
-            if key == 'time':
-                keys.remove(key)
-                keys.insert(0, key)
-        for key in keys:
-            if key == 'date':
-                keys.remove(key)
-                keys.insert(0, key)
-        for key in keys:
-            if key == 'message_type':
-                keys.remove(key)
-                keys.insert(0, key)
-
-        for key in keys:
-            print(nesting * ' ', end='')
-            print(key, end=': ')
-
-            if massege[key] == 0:
-                if key == 'type':
-                    massege[key] = 'openning'
-                elif key == 'status':
-                    massege[key] = 'null'
-
-            print_massege(massege[key], nesting)
-    elif type(massege) == list:
-        print('')
-        nesting += 4
-        for ind in range(len(massege)):
-            print(nesting * ' ', end='')
-            print(ind, end=': ')
-            print_massege(massege[ind], nesting)
-    else:
-        print(massege)
+from watcher.protologutills import print_massege, split_path_name
 
 
 class WatchLogRead(PatternMatchingEventHandler):
@@ -110,7 +67,6 @@ class WatchLogRead(PatternMatchingEventHandler):
                 self.pos_cur += self.size_message_cur
 
                 # TODO handle defaults:
-
                 dict_massege = protobuf_to_dict(
                     self.proto_log.messages[-1],
                     use_enum_labels=True,
@@ -125,18 +81,6 @@ class WatchLogRead(PatternMatchingEventHandler):
 
                 self.smart_log.append(dict_massege)
 
-                print(self.smart_log)
+                # print(self.smart_log)
 
-                # print_massege(dict_massege)
-
-
-def split_path_name(file_name):
-    split = 0
-    for i in range(len(file_name)):
-        if file_name[-1 - i] == '/':
-            split = - i
-            break
-    if split == 0:
-        return {'path': './', 'name': file_name}
-    else:
-        return {'path': file_name[:split], 'name': file_name[split:]}
+                print_massege(dict_massege)

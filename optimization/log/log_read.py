@@ -6,9 +6,10 @@ import os
 current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_path, '../'))
 
-from samples.protolog import *
-from samples.smartlog import *
-from watcher.watchlogread import *
+from samples.protolog import ProtoLog
+from samples.smartlog import SmartLog
+from watcher.watchlogread import WatchLogRead
+from watcher.protologutills import split_path_name
 
 proto_log = ProtoLog()
 smart_log = SmartLog()
