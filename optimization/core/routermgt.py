@@ -121,6 +121,9 @@ class RouterMgt(FlowStat):
                 self.wanes[i] = True
                 self.freqs[i] = self.freqs_in[i]
 
+        for i in range(self.users_number):
+            self.balances[i] = round(self.balances[i])
+
 
 if __name__ == '__main__':
     file_inlet = 'inlet/routermgt_inlet.json'
