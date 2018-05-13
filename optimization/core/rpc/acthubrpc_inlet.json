@@ -1,4 +1,4 @@
 {
     "users_id_file_name": "../../activity/outlet/users_id.json",
-    "router_balances_file_name": "../../core/outlet/router_balances.json"
+    "router_balances_file_name": "../../core/testbed/outlet/router_balances.json"
 }
