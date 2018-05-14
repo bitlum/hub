@@ -12,8 +12,8 @@ sys.path.append(os.path.join(current_path, '../'))
 
 class RouterMgt(FlowStat):
 
-    def __init__(self, transstream, setts):
-        super().__init__(transstream)
+    def __init__(self, transseq, setts):
+        super().__init__(transseq)
         self.setts = setts
         self.balances = list()
         self.idle_lim = list()
@@ -140,10 +140,10 @@ if __name__ == '__main__':
     router_setts.set_alpha_p(inlet['alpha_p'])
     router_setts.set_alpha_T(inlet['alpha_T'])
 
-    with open('../activity/outlet/transstream.json') as f:
-        transstream = json.load(f)['transstream']
+    with open('../activity/outlet/transseq.json') as f:
+        transseq = json.load(f)['transseq']
 
-    router_mgt = RouterMgt(transstream, router_setts)
+    router_mgt = RouterMgt(transseq, router_setts)
     router_mgt.calc_parameters()
 
     print('balances ', router_mgt.balances)

@@ -7,18 +7,18 @@ sys.path.append(os.path.join(current_path, '../'))
 
 
 class UsersSample:
-    def __init__(self, transstream):
-        self.transstream = transstream
+    def __init__(self, transseq):
+        self.transseq = transseq
         self.users_id = dict()
         self.users_ind = dict()
         self.users_number = int()
 
     def calc_users_data(self):
         users_id_list = []
-        for i in range(len(self.transstream)):
-            users_id_list.append(self.transstream[i]["payment"]['sender'])
+        for i in range(len(self.transseq)):
+            users_id_list.append(self.transseq[i]["payment"]['sender'])
             users_id_list.append(
-                self.transstream[i]["payment"]['receiver'])
+                self.transseq[i]["payment"]['receiver'])
         users_id_list = sorted(list(set(users_id_list)))
 
         self.users_number = len(users_id_list)
@@ -33,10 +33,10 @@ class UsersSample:
 
 
 if __name__ == '__main__':
-    with open('../activity/outlet/transstream.json') as f:
-        transstream = json.load(f)['transstream']
+    with open('../activity/outlet/transseq.json') as f:
+        transseq = json.load(f)['transseq']
 
-    trans_stat = UsersSample(transstream)
+    trans_stat = UsersSample(transseq)
     trans_stat.calc_users_data()
 
     print('users_number ', trans_stat.users_number)

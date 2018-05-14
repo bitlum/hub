@@ -17,13 +17,13 @@ def actmatr_calc(file_name_inlet):
     with open(file_name_inlet) as f:
         inlet = json.load(f)
 
-    with open(inlet['transstream_file_name']) as f:
-        transstream = json.load(f)['transstream']
+    with open(inlet['transseq_file_name']) as f:
+        transseq = json.load(f)['transseq']
 
     users_id_rep_calc = []
-    for i in range(len(transstream)):
-        users_id_rep_calc.append(transstream[i]["payment"]['sender'])
-        users_id_rep_calc.append(transstream[i]["payment"]['receiver'])
+    for i in range(len(transseq)):
+        users_id_rep_calc.append(transseq[i]["payment"]['sender'])
+        users_id_rep_calc.append(transseq[i]["payment"]['receiver'])
     users_id_list_calc = sorted(list(set(users_id_rep_calc)))
 
     user_id_calc = {i: users_id_list_calc[i] for i in
@@ -38,14 +38,14 @@ def actmatr_calc(file_name_inlet):
     amountmatr_calc = [[[] for _ in range(len(users_id_list_calc))] for _ in
                       range(len(users_id_list_calc))]
 
-    for i in range(len(transstream)):
-        timematr_calc[users_ind_calc[transstream[i]["payment"]['sender']]][
-            users_ind_calc[transstream[i]["payment"]['receiver']]].append(
-            1.E-9 * (transstream[i]['time'] - transstream[0]['time']))
+    for i in range(len(transseq)):
+        timematr_calc[users_ind_calc[transseq[i]["payment"]['sender']]][
+            users_ind_calc[transseq[i]["payment"]['receiver']]].append(
+            1.E-9 * (transseq[i]['time'] - transseq[0]['time']))
 
-        amountmatr_calc[users_ind_calc[transstream[i]["payment"]['sender']]][
-            users_ind_calc[transstream[i]["payment"]['receiver']]].append(
-            transstream[i]["payment"]['amount'])
+        amountmatr_calc[users_ind_calc[transseq[i]["payment"]['sender']]][
+            users_ind_calc[transseq[i]["payment"]['receiver']]].append(
+            transseq[i]["payment"]['amount'])
 
     periodmatr_calc = copy.deepcopy(timematr_calc)
 
@@ -81,4 +81,4 @@ def actmatr_calc(file_name_inlet):
 
 
 if __name__ == '__main__':
-    actmatr_calc(file_name_inlet='inlet/actmatr_from_stream_inlet.json')
+    actmatr_calc(file_name_inlet='inlet/actmatr_transseq_inlet.json')

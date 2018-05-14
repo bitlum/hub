@@ -56,12 +56,12 @@ class TransactionThread(Thread):
         print(self.request)
 
 
-def sent_transactions(stub, transstream):
+def sent_transactions(stub, transseq):
     time_init = time.time()
     # for i in range(40):
-    for i in range(len(transstream)):
+    for i in range(len(transseq)):
         TransactionThread(stub, time.time() - time_init,
-                          transstream[i]).start()
+                          transseq[i]).start()
 
 
 def actrpc_gen(file_name_inlet):
@@ -76,8 +76,8 @@ def actrpc_gen(file_name_inlet):
     with open(inlet['user_balances_file_name']) as f:
         user_balances = json.load(f)['balances']
 
-    with open(inlet['transstream_file_name']) as f:
-        transstream = json.load(f)['transstream']
+    with open(inlet['transseq_file_name']) as f:
+        transseq = json.load(f)['transseq']
 
     stub = create_stub()
 
@@ -89,7 +89,7 @@ def actrpc_gen(file_name_inlet):
     acthubrpc_gen(file_name_inlet='../../core/rpc/acthubrpc_inlet.json')
     time.sleep(2)
 
-    sent_transactions(stub, transstream)
+    sent_transactions(stub, transseq)
 
     with open(inlet['channels_id_file_name'], 'w') as f:
         json.dump({'channels_id': channels_id}, f,

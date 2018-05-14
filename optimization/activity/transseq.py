@@ -10,7 +10,7 @@ sys.path.append(os.path.join(current_path, '../'))
 # Formation of a general time-ordered transaction stream. Transaction stream
 # element structure: time, sender_id, receiver_id, trans.
 
-def transstream_gen(file_name_inlet):
+def transseq_gen(file_name_inlet):
     with open(file_name_inlet) as f:
         inlet = json.load(f)
 
@@ -37,14 +37,14 @@ def transstream_gen(file_name_inlet):
     def take_time(trans):
         return trans['time']
 
-    transstream = sorted(transstream_unsort, key=take_time)
+    transseq = sorted(transstream_unsort, key=take_time)
 
     # write a general time-ordered transaction stream into a file
 
-    with open(inlet['transstream_file_name'], 'w') as f:
-        json.dump({'transstream': transstream}, f, sort_keys=True,
+    with open(inlet['transseq_file_name'], 'w') as f:
+        json.dump({'transseq': transseq}, f, sort_keys=True,
                   indent=4 * ' ')
 
 
 if __name__ == '__main__':
-    transstream_gen(file_name_inlet='inlet/transstream_inlet.json')
+    transseq_gen(file_name_inlet='inlet/transseq_inlet.json')

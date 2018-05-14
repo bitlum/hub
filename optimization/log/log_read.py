@@ -28,7 +28,7 @@ router_setts.set_alpha_T(inlet['alpha_T'])
 
 smart_log = SmartLog()
 
-router_mgt = RouterMgt(smart_log.payments, router_setts)
+router_mgt = RouterMgt(smart_log.transseq, router_setts)
 
 log_file = '/Users/bigelk/data/tmp/manager/test.log'
 

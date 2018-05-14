@@ -10,8 +10,8 @@ sys.path.append(os.path.join(current_path, '../'))
 
 class FlowStat(TransStat):
 
-    def __init__(self, transstream):
-        super().__init__(transstream)
+    def __init__(self, transseq):
+        super().__init__(transseq)
         self.flowmatr = list()
         self.flowvect_out = list()
         self.flowvect_in = list()
@@ -44,12 +44,12 @@ class FlowStat(TransStat):
 
 
 if __name__ == '__main__':
-    with open('../activity/outlet/transstream.json') as f:
-        transstream = json.load(f)['transstream']
+    with open('../activity/outlet/transseq.json') as f:
+        transseq = json.load(f)['transseq']
 
     prob_cut = 0.5
 
-    flow_stat = FlowStat(transstream)
+    flow_stat = FlowStat(transseq)
     flow_stat.calc_flow(prob_cut)
 
     print('flowmatr:')

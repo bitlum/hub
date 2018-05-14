@@ -11,8 +11,8 @@ sys.path.append(os.path.join(current_path, '../'))
 
 class TransSample(UsersSample):
 
-    def __init__(self, transstream):
-        super().__init__(transstream)
+    def __init__(self, transseq):
+        super().__init__(transseq)
         self.timematr = list()
         self.amountmatr = list()
         self.periodmatr = list()
@@ -24,7 +24,7 @@ class TransSample(UsersSample):
         self.amountmatr.clear()
         self.periodmatr.clear()
 
-        self.trans_number = len(self.transstream)
+        self.trans_number = len(self.transseq)
 
         self.timematr = [[list() for _ in range(self.users_number)] for _ in
                          range(self.users_number)]
@@ -32,12 +32,12 @@ class TransSample(UsersSample):
         self.amountmatr = [[list() for _ in range(self.users_number)] for _ in
                            range(self.users_number)]
 
-        for i in range(len(self.transstream)):
-            payment = self.transstream[i]["payment"]
+        for i in range(len(self.transseq)):
+            payment = self.transseq[i]["payment"]
             sender = self.users_ind[payment['sender']]
             receiver = self.users_ind[payment['receiver']]
 
-            delta = self.transstream[i]['time'] - self.transstream[0]['time']
+            delta = self.transseq[i]['time'] - self.transseq[0]['time']
             self.timematr[sender][receiver].append(1.E-9 * delta)
 
             amount = payment['amount']
@@ -57,10 +57,10 @@ class TransSample(UsersSample):
 
 
 if __name__ == '__main__':
-    with open('../activity/outlet/transstream.json') as f:
-        transstream = json.load(f)['transstream']
+    with open('../activity/outlet/transseq.json') as f:
+        transseq = json.load(f)['transseq']
 
-    trans_sample = TransSample(transstream)
+    trans_sample = TransSample(transseq)
     trans_sample.calc_data()
 
     print('users_number ', trans_sample.users_number)

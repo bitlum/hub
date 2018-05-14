@@ -11,8 +11,8 @@ sys.path.append(os.path.join(current_path, '../'))
 
 class TransStat(TransSample):
 
-    def __init__(self, transstream):
-        super().__init__(transstream)
+    def __init__(self, transseq):
+        super().__init__(transseq)
 
         self.smart_period = list()
         self.smart_amount = list()
@@ -35,12 +35,12 @@ class TransStat(TransSample):
 
 
 if __name__ == '__main__':
-    with open('../activity/outlet/transstream.json') as f:
-        transstream = json.load(f)['transstream']
+    with open('../activity/outlet/transseq.json') as f:
+        transseq = json.load(f)['transseq']
 
     prob_cut = 0.5
 
-    trans_stat = TransStat(transstream)
+    trans_stat = TransStat(transseq)
     trans_stat.calc_stat(prob_cut)
 
     print('period:')

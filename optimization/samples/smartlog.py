@@ -14,12 +14,12 @@ class SmartLog(RouterState):
     def __init__(self):
         super().__init__()
         self.channel_changes = []
-        self.payments = []
+        self.transseq = []
         self.states = []
 
     def append(self, message):
         if self.id['payment'] in message:
-            self.payments.append(message)
+            self.transseq.append(message)
             self.set_payment(message[self.id['payment']])
 
         if self.id['state'] in message:
@@ -36,13 +36,13 @@ class SmartLog(RouterState):
         out_str += 'Number of channel_changes is ' + str(len(
             self.channel_changes)) + '\n'
         out_str += 'Number of payments is ' + str(len(
-            self.payments)) + '\n'
+            self.transseq)) + '\n'
         out_str += 'Number of states is ' + str(len(self.states)) + '\n'
-        if len(self.payments) > 0:
+        if len(self.transseq) > 0:
             out_str += 'Last transaction: ' + self.sender + ' -> ' + \
-                       self.receiver + ' : ' + str(self.transaction) + '\n'
+                       self.receiver + ' : ' + str(self.amount) + '\n'
 
-        for key in list(SortedDict(self.balances).keys()):
-            out_str += key + ' ' + str(self.balances[key]) + '\n'
+        for key in list(SortedDict(self.router_balances).keys()):
+            out_str += key + ' ' + str(self.router_balances[key]) + '\n'
 
         return out_str
