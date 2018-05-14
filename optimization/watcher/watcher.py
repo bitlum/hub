@@ -28,17 +28,32 @@ class Watcher(PattMatchEvHand):
             self.log_reader.process_log()
 
             self.channels_change.clear()
-            for user, wane in self.router_mgt.wanes_dict.items():
+            for user, wane in self.router_mgt.wanes.items():
                 balance = self.smart_log.router_balances[user]
-                bound = self.router_mgt.bounds_dict[user]
+                bound = self.router_mgt.bounds[user]
                 if wane:
                     if balance < bound:
                         self.channels_change.append(user)
                 else:
                     if balance > bound:
                         self.channels_change.append(user)
-
-            print('channels_change', self.channels_change)
+            # print()
+            # print('balance_cur', self.smart_log.router_balances)
+            # print()
+            # print('freqs_out', self.router_mgt.freqs_out)
+            # print('freqs_in ', self.router_mgt.freqs_in)
+            # print('freqs ', self.router_mgt.freqs)
+            # print()
+            # print('total_lim', self.router_mgt.total_lim)
+            # print('balances', self.router_mgt.balances)
+            # print('bounds  ', self.router_mgt.bounds)
+            # print()
+            # print('flowvect_out', self.router_mgt.flowvect_out)
+            # print('flowvect_in ', self.router_mgt.flowvect_in)
+            # print('flowvect_eff', self.router_mgt.flowvect_in_eff)
+            # print()
+            # print('wanes', self.router_mgt.wanes)
+            # print('channels_change', self.channels_change)
 
             if self.mgt_ticker % self.mgt_freq == 0:
                 self.router_mgt.calc_parameters()

@@ -15,21 +15,16 @@ class RouterMgt(FlowStat):
     def __init__(self, transseq, setts):
         super().__init__(transseq)
         self.setts = setts
-        self.balances = list()
-        self.balances_dict = dict()
-
+        self.balances = dict()
         self.idle_lim = list()
         self.periods_max = list()
         self.period_lim = list()
         self.freqs_out = list()
         self.freqs_in = list()
         self.total_lim = list()
-        self.freqs = list()
-        self.freqs_dict = dict()
-        self.wanes = list()
-        self.wanes_dict = dict()
-        self.bounds = list()
-        self.bounds_dict = dict()
+        self.freqs = dict()
+        self.wanes = dict()
+        self.bounds = dict()
 
     def calc_parameters(self):
         self.calc_flow(self.setts.prob_cut)
@@ -45,11 +40,12 @@ class RouterMgt(FlowStat):
 
     def calc_extremum(self):
         self.balances.clear()
-        self.balances = [self.setts.penalty / self.setts.commission
-                         for _ in range(self.users_number)]
+        self.balances = {
+            self.users_id[i]: self.setts.penalty / self.setts.commission
+            for i in range(self.users_number)}
         if self.setts.income:
             for i in range(self.users_number):
-                self.balances[i] *= 2
+                self.balances[self.users_id[i]] *= 2
 
     def account_idle(self):
         self.idle_lim.clear()
@@ -60,8 +56,9 @@ class RouterMgt(FlowStat):
 
         for i in range(self.users_number):
             lim = self.idle_lim[i]
-            if self.balances[i] < lim:
-                self.balances[i] = lim
+            user_id = self.users_id[i]
+            if self.balances[user_id] < lim:
+                self.balances[user_id] = lim
 
     def calc_periods_max(self):
         self.periods_max.clear()
@@ -81,13 +78,15 @@ class RouterMgt(FlowStat):
 
         for i in range(self.users_number):
             lim = self.period_lim[i]
-            if self.balances[i] < lim:
-                self.balances[i] = lim
+            user_id = self.users_id[i]
+            if self.balances[user_id] < lim:
+                self.balances[user_id] = lim
 
     def calc_freqs_out(self):
         self.freqs_out.clear()
-        self.freqs_out = [self.flowvect_out[i] / self.balances[i]
-                          for i in range(self.users_number)]
+        self.freqs_out = [
+            self.flowvect_out[i] / self.balances[self.users_id[i]]
+            for i in range(self.users_number)]
 
     def calc_freqs_in(self):
         self.freqs_in.clear()
@@ -108,51 +107,60 @@ class RouterMgt(FlowStat):
                 self.total_lim[i] = lim
 
     def calc_closure(self):
-        self.freqs.clear()
-        self.wanes.clear()
-        self.balances.clear()
 
-        self.wanes = [bool(False) for _ in range(self.users_number)]
-        self.freqs = copy.deepcopy(self.freqs_out)
-        self.balances = copy.deepcopy(self.total_lim)
+        self.wanes.clear()
+        self.wanes = {self.users_id[i]: bool(False)
+                      for i in range(self.users_number)}
+        self.freqs.clear()
+        self.freqs = {self.users_id[i]: self.freqs_out[i]
+                      for i in range(self.users_number)}
+        self.balances.clear()
+        self.balances = {self.users_id[i]: self.total_lim[i]
+                         for i in range(self.users_number)}
 
         for i in range(self.users_number):
-            flow_delta = self.flowvect_in[i] - self.flowvect_out[i]
-            balance = flow_delta / self.freqs_in[i]
+            balance = self.flowvect_in_eff[i] / self.freqs_in[i]
+            user_id = self.users_id[i]
 
             if balance > self.total_lim[i]:
-                self.balances[i] = balance
+                self.balances[user_id] = balance
 
-            if flow_delta >= 0:
-                self.wanes[i] = True
-                self.freqs[i] = self.freqs_in[i]
+            if self.flowvect_in_eff[i] >= 0:
+                self.wanes[user_id] = True
+                self.freqs[user_id] = self.freqs_in[i]
 
         self.bounds.clear()
-        self.bounds = [self.balances[i] / self.freqs[i] for i in
-                       range(self.users_number)]
+        self.bounds = copy.deepcopy(self.balances)
 
         for i in range(self.users_number):
-            if self.wanes[i]:
-                self.bounds[i] = self.total_lim[i]
+            user_id = self.users_id[i]
+            flow = self.flowvect_in_eff[i]
+            self.bounds[user_id] -= flow / self.freqs[user_id]
 
         for i in range(self.users_number):
-            self.balances[i] = round(self.balances[i])
+            user_id = self.users_id[i]
+            if self.wanes[user_id]:
+                self.bounds[user_id] = self.total_lim[i]
 
-            self.balances_dict.clear()
-            self.balances_dict = {self.users_id[i]: self.balances[i] for i in
-                                  range(self.users_number)}
+        for i in range(self.users_number):
+            user_id = self.users_id[i]
+            self.balances[user_id] = round(self.balances[user_id])
 
-            self.freqs_dict.clear()
-            self.freqs_dict = {self.users_id[i]: self.freqs[i] for i in
-                               range(self.users_number)}
+        # TODO remove this:
+        for i in range(self.users_number):
+            user_id = self.users_id[i]
 
-            self.wanes_dict.clear()
-            self.wanes_dict = {self.users_id[i]: self.wanes[i] for i in
-                               range(self.users_number)}
+            self.freqs_out[i] = round(self.freqs_out[i], 2)
+            self.freqs_in[i] = round(self.freqs_in[i], 2)
+            self.freqs[user_id] = round(self.freqs[user_id], 2)
 
-            self.bounds_dict.clear()
-            self.bounds_dict = {self.users_id[i]: self.bounds[i] for i in
-                                range(self.users_number)}
+            self.total_lim[i] = round(self.total_lim[i])
+            self.balances[user_id] = round(self.balances[user_id])
+            self.bounds[user_id] = round(self.bounds[user_id])
+
+            self.flowvect_out[i] = round(self.flowvect_out[i], 2)
+            self.flowvect_in[i] = round(self.flowvect_in[i], 2)
+            self.flowvect_in_eff[i] = round(self.flowvect_in_eff[i], 2)
 
 
 if __name__ == '__main__':

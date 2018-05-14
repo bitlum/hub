@@ -15,6 +15,7 @@ class FlowStat(TransStat):
         self.flowmatr = list()
         self.flowvect_out = list()
         self.flowvect_in = list()
+        self.flowvect_in_eff = list()
 
     def calc_flow(self, prob_cut=0.5):
         self.calc_stat(prob_cut)
@@ -41,6 +42,11 @@ class FlowStat(TransStat):
                 if value is not None:
                     self.flowvect_out[i] += value
                     self.flowvect_in[j] += value
+
+        self.flowvect_in_eff.clear()
+        self.flowvect_in_eff = [flow for flow in self.flowvect_in]
+        for i in range(self.users_number):
+            self.flowvect_in_eff[i] -= self.flowvect_out[i]
 
 
 if __name__ == '__main__':
