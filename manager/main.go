@@ -22,6 +22,7 @@ import (
 	"github.com/bitlum/hub/manager/router/stats"
 	"github.com/bitlum/hub/manager/db"
 	"github.com/bitlum/hub/manager/graphql"
+	"github.com/bitlum/hub/manager/router/registry"
 )
 
 var (
@@ -71,6 +72,7 @@ func backendMain() error {
 		defer emulationRouter.Stop()
 		r = emulationRouter
 	case "lnd":
+		storage := router.NewInMemoryHubStorage()
 
 		mainLog.Infof("Start GraphQL server serving on: %v",
 			net.JoinHostPort(config.GraphQL.ListenHost, config.GraphQL.ListenPort))
@@ -78,8 +80,7 @@ func backendMain() error {
 			ListenIP:         config.GraphQL.ListenHost,
 			ListenPort:       config.GraphQL.ListenPort,
 			SecureListenPort: config.GraphQL.SecureListenPort,
-			PublicHost:       config.LND.Host,
-			Network:          config.LND.Network,
+			Storage:          storage,
 		})
 		if err != nil {
 			return errors.New("unable to create GraphQL server: " +
@@ -108,12 +109,23 @@ func backendMain() error {
 		mainLog.Infof("Initialise lnd router...")
 		lndConfig := &lnd.Config{
 			Asset:          "BTC",
-			Host:           config.LND.Host,
-			Port:           config.LND.Port,
+			Host:           config.LND.GRPCHost,
+			Port:           config.LND.GRPCPort,
 			TlsCertPath:    config.LND.TlsCert,
 			DB:             database,
 			MetricsBackend: metricsBackend,
 			Net:            config.LND.Network,
+			Storage:        storage,
+			NeutrinoHost:   config.LND.NeutrinoHost,
+			NeutrinoPort:   config.LND.NeutrinoPort,
+			PeerHost:       config.LND.PeerHost,
+			PeerPort:       config.LND.PeerPort,
+		}
+
+		for alias, pubKey := range config.LND.KnownPeers {
+			mainLog.Infof("Add known public node alias(%v) pubkey(%v)",
+				alias, pubKey)
+			registry.AddKnownPeer(router.UserID(pubKey), alias)
 		}
 
 		lndRouter, err := lnd.NewRouter(lndConfig)
@@ -127,7 +139,13 @@ func backendMain() error {
 				"", err)
 		}
 
-		statsGatherer := stats.NewNetworkStatsGatherer(lndRouter, statsBackend)
+		gathererConf := &stats.Config{
+			Storage:        storage,
+			Router:         lndRouter,
+			MetricsBackend: statsBackend,
+		}
+
+		statsGatherer := stats.NewNetworkStatsGatherer(gathererConf)
 		statsGatherer.Start()
 		defer statsGatherer.Stop()
 
