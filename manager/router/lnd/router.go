@@ -176,7 +176,8 @@ func (r *Router) Start() error {
 	r.client = lnrpc.NewLightningClient(r.conn)
 
 	reqInfo := &lnrpc.GetInfoRequest{}
-	respInfo, err := r.client.GetInfo(context.Background(), reqInfo)
+	ctx, _ := context.WithTimeout(context.Background(), time.Second*5)
+	respInfo, err := r.client.GetInfo(ctx, reqInfo)
 	if err != nil {
 		m.AddError(metrics.HighSeverity)
 		return errors.Errorf("unable get lnd node info: %v", err)
