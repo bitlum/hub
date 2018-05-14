@@ -16,6 +16,7 @@ import (
 	"github.com/bitlum/hub/manager/metrics"
 	"github.com/bitlum/hub/manager/router"
 	"github.com/bitlum/hub/manager/router/broadcast"
+	"github.com/bitlum/hub/manager/router/registry"
 )
 
 // Config is a connector config.
@@ -33,18 +34,46 @@ type Config struct {
 	// gRPC connection with lnd daemon.
 	TlsCertPath string
 
-	// DB is used to store all data which needs to be persistent,
+	// SyncStorage is used to store all data which needs to be persistent,
 	// exact implementation of database backend is unknown for the hub,
 	// in the simplest case it might be in-memory storage.
-	DB DB
+	DB SyncStorage
 
-	// MetricsBackend...
+	// MetricsBackend is used to send metrics about internal state of the
+	// router, and act on errors accordingly.
 	MetricsBackend crypto.MetricsBackend
+
+	// Storage is used to save information about lighting network node
+	// fetched on the init stage.
+	Storage router.InfoStorage
 
 	// Net is the blockchain network which hub should operate on,
 	// if hub trying to connect to the lnd with different network,
 	// than init should fail.
 	Net string
+
+	// TODO(andrew.shvv) Remove if lightning network info will be init in
+	// another place.
+	// NeutrinoHost is an information about neutrino backend host,
+	// which is needed for external users to connect to our bitcoind node.
+	NeutrinoHost string
+
+	// TODO(andrew.shvv) Remove if lightning network info will be init in
+	// another place.
+	// NeutrinoPort is an information about neutrino backend port,
+	// which is needed for external users to connect to our bitcoind node.
+	NeutrinoPort string
+
+	// TODO(andrew.shvv) Remove if lightning network info will be init in
+	// another place.
+	// PeerHost is a public host of hub lightning network node.
+	PeerHost string
+
+	// TODO(andrew.shvv) Remove if lightning network info will be init in
+	// another place.
+	// PeerHost is a public port of hub lightning network node,
+	// to which users are connect to negotiate creation of channel.
+	PeerPort string
 }
 
 func (c *Config) validate() error {
@@ -165,11 +194,32 @@ func (r *Router) Start() error {
 			r.cfg.Net, lndNet)
 	}
 
+	if err := r.cfg.Storage.UpdateInfo(&router.DbInfo{
+		Version:     respInfo.Version,
+		Network:     r.cfg.Net,
+		BlockHeight: respInfo.BlockHeight,
+		BlockHash:   respInfo.BlockHash,
+		NodeInfo: &router.DbNodeInfo{
+			Alias:          respInfo.Alias,
+			Host:           r.cfg.PeerHost,
+			Port:           r.cfg.PeerPort,
+			IdentityPubKey: respInfo.IdentityPubkey,
+		},
+		NeutrinoInfo: &router.DbNeutrinoInfo{
+			Host: r.cfg.NeutrinoHost,
+			Port: r.cfg.NeutrinoPort,
+		},
+	}); err != nil {
+		return errors.Errorf("unable to save lightning node info: %v", err)
+	}
 
 	log.Infof("Init lnd router working with network(%v) alias(%v) ", lndNet, respInfo.Alias)
 
 	r.nodeAddr = respInfo.IdentityPubkey
 	log.Infof("Init lnd router with pub key: %v", respInfo.IdentityPubkey)
+
+	// Register ZigZag us known and public lighting network node.
+	registry.AddKnownPeer(router.UserID(respInfo.IdentityPubkey), "ZigZag")
 
 	r.listenLocalTopologyUpdates()
 	r.listenForwardingUpdates()
