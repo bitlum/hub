@@ -29,6 +29,7 @@
   revision = "ff69c1bdcd79a3d2687b553361283bc7d04a25a3"
 
 [[projects]]
+  branch = "master"
   name = "github.com/btcsuite/btclog"
   packages = ["."]
   revision = "84c8d2346e9fc8c7b947e243b9c24e6df9fd206a"
@@ -101,10 +102,10 @@
   revision = "a93b200c26cbae3bb09dd0dc2c7c7fe1468a034a"
 
 [[projects]]
+  branch = "master"
   name = "github.com/lightningnetwork/lnd"
   packages = ["lnrpc"]
-  revision = "6fa93a78c18180a3bc77116b749b3c5e279d5a33"
-  version = "v0.4.1-beta"
+  revision = "b73eef12b36af3b98c90137bcc111a3405f781bf"
 
 [[projects]]
   name = "github.com/matttproud/golang_protobuf_extensions"
@@ -135,7 +136,7 @@
     "internal/bitbucket.org/ww/goautoneg",
     "model"
   ]
-  revision = "38c53a9f4bfcd932d1b00bfc65e256a7fba6b37a"
+  revision = "d811d2e9bf898806ecfb6ef6296774b13ffc314c"
 
 [[projects]]
   branch = "master"
@@ -146,13 +147,13 @@
     "nfs",
     "xfs"
   ]
-  revision = "780932d4fbbe0e69b84c34c20f5c8d0981e109ea"
+  revision = "8b1c2da0d56deffdbb9e48d4414b4e674bd8083e"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ripemd160"]
-  revision = "b2aa35443fbc700ab74c586ae79b81c171851023"
+  revision = "2d027ae1dddd4694d54f7a8b6cbe78dca8720226"
 
 [[projects]]
   name = "golang.org/x/net"
@@ -171,7 +172,7 @@
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "3b87a42e500a6dc65dae1a55d0b641295971163e"
+  revision = "d0faeb539838e250bd0a9db4182d48d4a1915181"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -226,6 +227,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "a239eca95ec674ea2055d2a50ecabbf0995cde3dc2997671b0fcc84f5ec6d5b8"
+  inputs-digest = "04b52e6364a5609c911bcff68a1430d3ac8445d50dae4f35ef03b1a9415db4f3"
   solver-name = "gps-cdcl"
   solver-version = 1
