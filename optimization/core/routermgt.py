@@ -16,6 +16,8 @@ class RouterMgt(FlowStat):
         super().__init__(transseq)
         self.setts = setts
         self.balances = list()
+        self.balances_dict = dict()
+
         self.idle_lim = list()
         self.periods_max = list()
         self.period_lim = list()
@@ -23,7 +25,11 @@ class RouterMgt(FlowStat):
         self.freqs_in = list()
         self.total_lim = list()
         self.freqs = list()
+        self.freqs_dict = dict()
         self.wanes = list()
+        self.wanes_dict = dict()
+        self.bounds = list()
+        self.bounds_dict = dict()
 
     def calc_parameters(self):
         self.calc_flow(self.setts.prob_cut)
@@ -121,8 +127,32 @@ class RouterMgt(FlowStat):
                 self.wanes[i] = True
                 self.freqs[i] = self.freqs_in[i]
 
+        self.bounds.clear()
+        self.bounds = [self.balances[i] / self.freqs[i] for i in
+                       range(self.users_number)]
+
+        for i in range(self.users_number):
+            if self.wanes[i]:
+                self.bounds[i] = self.total_lim[i]
+
         for i in range(self.users_number):
             self.balances[i] = round(self.balances[i])
+
+            self.balances_dict.clear()
+            self.balances_dict = {self.users_id[i]: self.balances[i] for i in
+                                  range(self.users_number)}
+
+            self.freqs_dict.clear()
+            self.freqs_dict = {self.users_id[i]: self.freqs[i] for i in
+                               range(self.users_number)}
+
+            self.wanes_dict.clear()
+            self.wanes_dict = {self.users_id[i]: self.wanes[i] for i in
+                               range(self.users_number)}
+
+            self.bounds_dict.clear()
+            self.bounds_dict = {self.users_id[i]: self.bounds[i] for i in
+                                range(self.users_number)}
 
 
 if __name__ == '__main__':
