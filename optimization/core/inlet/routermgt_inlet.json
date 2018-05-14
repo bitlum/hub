@@ -4,5 +4,6 @@
 	"commission": 0.01,
 	"time_p": 0.003,
 	"alpha_p": 0.1,
-	"alpha_T": 2
+	"alpha_T": 2,
+	"prob_cut": 0.5
 }

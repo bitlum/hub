@@ -21,7 +21,6 @@ class RouterSetts:
                      penalty, commission,
                      time_p, alpha_p,
                      alpha_T, prob_cut=0.5):
-
         self.set_income(income)
         self.set_penalty(penalty)
         self.set_commission(commission)
@@ -29,6 +28,17 @@ class RouterSetts:
         self.set_alpha_p(alpha_p)
         self.set_alpha_T(alpha_T)
         self.set_prob_cut(prob_cut)
+
+    def set_setts_from_file(self, file_name):
+        with open(file_name) as f:
+            inlet = json.load(f)
+        self.set_income(inlet['income'])
+        self.set_penalty(inlet['penalty'])
+        self.set_commission(inlet['commission'])
+        self.set_time_p(inlet['time_p'])
+        self.set_alpha_p(inlet['alpha_p'])
+        self.set_alpha_T(inlet['alpha_T'])
+        self.set_prob_cut(inlet['prob_cut'])
 
     def set_income(self, income):
         self.income = income
