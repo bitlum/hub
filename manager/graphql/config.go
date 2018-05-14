@@ -4,15 +4,14 @@ import (
 	"errors"
 	"net"
 	"strconv"
+	"github.com/bitlum/hub/manager/router"
 )
 
 type Config struct {
 	ListenIP         string
 	ListenPort       string
 	SecureListenPort string
-
-	PublicHost string
-	Network    string
+	Storage          router.InfoStorage
 }
 
 func (c Config) validate() error {
@@ -47,14 +46,6 @@ func (c Config) validate() error {
 	if c.SecureListenPort == c.ListenPort {
 		return errors.New("secure listen port should not be" +
 			" equal to listen port")
-	}
-
-	if c.PublicHost == "" {
-		return errors.New("public host param should not be empty")
-	}
-
-	if c.Network == "" {
-		return errors.New("network param should not be empty")
 	}
 
 	return nil

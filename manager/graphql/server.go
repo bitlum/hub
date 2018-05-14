@@ -38,7 +38,7 @@ func NewServer(c Config) (*Server, error) {
 			err.Error())
 	}
 
-	schema, err := New()
+	schema, err := New(c.Storage)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create schema: %v",
 			err)

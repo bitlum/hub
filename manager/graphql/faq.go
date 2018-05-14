@@ -47,7 +47,7 @@ query GetPayments {
     toPeer
     time
     amount
-    paymentID
+    type
   }
 }
 
@@ -60,8 +60,6 @@ query GetPeers {
     alias
     lockedByPeer
     lockedByHub
-    isActive
-    lastUpdate
   }
 }
 `
