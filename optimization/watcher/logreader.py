@@ -8,13 +8,14 @@ current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_path, '../'))
 
 from watcher.protologutills import print_massege
+from samples.protolog import ProtoLog
 
 
 class LogReader:
 
-    def __init__(self, file_name, proto_log, smart_log):
+    def __init__(self, file_name, smart_log):
         self.file_name = file_name
-        self.proto_log = proto_log
+        self.proto_log = ProtoLog()
         self.smart_log = smart_log
         self.pos = int(0)
         self.size_message = int(0)

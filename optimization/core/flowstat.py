@@ -25,8 +25,9 @@ class FlowStat(TransStat):
 
         for i in range(self.users_number):
             for j in range(self.users_number):
-                if self.flowmatr[i][j] is not None:
-                    self.flowmatr[i][j] /= self.smart_period[i][j].cut
+                period = self.smart_period[i][j].cut
+                if self.flowmatr[i][j] is not None and period > 0:
+                    self.flowmatr[i][j] /= period
 
         self.flowvect_out.clear()
         self.flowvect_out = [float() for _ in range(self.users_number)]

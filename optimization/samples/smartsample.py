@@ -54,14 +54,15 @@ class SmartSample:
             self.mean = statistics.mean(self.sample)
             self.minimum = min(self.sample)
             self.maximum = max(self.sample)
+            self.cut = self.mean
             if self.number == 1:
                 self.stdev = 0
                 self.variance = 0
-                self.cut = self.mean
             else:
                 self.stdev = statistics.stdev(self.sample)
                 self.variance = statistics.variance(self.sample)
-                self.calc_erfcut()
+                if self.stdev > 0:
+                    self.calc_erfcut()
 
     def calc_sum(self):
         self.sum = 0.

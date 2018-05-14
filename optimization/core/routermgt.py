@@ -131,19 +131,19 @@ if __name__ == '__main__':
     with open(file_inlet) as f:
         inlet = json.load(f)
 
-    routersetts = RouterSetts()
+    router_setts = RouterSetts()
 
-    routersetts.set_income(inlet['income'])
-    routersetts.set_penalty(inlet['penalty'])
-    routersetts.set_commission(inlet['commission'])
-    routersetts.set_time_p(inlet['time_p'])
-    routersetts.set_alpha_p(inlet['alpha_p'])
-    routersetts.set_alpha_T(inlet['alpha_T'])
+    router_setts.set_income(inlet['income'])
+    router_setts.set_penalty(inlet['penalty'])
+    router_setts.set_commission(inlet['commission'])
+    router_setts.set_time_p(inlet['time_p'])
+    router_setts.set_alpha_p(inlet['alpha_p'])
+    router_setts.set_alpha_T(inlet['alpha_T'])
 
     with open('../activity/outlet/transstream.json') as f:
         transstream = json.load(f)['transstream']
 
-    router_mgt = RouterMgt(transstream, routersetts)
+    router_mgt = RouterMgt(transstream, router_setts)
     router_mgt.calc_parameters()
 
     print('balances ', router_mgt.balances)
