@@ -24,11 +24,6 @@ class LogReader:
         self.message_names = ['payment', 'state', 'channel_change']
 
     def process_log(self):
-        self.read_log()
-        self.convert()
-        # print(self.smart_log)
-
-    def read_log(self):
         with open(self.file_name, "rb") as self.file:
             self.size_file = os.path.getsize(self.file_name)
             while True:
@@ -41,6 +36,10 @@ class LogReader:
                 self.pos += 2
                 self.proto_log.append(self.read_message())
                 self.pos += self.size_message
+
+                self.convert()
+
+                # print(self.smart_log)
 
     def read_message(self):
         log = proto.Log()
