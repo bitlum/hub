@@ -16,6 +16,56 @@ import (
 // ChannelsState is a map of chan points and current state of the channel.
 type ChannelsState map[string]string
 
+// updateNodeInfo updates information about last synced version of the
+// lightning node.
+func (r *Router) updateNodeInfo() {
+	r.wg.Add(1)
+	go func() {
+		defer func() {
+			log.Info("Stopped lightning node info updates goroutine")
+			r.wg.Done()
+		}()
+
+		log.Info("Started lightning node info updates goroutine")
+
+		for {
+			select {
+			case <-time.After(time.Second * 5):
+			case <-r.quit:
+				return
+			}
+
+			reqInfo := &lnrpc.GetInfoRequest{}
+			ctx, _ := context.WithTimeout(context.Background(), time.Second*5)
+			respInfo, err := r.client.GetInfo(ctx, reqInfo)
+			if err != nil {
+				log.Errorf("unable get lnd node info: %v", err)
+				continue
+			}
+
+			if err := r.cfg.Storage.UpdateInfo(&router.DbInfo{
+				Version:     respInfo.Version,
+				Network:     r.cfg.Net,
+				BlockHeight: respInfo.BlockHeight,
+				BlockHash:   respInfo.BlockHash,
+				NodeInfo: &router.DbNodeInfo{
+					Alias:          respInfo.Alias,
+					Host:           r.cfg.PeerHost,
+					Port:           r.cfg.PeerPort,
+					IdentityPubKey: respInfo.IdentityPubkey,
+				},
+				NeutrinoInfo: &router.DbNeutrinoInfo{
+					Host: r.cfg.NeutrinoHost,
+					Port: r.cfg.NeutrinoPort,
+				},
+			}); err != nil {
+				log.Errorf("unable to save lightning node info: %v", err)
+			}
+
+		}
+	}()
+}
+
 // listenLocalTopologyUpdates tracks the local channel topology state updates
 // and sends notifications accordingly to the occurred transition.
 func (r *Router) listenLocalTopologyUpdates() {

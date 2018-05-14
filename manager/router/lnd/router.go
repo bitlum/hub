@@ -195,25 +195,6 @@ func (r *Router) Start() error {
 			r.cfg.Net, lndNet)
 	}
 
-	if err := r.cfg.Storage.UpdateInfo(&router.DbInfo{
-		Version:     respInfo.Version,
-		Network:     r.cfg.Net,
-		BlockHeight: respInfo.BlockHeight,
-		BlockHash:   respInfo.BlockHash,
-		NodeInfo: &router.DbNodeInfo{
-			Alias:          respInfo.Alias,
-			Host:           r.cfg.PeerHost,
-			Port:           r.cfg.PeerPort,
-			IdentityPubKey: respInfo.IdentityPubkey,
-		},
-		NeutrinoInfo: &router.DbNeutrinoInfo{
-			Host: r.cfg.NeutrinoHost,
-			Port: r.cfg.NeutrinoPort,
-		},
-	}); err != nil {
-		return errors.Errorf("unable to save lightning node info: %v", err)
-	}
-
 	log.Infof("Init lnd router working with network(%v) alias(%v) ", lndNet, respInfo.Alias)
 
 	r.nodeAddr = respInfo.IdentityPubkey
@@ -222,6 +203,7 @@ func (r *Router) Start() error {
 	// Register ZigZag us known and public lighting network node.
 	registry.AddKnownPeer(router.UserID(respInfo.IdentityPubkey), "ZigZag")
 
+	r.updateNodeInfo()
 	r.listenLocalTopologyUpdates()
 	r.listenForwardingUpdates()
 	r.listenInvoiceUpdates()
