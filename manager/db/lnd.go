@@ -12,9 +12,8 @@ var (
 	indexKey  = []byte("index_key")
 )
 
-// Runtime check to ensure that Connector implements common.LightningConnector
-// interface.
-var _ lnd.DB = (*DB)(nil)
+// Runtime check to ensure that DB implements lnd.SyncStorage interface.
+var _ lnd.SyncStorage = (*DB)(nil)
 
 // PutLastForwardingIndex is used to save last forward pagination index
 // which was used for getting forwarding events. With this we avoid
