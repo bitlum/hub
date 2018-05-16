@@ -29,7 +29,7 @@ message UpdateLinkRequest {
     // Time of the last sync with state of the router.
     uint64 time = 1;
     string user_id = 2;
-    uint64 router_balance = 4;
+    int64 router_balance = 4;
 }
 
 message UpdateLinkResponse {
@@ -40,7 +40,7 @@ message UpdateLinkResponse {
 message SetPaymentFeeBaseRequest {
     // PaymentFeeBase number of milli units (i.e milli satoshis in
     // Bitcoin) which will be taken for every forwarding payment.
-    int64 PaymentFeeBase = 1;
+    int64 payment_fee_base = 1;
 }
 
 message SetPaymentFeeBaseResponse {
@@ -50,7 +50,7 @@ message SetPaymentFeeProportionalRequest {
     // PaymentFeeProportional number of milli units (i.e milli
     // satoshis in Bitcoin) which will be taken for every killounit of
     // payment amount.
-    int64 PaymentFeeProportional = 1;
+    int64 payment_fee_proportional = 1;
 }
 
 message SetPaymentFeeProportionalResponse {
