@@ -26,9 +26,14 @@ type Router interface {
 	// channel.
 	UpdateChannel(id ChannelID, funds BalanceUnit) error
 
-	// SetFee updates the fee which router takes for routing the users
-	// payments.
-	SetFee(fee uint64) error
+	// SetFeeBase sets base number of milli units (i.e milli satoshis in
+	// Bitcoin) which will be taken for every forwarding payment.
+	SetFeeBase(feeBase int64) error
+
+	// SetFeeProportional sets the number of milli units (i.e milli
+	// satoshis in Bitcoin) which will be taken for every killo-unit of
+	// forwarding payment amount as a forwarding fee.
+	SetFeeProportional(feeProportional int64) error
 
 	// RegisterOnUpdates returns register which returns updates about router
 	// local network topology changes, about attempts of propagating the payment
@@ -76,6 +81,7 @@ type Channel struct {
 	IsPending     bool
 	IsActive      bool
 	Initiator     string
+	CloseFee      BalanceUnit
 }
 
 type UpdateChannelClosing struct {
