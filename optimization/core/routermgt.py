@@ -16,13 +16,13 @@ class RouterMgt(FlowStat):
         super().__init__(transseq)
         self.setts = setts
         self.balances = dict()
-        self.idle_lim = list()
+        self.lim_idle = list()
         self.periods_in_eff = list()
         self.periods_out_eff = list()
         self.lim_period_in = list()
         self.freqs_out = list()
         self.freqs_in = list()
-        self.total_lim = list()
+        self.lim_total = list()
         self.freqs = dict()
         self.wanes = dict()
         self.bounds = dict()
@@ -36,7 +36,7 @@ class RouterMgt(FlowStat):
         self.account_periods_in_eff()
         self.calc_freqs_in()
         self.calc_freqs_out()
-        # self.calc_total_lim()
+        self.calc_lim_total()
         # self.calc_closure()
         # self.calc_closure()
 
@@ -50,14 +50,14 @@ class RouterMgt(FlowStat):
                 self.balances[self.users_id[i]] *= 2
 
     def account_idle(self):
-        self.idle_lim.clear()
+        self.lim_idle.clear()
 
-        self.idle_lim = [
+        self.lim_idle = [
             self.flowvect_out[i] * self.setts.time_p / self.setts.alpha_p
             for i in range(self.users_number)]
 
         for i in range(self.users_number):
-            lim = self.idle_lim[i]
+            lim = self.lim_idle[i]
             user_id = self.users_id[i]
             if self.balances[user_id] < lim:
                 self.balances[user_id] = lim
@@ -133,13 +133,15 @@ class RouterMgt(FlowStat):
                         if freq_out is None or freq_out > freq_in:
                             self.freqs_out[j] = freq_in
 
-    def calc_total_lim(self):
-        self.total_lim.clear()
-        self.total_lim = [lim for lim in self.idle_lim]
+    def calc_lim_total(self):
+        self.lim_total.clear()
+        self.lim_total = [lim for lim in self.lim_idle]
         for i in range(self.users_number):
             lim = self.lim_period_in[i]
-            if self.total_lim[i] < lim:
-                self.total_lim[i] = lim
+            if lim is None or lim > self.lim_total[i]:
+                self.lim_total[i] = lim
+
+        print('total_lim', self.lim_total)
 
     def calc_closure(self):
 
@@ -150,14 +152,14 @@ class RouterMgt(FlowStat):
         self.freqs = {self.users_id[i]: self.freqs_out[i]
                       for i in range(self.users_number)}
         self.balances.clear()
-        self.balances = {self.users_id[i]: self.total_lim[i]
+        self.balances = {self.users_id[i]: self.lim_total[i]
                          for i in range(self.users_number)}
 
         for i in range(self.users_number):
             balance = self.flowvect_in_eff[i] / self.freqs_in[i]
             user_id = self.users_id[i]
 
-            if balance > self.total_lim[i]:
+            if balance > self.lim_total[i]:
                 self.balances[user_id] = balance
 
             if self.flowvect_in_eff[i] >= 0:
@@ -175,7 +177,7 @@ class RouterMgt(FlowStat):
         for i in range(self.users_number):
             user_id = self.users_id[i]
             if self.wanes[user_id]:
-                self.bounds[user_id] = self.total_lim[i]
+                self.bounds[user_id] = self.lim_total[i]
 
         for i in range(self.users_number):
             user_id = self.users_id[i]
@@ -189,7 +191,7 @@ class RouterMgt(FlowStat):
             self.freqs_in[i] = round(self.freqs_in[i], 2)
             self.freqs[user_id] = round(self.freqs[user_id], 2)
 
-            self.total_lim[i] = round(self.total_lim[i])
+            self.lim_total[i] = round(self.lim_total[i])
             self.balances[user_id] = round(self.balances[user_id])
             self.bounds[user_id] = round(self.bounds[user_id])
 
