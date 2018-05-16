@@ -86,6 +86,8 @@ func (r *RouterEmulation) OpenChannel(userID router.UserID,
 		UserBalance:   0,
 		RouterBalance: funds,
 		IsPending:     true,
+		IsActive:      false,
+		Initiator:     router.RouterInitiator,
 	}
 
 	r.network.users[userID] = c

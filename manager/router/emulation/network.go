@@ -212,6 +212,8 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 		UserBalance:   router.BalanceUnit(req.LockedByUser),
 		RouterBalance: 0,
 		IsPending:     true,
+		IsActive:      false,
+		Initiator:     router.UserInitiator,
 	}
 
 	n.users[userID] = c

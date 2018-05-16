@@ -75,6 +75,7 @@ type Channel struct {
 	RouterBalance BalanceUnit
 	IsPending     bool
 	IsActive      bool
+	Initiator     string
 }
 
 type UpdateChannelClosing struct {
@@ -208,7 +209,7 @@ const (
 	Incoming PaymentType = "incoming"
 
 	// Forward is the payment which was send from uer to user.
-	Forward  PaymentType = "forward"
+	Forward PaymentType = "forward"
 )
 
 const (
