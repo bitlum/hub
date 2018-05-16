@@ -9,6 +9,7 @@ import (
 	"google.golang.org/grpc"
 	"github.com/go-errors/errors"
 	"github.com/bitlum/hub/manager/router/broadcast"
+	"fmt"
 )
 
 func TestStartNetwork(t *testing.T) {
@@ -43,7 +44,7 @@ func TestEmulationNetwork(t *testing.T) {
 	}
 
 	obj = &router.UpdateChannelOpening{}
-	if err := checkUpdate(updates, obj); err != nil {
+	if err := waitUpdate(updates, obj); err != nil {
 		t.Fatal(err)
 	}
 
@@ -57,19 +58,19 @@ func TestEmulationNetwork(t *testing.T) {
 	}
 
 	obj = &router.UpdateChannelOpened{}
-	if err := checkUpdate(updates, obj); err != nil {
+	if err := waitUpdate(updates, obj); err != nil {
 		t.Fatal(err)
 	}
 
 	if _, err := r.network.OpenChannel(context.Background(), &OpenChannelRequest{
 		UserId:       "2",
-		LockedByUser: 0,
+		LockedByUser: 10,
 	}); err != nil {
 		t.Fatalf("unable to emulate user openning channel: %v", err)
 	}
 
 	obj = &router.UpdateChannelOpening{}
-	if err := checkUpdate(updates, obj); err != nil {
+	if err := waitUpdate(updates, obj); err != nil {
 		t.Fatal(err)
 	}
 
@@ -83,7 +84,7 @@ func TestEmulationNetwork(t *testing.T) {
 	}
 
 	obj = &router.UpdateChannelOpened{}
-	if err := checkUpdate(updates, obj); err != nil {
+	if err := waitUpdate(updates, obj); err != nil {
 		t.Fatal(err)
 	}
 
@@ -119,7 +120,7 @@ func TestEmulationNetwork(t *testing.T) {
 	}
 
 	obj = &router.UpdatePayment{}
-	if err := checkUpdate(updates, obj); err != nil {
+	if err := waitUpdate(updates, obj); err != nil {
 		t.Fatal(err)
 	}
 
@@ -133,7 +134,7 @@ func TestEmulationNetwork(t *testing.T) {
 	}
 
 	obj = &router.UpdateChannelUpdating{}
-	if err := checkUpdate(updates, obj); err != nil {
+	if err := waitUpdate(updates, obj); err != nil {
 		t.Fatal(err)
 	}
 
@@ -158,7 +159,7 @@ func TestEmulationNetwork(t *testing.T) {
 	}
 
 	obj = &router.UpdateChannelUpdated{}
-	if err := checkUpdate(updates, obj); err != nil {
+	if err := waitUpdate(updates, obj); err != nil {
 		t.Fatal(err)
 	}
 
@@ -171,7 +172,7 @@ func TestEmulationNetwork(t *testing.T) {
 	}
 
 	obj = &router.UpdatePayment{}
-	if err := checkUpdate(updates, obj); err != nil {
+	if err := waitUpdate(updates, obj); err != nil {
 		t.Fatal(err)
 	}
 
@@ -187,7 +188,7 @@ func TestEmulationNetwork(t *testing.T) {
 		t.Fatalf("wrong router balance")
 	}
 
-	if r.network.channels[router.ChannelID("2")].UserBalance != 5 {
+	if r.network.channels[router.ChannelID("2")].UserBalance != 15 {
 		t.Fatalf("wrong user balance")
 	}
 
@@ -201,7 +202,7 @@ func TestEmulationNetwork(t *testing.T) {
 	}
 
 	obj = &router.UpdateChannelClosing{}
-	if err := checkUpdate(updates, obj); err != nil {
+	if err := waitUpdate(updates, obj); err != nil {
 		t.Fatal(err)
 	}
 
@@ -217,7 +218,7 @@ func TestEmulationNetwork(t *testing.T) {
 	}
 
 	obj = &router.UpdateChannelClosed{}
-	if err := checkUpdate(updates, obj); err != nil {
+	if err := waitUpdate(updates, obj); err != nil {
 		t.Fatal(err)
 	}
 
@@ -237,7 +238,7 @@ func TestEmulationNetwork(t *testing.T) {
 	}
 
 	obj = &router.UpdateChannelClosing{}
-	if err := checkUpdate(updates, obj); err != nil {
+	if err := waitUpdate(updates, obj); err != nil {
 		t.Fatal(err)
 	}
 
@@ -251,7 +252,7 @@ func TestEmulationNetwork(t *testing.T) {
 	}
 
 	obj = &router.UpdateChannelClosed{}
-	if err := checkUpdate(updates, obj); err != nil {
+	if err := waitUpdate(updates, obj); err != nil {
 		t.Fatal(err)
 	}
 
@@ -334,7 +335,178 @@ func TestSimpleStrategy(t *testing.T) {
 
 }
 
-func checkUpdate(receiver *broadcast.Receiver, obj interface{}) error {
+func TestUpdateChannelFee(t *testing.T) {
+	r := NewRouter(100, time.Hour)
+
+	// Manually start te network to avoid automatic block generation.
+	go r.network.blockNotifier.Start()
+	defer r.network.blockNotifier.Stop()
+
+	routerUpdates := r.RegisterOnUpdates()
+	defer routerUpdates.Stop()
+
+	// This subscription is used to understand when new block has been
+	// generated in the simulation network.
+	blocks := r.network.blockNotifier.Subscribe()
+
+	blockchainFee := router.BalanceUnit(1)
+	r.network.SetBlockchainFee(context.Background(), &SetBlockchainFeeRequest{
+		Fee: int64(blockchainFee),
+	})
+
+	if _, err := r.network.OpenChannel(context.Background(), &OpenChannelRequest{
+		UserId:       "1",
+		LockedByUser: 10,
+	}); err != nil {
+		t.Fatalf("unable to emulate user openning channel: %v", err)
+	}
+
+	select {
+	case update := <-routerUpdates.Read():
+		u := update.(*router.UpdateChannelOpening)
+		if u.UserBalance != 8 {
+			t.Fatalf("wrong user balance, fee should be taken")
+		}
+
+		if u.Fee != blockchainFee {
+			t.Fatalf("wrong fee")
+		}
+	case <-time.After(time.Second * 2):
+		t.Fatalf("haven't received update")
+	}
+
+	mineBlock(t, r, blocks)
+	skipUpdate(routerUpdates)
+
+	if err := r.UpdateChannel("1", 8); err != nil {
+		t.Fatalf("unable to update channel: %v", err)
+	}
+	skipUpdate(routerUpdates)
+
+	mineBlock(t, r, blocks)
+	skipUpdate(routerUpdates)
+
+	// Close channel from side of router
+	if err := r.CloseChannel("1"); err != nil {
+		t.Fatalf("unable to close the channel")
+	}
+
+	select {
+	case update := <-routerUpdates.Read():
+		u := update.(*router.UpdateChannelClosing)
+		if u.Fee != blockchainFee {
+			t.Fatalf("wrong fee")
+		}
+	case <-time.After(time.Second * 2):
+		t.Fatalf("haven't received update")
+	}
+
+	balance, err := r.FreeBalance()
+	if err != nil {
+		t.Fatalf("unable to get free balance: %v", err)
+	}
+
+	// Router should pay blockchain fee when it updated the channel.
+	if balance != 92-blockchainFee {
+		t.Fatalf("router free balance is wrong: %v", balance)
+	}
+}
+
+func TestForwardingPaymentFee(t *testing.T) {
+	r := NewRouter(100, time.Hour)
+
+	// Manually start te network to avoid automatic block generation.
+	go r.network.blockNotifier.Start()
+	defer r.network.blockNotifier.Stop()
+
+	routerUpdates := r.RegisterOnUpdates()
+	defer routerUpdates.Stop()
+
+	// This subscription is used to understand when new block has been
+	// generated in the simulation network.
+	blocks := r.network.blockNotifier.Subscribe()
+
+	// Open first channel and update it update balance from router side.
+	if _, err := r.network.OpenChannel(context.Background(), &OpenChannelRequest{
+		UserId:       "1",
+		LockedByUser: 10,
+	}); err != nil {
+		t.Fatalf("unable to emulate user openning channel: %v", err)
+	}
+	skipUpdate(routerUpdates)
+
+	mineBlock(t, r, blocks)
+	skipUpdate(routerUpdates)
+
+	if err := r.UpdateChannel("1", 10); err != nil {
+		t.Fatalf("unable to update channel: %v", err)
+	}
+	skipUpdate(routerUpdates)
+
+	mineBlock(t, r, blocks)
+	skipUpdate(routerUpdates)
+
+	// Open second channel and update it update balance from router side.
+	if _, err := r.network.OpenChannel(context.Background(), &OpenChannelRequest{
+		UserId:       "2",
+		LockedByUser: 10,
+	}); err != nil {
+		t.Fatalf("unable to emulate user openning channel: %v", err)
+	}
+	skipUpdate(routerUpdates)
+
+	mineBlock(t, r, blocks)
+	skipUpdate(routerUpdates)
+
+	if err := r.UpdateChannel("2", 10); err != nil {
+		t.Fatalf("unable to update channel: %v", err)
+	}
+	skipUpdate(routerUpdates)
+
+	mineBlock(t, r, blocks)
+	skipUpdate(routerUpdates)
+
+	// For every 10 satoshi we get 2 satoshi as proportional fee
+	r.SetFeeProportional(toMilli(200))
+
+	// From every payment we get 2 satoshi
+	r.SetFeeBase(toMilli(2))
+
+	if _, err := r.network.SendPayment(context.Background(), &SendPaymentRequest{
+		Sender:   "1",
+		Receiver: "2",
+		Amount:   2,
+	}); err == nil {
+		t.Fatalf("should have failed with small amount error")
+	}
+
+	if _, err := r.network.SendPayment(context.Background(), &SendPaymentRequest{
+		Sender:   "1",
+		Receiver: "2",
+		Amount:   10,
+	}); err != nil {
+		t.Fatalf("user is unable to forward payment")
+	}
+
+	if r.network.channels[router.ChannelID("1")].UserBalance != 0 {
+		t.Fatalf("wrong user balance")
+	}
+
+	if r.network.channels[router.ChannelID("1")].RouterBalance != 20 {
+		t.Fatalf("wrong router balance")
+	}
+
+	// Check that router earned fee
+	if r.network.channels[router.ChannelID("2")].RouterBalance != 4 {
+		t.Fatalf("wrong router balance")
+	}
+
+	if r.network.channels[router.ChannelID("2")].UserBalance != 16 {
+		t.Fatalf("wrong user balance")
+	}
+}
+
+func waitUpdate(receiver *broadcast.Receiver, obj interface{}) error {
 	desiredType := reflect.TypeOf(obj)
 
 	select {
@@ -348,4 +520,26 @@ func checkUpdate(receiver *broadcast.Receiver, obj interface{}) error {
 	}
 
 	return nil
+}
+
+func skipUpdate(receiver *broadcast.Receiver) error {
+	select {
+	case <-receiver.Read():
+		return nil
+	case <-time.After(time.Second * 2):
+		return errors.New("haven't received update")
+	}
+
+	return nil
+}
+
+func mineBlock(t *testing.T, r *RouterEmulation, blocks *broadcast.Receiver) {
+	// Manually trigger block generation and wait for block notification to be
+	// received.
+	r.network.blockNotifier.MineBlock()
+	select {
+	case <-blocks.Read():
+	case <-time.After(time.Second):
+		t.Fatalf("haven't received block notification")
+	}
 }

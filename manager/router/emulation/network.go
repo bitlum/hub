@@ -29,6 +29,7 @@ type emulationNetwork struct {
 
 	blockNotifier   *blockNotifier
 	blockGeneration time.Duration
+	blockchainFee   int64
 }
 
 func newEmulationNetwork(blockGeneration time.Duration) *emulationNetwork {
@@ -103,13 +104,23 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 		return nil, errors.Errorf("both receiver and sender are zero")
 	}
 
+	// Calculate router fee which it takes for making the forwarding payment.
+	routerFee := calculateForwardingFee(req.Amount, n.router.feeBase,
+		n.router.feeProportion)
+
+	if req.Amount-routerFee <= 0 {
+		return nil, errors.Errorf("fee is greater than amount")
+	}
+
 	if req.Sender != "" {
 		// TODO(andrew.shvv) add multiple channels support
 		channel, ok := n.users[router.UserID(req.Sender)]
 		if !ok {
+			paymentFailed = true
 			return nil, errors.Errorf("unable to find sender with %v id",
 				req.Sender)
 		} else if channel.IsPending {
+			paymentFailed = true
 			return nil, errors.Errorf("channel %v is locked",
 				channel.ChannelID)
 		}
@@ -138,19 +149,21 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 		// TODO(andrew.shvv) add multiple channels support
 		channel, ok := n.users[router.UserID(req.Receiver)]
 		if !ok {
+			paymentFailed = true
 			return nil, errors.Errorf("unable to find receiver with %v id",
 				req.Sender)
 		} else if channel.IsPending {
+			paymentFailed = true
 			return nil, errors.Errorf("channel %v is locked",
 				channel.ChannelID)
 		}
 
-		channel.RouterBalance -= router.BalanceUnit(req.Amount - n.router.fee)
-		channel.UserBalance += router.BalanceUnit(req.Amount - n.router.fee)
+		channel.RouterBalance -= router.BalanceUnit(req.Amount - routerFee)
+		channel.UserBalance += router.BalanceUnit(req.Amount - routerFee)
 		defer func() {
 			if paymentFailed {
-				channel.RouterBalance += router.BalanceUnit(req.Amount + n.router.fee)
-				channel.UserBalance -= router.BalanceUnit(req.Amount + n.router.fee)
+				channel.RouterBalance += router.BalanceUnit(req.Amount + routerFee)
+				channel.UserBalance -= router.BalanceUnit(req.Amount + routerFee)
 			}
 		}()
 
@@ -178,9 +191,7 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 		Sender:   router.UserID(req.Sender),
 		Receiver: router.UserID(req.Receiver),
 		Amount:   router.BalanceUnit(req.Amount),
-
-		// TODO(andrew.shvv) Add earned
-		Earned: 0,
+		Earned:   router.BalanceUnit(routerFee),
 	})
 
 	return &SendPaymentResponse{}, nil
@@ -206,14 +217,30 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 			"user id unsupported")
 	}
 
+	// Ensure that initiator has enough funds to open and close the channel.
+	if req.LockedByUser-n.blockchainFee <= 0 {
+		return nil, errors.Errorf("user balance is not sufficient to "+
+			"open the channel, need(%v)", n.blockchainFee)
+	} else if req.LockedByUser-2*n.blockchainFee <= 0 {
+		return nil, errors.Errorf("user balance is not sufficient to "+
+			"close the channel after opening, need(%v)", 2*n.blockchainFee)
+	}
+
+	// Take fee for opening and closing the channel, from channel initiator,
+	// and save close fee so that we could use it later for paying the
+	// blockchain.
+	openChannelFee := router.BalanceUnit(n.blockchainFee)
+	closeChannelFee := router.BalanceUnit(n.blockchainFee)
+	userBalance := router.BalanceUnit(req.LockedByUser) - openChannelFee - closeChannelFee
 	c := &router.Channel{
 		ChannelID:     chanID,
 		UserID:        userID,
-		UserBalance:   router.BalanceUnit(req.LockedByUser),
+		UserBalance:   router.BalanceUnit(userBalance),
 		RouterBalance: 0,
 		IsPending:     true,
 		IsActive:      false,
 		Initiator:     router.UserInitiator,
+		CloseFee:      closeChannelFee,
 	}
 
 	n.users[userID] = c
@@ -224,9 +251,7 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 		ChannelID:     c.ChannelID,
 		UserBalance:   router.BalanceUnit(c.UserBalance),
 		RouterBalance: router.BalanceUnit(c.RouterBalance),
-
-		// TODO(andrew.shvv) Add work with fee
-		Fee: 0,
+		Fee:           openChannelFee,
 	})
 
 	log.Tracef("User(%v) opened channel(%v) with router", userID, chanID)
@@ -250,9 +275,7 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 			ChannelID:     c.ChannelID,
 			UserBalance:   router.BalanceUnit(c.UserBalance),
 			RouterBalance: router.BalanceUnit(c.RouterBalance),
-
-			// TODO(andrew.shvv) Add work with fee
-			Fee: 0,
+			Fee:           openChannelFee,
 		})
 
 		log.Tracef("Channel(%v) with user(%v) unlocked", chanID, userID)
@@ -287,9 +310,7 @@ func (n *emulationNetwork) CloseChannel(_ context.Context, req *CloseChannelRequ
 	n.broadcaster.Write(&router.UpdateChannelClosing{
 		UserID:    channel.UserID,
 		ChannelID: channel.ChannelID,
-
-		// TODO(andrew.shvv) Add work with fee
-		Fee: 0,
+		Fee:       channel.CloseFee,
 	})
 
 	log.Tracef("User(%v) closed channel(%v)", channel.UserID, channel.ChannelID)
@@ -310,9 +331,7 @@ func (n *emulationNetwork) CloseChannel(_ context.Context, req *CloseChannelRequ
 		n.broadcaster.Write(&router.UpdateChannelClosed{
 			UserID:    channel.UserID,
 			ChannelID: channel.ChannelID,
-
-			// TODO(andrew.shvv) Add work with fee
-			Fee: 0,
+			Fee:       channel.CloseFee,
 		})
 
 		delete(n.channels, chanID)
@@ -333,7 +352,6 @@ func (n *emulationNetwork) CloseChannel(_ context.Context, req *CloseChannelRequ
 // update and channel close.
 func (n *emulationNetwork) SetBlockGenDuration(_ context.Context,
 	req *SetBlockGenDurationRequest) (*SetBlockGenDurationResponse, error) {
-
 	n.Lock()
 	defer n.Unlock()
 
@@ -344,4 +362,16 @@ func (n *emulationNetwork) SetBlockGenDuration(_ context.Context,
 	}
 
 	return &SetBlockGenDurationResponse{}, nil
+}
+
+//
+// SetBlockchainFee is used to set the fee which blockchain takes for
+// making an computation, transaction creation, i.e. channel updates.
+func (n *emulationNetwork) SetBlockchainFee(_ context.Context,
+	req *SetBlockchainFeeRequest) (*SetBlockchainFeeResponse, error) {
+	n.Lock()
+	defer n.Unlock()
+
+	n.blockchainFee = req.Fee
+	return &SetBlockchainFeeResponse{}, nil
 }

@@ -15,7 +15,8 @@ type RouterEmulation struct {
 	freeBalance    router.BalanceUnit
 	pendingBalance router.BalanceUnit
 	network        *emulationNetwork
-	fee            uint64
+	feeBase        int64
+	feeProportion  int64
 }
 
 // Runtime check that RouterEmulation implements router.Router interface.
@@ -80,14 +81,30 @@ func (r *RouterEmulation) OpenChannel(userID router.UserID,
 		return errors.Errorf("multiple channels unsupported")
 	}
 
+	// Ensure that initiator has enough funds to open and close the channel.
+	if funds-router.BalanceUnit(r.network.blockchainFee) <= 0 {
+		return errors.Errorf("router balance is not sufficient to "+
+			"open the channel, need(%v)", r.network.blockchainFee)
+	} else if funds-router.BalanceUnit(2*r.network.blockchainFee) <= 0 {
+		return errors.Errorf("router balance is not sufficient to "+
+			"close the channel after opening, need(%v)", 2*r.network.blockchainFee)
+	}
+
+	// Take fee for opening and closing the channel, from channel initiator,
+	// and save close fee so that we could use it later for paying the
+	// blockchain.
+	openChannelFee := router.BalanceUnit(r.network.blockchainFee)
+	closeChannelFee := router.BalanceUnit(r.network.blockchainFee)
+	routerBalance := funds - openChannelFee - closeChannelFee
 	c := &router.Channel{
 		ChannelID:     chanID,
 		UserID:        userID,
 		UserBalance:   0,
-		RouterBalance: funds,
+		RouterBalance: routerBalance,
 		IsPending:     true,
 		IsActive:      false,
 		Initiator:     router.RouterInitiator,
+		CloseFee:      closeChannelFee,
 	}
 
 	r.network.users[userID] = c
@@ -98,9 +115,7 @@ func (r *RouterEmulation) OpenChannel(userID router.UserID,
 		ChannelID:     c.ChannelID,
 		UserBalance:   router.BalanceUnit(c.UserBalance),
 		RouterBalance: router.BalanceUnit(c.RouterBalance),
-
-		// TODO(andrew.shvv) Add work with fee
-		Fee: 0,
+		Fee:           openChannelFee,
 	})
 
 	log.Tracef("Router opened channel(%v) with user(%v)", chanID, userID)
@@ -124,9 +139,7 @@ func (r *RouterEmulation) OpenChannel(userID router.UserID,
 			ChannelID:     c.ChannelID,
 			UserBalance:   router.BalanceUnit(c.UserBalance),
 			RouterBalance: router.BalanceUnit(c.RouterBalance),
-
-			// TODO(andrew.shvv) Add work with fee
-			Fee: 0,
+			Fee:           openChannelFee,
 		})
 
 		log.Tracef("Channel(%v) with user(%v) unlocked", chanID, userID)
@@ -160,9 +173,7 @@ func (r *RouterEmulation) CloseChannel(id router.ChannelID) error {
 			r.network.broadcaster.Write(&router.UpdateChannelClosing{
 				UserID:    userID,
 				ChannelID: id,
-
-				// TODO(andrew.shvv) Add work with fee
-				Fee: 0,
+				Fee:       channel.CloseFee,
 			})
 
 			log.Tracef("Router closed channel(%v)", id)
@@ -189,9 +200,7 @@ func (r *RouterEmulation) CloseChannel(id router.ChannelID) error {
 				r.network.broadcaster.Write(&router.UpdateChannelClosed{
 					UserID:    userID,
 					ChannelID: id,
-
-					// TODO(andrew.shvv) Add work with fee
-					Fee: 0,
+					Fee:       channel.CloseFee,
 				})
 
 				log.Tracef("Router received %v money previously locked in"+
@@ -225,17 +234,18 @@ func (r *RouterEmulation) UpdateChannel(id router.ChannelID,
 	}
 
 	diff := newRouterBalance - channel.RouterBalance
+	fee := router.BalanceUnit(r.network.blockchainFee)
 
 	if diff > 0 {
 		// Number of funds we want to add from our free balance to the
 		// channel on router side.
 		sliceInFunds := diff
 
-		if sliceInFunds > r.freeBalance {
+		if sliceInFunds+fee > r.freeBalance {
 			return errors.Errorf("insufficient free funds")
 		}
 
-		r.freeBalance -= sliceInFunds
+		r.freeBalance -= sliceInFunds + fee
 		r.pendingBalance += sliceInFunds
 	} else {
 		// Number of funds we want to get from our channel to the
@@ -243,11 +253,11 @@ func (r *RouterEmulation) UpdateChannel(id router.ChannelID,
 		sliceOutFunds := -diff
 
 		// Redundant check, left here just for security if input values would
-		if sliceOutFunds > channel.RouterBalance {
+		if sliceOutFunds + fee > channel.RouterBalance {
 			return errors.Errorf("insufficient funds in channel")
 		}
 
-		channel.RouterBalance -= sliceOutFunds
+		channel.RouterBalance -= sliceOutFunds + fee
 		r.pendingBalance += sliceOutFunds
 	}
 
@@ -259,9 +269,7 @@ func (r *RouterEmulation) UpdateChannel(id router.ChannelID,
 		ChannelID:     channel.ChannelID,
 		UserBalance:   channel.UserBalance,
 		RouterBalance: channel.RouterBalance,
-
-		// TODO(andrew.shvv) Add work with fee
-		Fee: 0,
+		Fee:           fee,
 	})
 
 	// Subscribe on block notification and return funds when block is
@@ -302,9 +310,7 @@ func (r *RouterEmulation) UpdateChannel(id router.ChannelID,
 			ChannelID:     channel.ChannelID,
 			UserBalance:   channel.UserBalance,
 			RouterBalance: channel.RouterBalance,
-
-			// TODO(andrew.shvv) Add work with fee
-			Fee: 0,
+			Fee:           fee,
 		})
 	}()
 
@@ -368,11 +374,18 @@ func (r *RouterEmulation) AverageChangeUpdateDuration() (time.Duration, error) {
 	return r.network.blockGeneration, nil
 }
 
-func (r *RouterEmulation) SetFee(fee uint64) error {
-	r.network.Lock()
-	defer r.network.Unlock()
+// SetFeeBase sets base number of milli units (i.e milli satoshis in
+// Bitcoin) which will be taken for every forwarding payment.
+func (r *RouterEmulation) SetFeeBase(feeBase int64) error {
+	r.feeBase = feeBase
+	return nil
+}
 
-	r.fee = fee
+// SetFeeProportional sets the number of milli units (i.e milli
+// satoshis in Bitcoin) which will be taken for every killo-unit of
+// forwarding payment amount as a forwarding fee.
+func (r *RouterEmulation) SetFeeProportional(feeProportional int64) error {
+	r.feeProportion = feeProportional
 	return nil
 }
 

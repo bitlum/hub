@@ -22,3 +22,13 @@ func fail(errChan chan error, format string, params ...interface{}) error {
 
 	return err
 }
+
+func toMilli(satoshis int64) int64 {
+	milSatInSat := int64(1000)
+	return satoshis * milSatInSat
+}
+
+func fromMilli(milliSatoshis int64) int64 {
+	milSatInSat := int64(1000)
+	return milliSatoshis / milSatInSat
+}
