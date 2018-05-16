@@ -17,8 +17,9 @@ class RouterMgt(FlowStat):
         self.setts = setts
         self.balances = dict()
         self.idle_lim = list()
-        self.periods_eff = list()
-        self.lim_period = list()
+        self.periods_in_eff = list()
+        self.periods_out_eff = list()
+        self.lim_period_in = list()
         self.freqs_out = list()
         self.freqs_in = list()
         self.total_lim = list()
@@ -30,8 +31,9 @@ class RouterMgt(FlowStat):
         self.calc_flow(self.setts.prob_cut)
         self.calc_extremum()
         self.account_idle()
-        self.calc_periods_eff()
-        self.account_periods_eff()
+        self.calc_periods_in_eff()
+        self.calc_periods_out_eff()
+        self.account_periods_in_eff()
         # self.calc_freqs_out()
         # self.calc_freqs_in()
         # self.calc_total_lim()
@@ -60,32 +62,48 @@ class RouterMgt(FlowStat):
             if self.balances[user_id] < lim:
                 self.balances[user_id] = lim
 
-    def calc_periods_eff(self):
-        self.periods_eff.clear()
+    def calc_periods_in_eff(self):
+        self.periods_in_eff.clear()
 
-        self.periods_eff = [None for _ in range(self.users_number)]
+        self.periods_in_eff = [None for _ in range(self.users_number)]
         for i in range(self.users_number):
             for j in range(self.users_number):
                 period = self.smart_period[i][j].mean
                 flow = self.flowmatr[i][j]
                 if period is not None:
-                    amount = period * flow
-                    if self.periods_eff[j] is None:
-                        self.periods_eff[j] = amount / self.flowvect_in[j]
+                    value = period * flow / self.flowvect_in[j]
+                    if self.periods_in_eff[j] is None:
+                        self.periods_in_eff[j] = value
                     else:
-                        self.periods_eff[j] += amount / self.flowvect_in[j]
+                        self.periods_in_eff[j] += value
 
-    def account_periods_eff(self):
-        self.lim_period.clear()
-        self.lim_period = [None for _ in range(self.users_number)]
+    def calc_periods_out_eff(self):
+        self.periods_out_eff.clear()
+
+        self.periods_out_eff = [None for _ in range(self.users_number)]
+        for i in range(self.users_number):
+            for j in range(self.users_number):
+                period = self.smart_period[i][j].mean
+                flow = self.flowmatr[i][j]
+                if period is not None:
+                    value = period * flow / self.flowvect_out[i]
+                    if self.periods_out_eff[i] is None:
+                        self.periods_out_eff[i] = value
+                    else:
+                        self.periods_out_eff[i] += value
+
+    def account_periods_in_eff(self):
+        self.lim_period_in.clear()
+        self.lim_period_in = [None for _ in range(self.users_number)]
 
         for i in range(self.users_number):
-            if self.periods_eff[i] is not None:
-                self.lim_period[i] = self.flowvect_in[i] * self.periods_eff[i]
-                self.lim_period[i] *= self.setts.alpha_T
+            periods_in_eff = self.periods_in_eff[i]
+            if periods_in_eff is not None:
+                self.lim_period_in[i] = self.flowvect_in[i] * periods_in_eff
+                self.lim_period_in[i] *= self.setts.alpha_T
 
         for i in range(self.users_number):
-            lim = self.lim_period[i]
+            lim = self.lim_period_in[i]
             user_id = self.users_id[i]
             if lim is None or lim > self.balances[user_id]:
                 self.balances[user_id] = lim
@@ -110,7 +128,7 @@ class RouterMgt(FlowStat):
         self.total_lim.clear()
         self.total_lim = [lim for lim in self.idle_lim]
         for i in range(self.users_number):
-            lim = self.lim_period[i]
+            lim = self.lim_period_in[i]
             if self.total_lim[i] < lim:
                 self.total_lim[i] = lim
 
