@@ -145,7 +145,7 @@ func (m *NetworkStatsGatherer) Start() {
 						Amount:   int64(u.Amount),
 						Type:     string(u.Type),
 						Status:   string(u.Status),
-						Time:     time.Now().String(),
+						Time:     time.Now().Unix(),
 					}); err != nil {
 						log.Errorf("unable to save the payment: %v", err)
 						continue

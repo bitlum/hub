@@ -192,7 +192,7 @@ var typePayment = graphql.NewObject(graphql.ObjectConfig{
 		},
 		"time": &graphql.Field{
 			Description: "",
-			Type:        graphql.NewNonNull(graphql.String),
+			Type:        graphql.NewNonNull(graphql.Int),
 			Resolve: func(rp graphql.ResolveParams) (interface{}, error) {
 				return rp.Source.(*router.DbPayment).Time, nil
 			},

@@ -48,6 +48,7 @@ query GetPayments {
     time
     amount
     type
+    status
   }
 }
 

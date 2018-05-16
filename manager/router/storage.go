@@ -57,7 +57,7 @@ type DbPayment struct {
 	Amount   int64
 	Status   string
 	Type     string
-	Time     string
+	Time     int64
 }
 
 func NewInMemoryHubStorage() *InMemoryInfoStorage {
