@@ -17,7 +17,7 @@ class RouterMgt(FlowStat):
         self.setts = setts
         self.balances = dict()
         self.idle_lim = list()
-        self.periods_max = list()
+        self.periods_eff = list()
         self.period_lim = list()
         self.freqs_out = list()
         self.freqs_in = list()
@@ -30,13 +30,13 @@ class RouterMgt(FlowStat):
         self.calc_flow(self.setts.prob_cut)
         self.calc_extremum()
         self.account_idle()
-        self.calc_periods_max()
-        self.account_period()
-        self.calc_freqs_out()
-        self.calc_freqs_in()
-        self.calc_total_lim()
-        self.calc_closure()
-        self.calc_closure()
+        self.calc_periods_eff()
+        # self.account_period()
+        # self.calc_freqs_out()
+        # self.calc_freqs_in()
+        # self.calc_total_lim()
+        # self.calc_closure()
+        # self.calc_closure()
 
     def calc_extremum(self):
         self.balances.clear()
@@ -60,20 +60,25 @@ class RouterMgt(FlowStat):
             if self.balances[user_id] < lim:
                 self.balances[user_id] = lim
 
-    def calc_periods_max(self):
-        self.periods_max.clear()
+    def calc_periods_eff(self):
+        self.periods_eff.clear()
 
-        self.periods_max = [float(0) for _ in range(self.users_number)]
+        self.periods_eff = [None for _ in range(self.users_number)]
         for i in range(self.users_number):
-            for period in self.smart_period[i]:
-                if period.mean is not None:
-                    if self.periods_max[i] < period.mean:
-                        self.periods_max[i] = period.mean
+            for j in range(self.users_number):
+                period = self.smart_period[i][j].mean
+                flow = self.flowmatr[i][j]
+                if period is not None:
+                    amount = period * flow
+                    if self.periods_eff[j] is None:
+                        self.periods_eff[j] = amount / self.flowvect_in[j]
+                    else:
+                        self.periods_eff[j] += amount / self.flowvect_in[j]
 
     def account_period(self):
         self.period_lim.clear()
         self.period_lim = [
-            self.setts.alpha_T * self.flowvect_out[i] * self.periods_max[i]
+            self.setts.alpha_T * self.flowvect_out[i] * self.periods_eff[i]
             for i in range(self.users_number)]
 
         for i in range(self.users_number):
@@ -184,6 +189,6 @@ if __name__ == '__main__':
     router_mgt = RouterMgt(transseq, router_setts)
     router_mgt.calc_parameters()
 
-    print('balances ', router_mgt.balances)
-    print('freqs ', router_mgt.freqs)
-    print('wanes ', router_mgt.wanes)
+    # print('balances ', router_mgt.balances)
+    # print('freqs ', router_mgt.freqs)
+    # print('wanes ', router_mgt.wanes)
