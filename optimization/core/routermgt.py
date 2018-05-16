@@ -22,7 +22,6 @@ class RouterMgt(FlowStat):
         self.lim_period_in = list()
         self.freqs_out = list()
         self.freqs_in = list()
-        self.lim_total = list()
         self.freqs = dict()
         self.wanes = dict()
         self.bounds = dict()
@@ -36,9 +35,7 @@ class RouterMgt(FlowStat):
         self.account_periods_in_eff()
         self.calc_freqs_in()
         self.calc_freqs_out()
-        self.calc_lim_total()
-        # self.calc_closure()
-        # self.calc_closure()
+        self.calc_closure()
 
     def calc_extremum(self):
         self.balances.clear()
@@ -117,7 +114,7 @@ class RouterMgt(FlowStat):
         for i in range(self.users_number):
             balance = self.balances[self.users_id[i]]
             if balance is not None:
-                self.freqs_in[i] = self.flowvect_out[i] / balance
+                self.freqs_in[i] = self.flowvect_in[i] / balance
 
     def calc_freqs_out(self):
 
@@ -133,51 +130,49 @@ class RouterMgt(FlowStat):
                         if freq_out is None or freq_out > freq_in:
                             self.freqs_out[j] = freq_in
 
-    def calc_lim_total(self):
-        self.lim_total.clear()
-        self.lim_total = [lim for lim in self.lim_idle]
-        for i in range(self.users_number):
-            lim = self.lim_period_in[i]
-            if lim is None or lim > self.lim_total[i]:
-                self.lim_total[i] = lim
-
-        print('total_lim', self.lim_total)
-
     def calc_closure(self):
 
         self.wanes.clear()
-        self.wanes = {self.users_id[i]: bool(False)
-                      for i in range(self.users_number)}
+        self.wanes = {self.users_id[i]: None for i in range(self.users_number)}
+
         self.freqs.clear()
-        self.freqs = {self.users_id[i]: self.freqs_out[i]
-                      for i in range(self.users_number)}
-        self.balances.clear()
-        self.balances = {self.users_id[i]: self.lim_total[i]
-                         for i in range(self.users_number)}
+        self.freqs = {self.users_id[i]: None for i in range(self.users_number)}
 
         for i in range(self.users_number):
-            balance = self.flowvect_in_eff[i] / self.freqs_in[i]
             user_id = self.users_id[i]
-
-            if balance > self.lim_total[i]:
-                self.balances[user_id] = balance
-
             if self.flowvect_in_eff[i] >= 0:
-                self.wanes[user_id] = True
                 self.freqs[user_id] = self.freqs_in[i]
+                self.wanes[user_id] = True
+            else:
+                self.freqs[user_id] = self.freqs_out[i]
+                self.wanes[user_id] = False
 
         self.bounds.clear()
-        self.bounds = copy.deepcopy(self.balances)
+        self.bounds = {self.users_id[i]: None
+                       for i in range(self.users_number)}
 
         for i in range(self.users_number):
             user_id = self.users_id[i]
-            flow = self.flowvect_in_eff[i]
-            self.bounds[user_id] -= flow / self.freqs[user_id]
 
-        for i in range(self.users_number):
-            user_id = self.users_id[i]
             if self.wanes[user_id]:
-                self.bounds[user_id] = self.lim_total[i]
+                self.bounds[user_id] = self.balances[user_id]
+            else:
+                balance = 0
+                if self.freqs[user_id] is not None:
+                    balance = -self.flowvect_in_eff[i] / self.freqs_out[i]
+                self.bounds[user_id] = balance
+                if self.balances[user_id] is not None:
+                    self.bounds[user_id] += self.balances[user_id]
+
+        for i in range(self.users_number):
+            user_id = self.users_id[i]
+
+            if self.wanes[user_id]:
+                balance = self.flowvect_in_eff[i] / self.freqs[user_id]
+                self.balances[user_id] += balance
+
+            if self.balances[user_id] is None:
+                self.balances[user_id] = float(0)
 
         for i in range(self.users_number):
             user_id = self.users_id[i]
@@ -186,18 +181,24 @@ class RouterMgt(FlowStat):
         # TODO remove this:
         for i in range(self.users_number):
             user_id = self.users_id[i]
+            if self.freqs_out[i] is not None:
+                self.freqs_out[i] = round(self.freqs_out[i], 2)
+            if self.freqs_in[i] is not None:
+                self.freqs_in[i] = round(self.freqs_in[i], 2)
+            if self.freqs[user_id] is not None:
+                self.freqs[user_id] = round(self.freqs[user_id], 2)
 
-            self.freqs_out[i] = round(self.freqs_out[i], 2)
-            self.freqs_in[i] = round(self.freqs_in[i], 2)
-            self.freqs[user_id] = round(self.freqs[user_id], 2)
+            if self.balances[user_id] is not None:
+                self.balances[user_id] = round(self.balances[user_id])
+            if self.bounds[user_id] is not None:
+                self.bounds[user_id] = round(self.bounds[user_id])
 
-            self.lim_total[i] = round(self.lim_total[i])
-            self.balances[user_id] = round(self.balances[user_id])
-            self.bounds[user_id] = round(self.bounds[user_id])
-
-            self.flowvect_out[i] = round(self.flowvect_out[i], 2)
-            self.flowvect_in[i] = round(self.flowvect_in[i], 2)
-            self.flowvect_in_eff[i] = round(self.flowvect_in_eff[i], 2)
+            if self.flowvect_out[i] is not None:
+                self.flowvect_out[i] = round(self.flowvect_out[i], 2)
+            if self.flowvect_in[i] is not None:
+                self.flowvect_in[i] = round(self.flowvect_in[i], 2)
+            if self.flowvect_in_eff[i] is not None:
+                self.flowvect_in_eff[i] = round(self.flowvect_in_eff[i], 2)
 
 
 if __name__ == '__main__':
@@ -221,6 +222,9 @@ if __name__ == '__main__':
     router_mgt = RouterMgt(transseq, router_setts)
     router_mgt.calc_parameters()
 
-    # print('balances ', router_mgt.balances)
-    # print('freqs ', router_mgt.freqs)
-    # print('wanes ', router_mgt.wanes)
+    print('balances', router_mgt.balances)
+    print('bounds', router_mgt.bounds)
+    print('freqs_in', router_mgt.freqs_in)
+    print('freqs_out', router_mgt.freqs_out)
+    print('freqs', router_mgt.freqs)
+    print('wanes', router_mgt.wanes)
