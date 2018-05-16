@@ -1,7 +1,0 @@
-{
-    "users_id_calc_file_name": "outlet/users_id_calc.json",
-    "timematr_calc_file_name": "outlet/timematr_calc.json",
-    "periodmatr_calc_file_name": "outlet/periodmatr_calc.json",
-    "amountmatr_calc_file_name": "outlet/amountmatr_calc.json",
-    "transseq_file_name": "../../activity/outlet/transseq.json"
-}

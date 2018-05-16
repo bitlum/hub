@@ -1,12 +1,12 @@
 import datetime
 import sys
 import os
-import protobuffer.log_pb2 as proto
-from protobuffer.protobuf3_to_dict_patch import protobuf_to_dict
 
 current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_path, '../'))
 
+import protobuffer.log_pb2 as proto
+from protobuffer.protobuf3_to_dict_patch import protobuf_to_dict
 from watcher.protologutills import print_massege
 from samples.protolog import ProtoLog
 

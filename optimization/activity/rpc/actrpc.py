@@ -1,10 +1,7 @@
-from __future__ import print_function
 import time
 import json
 from threading import Thread
-
 import grpc
-
 import sys
 import os
 
@@ -13,8 +10,6 @@ sys.path.append(os.path.join(current_path, '../../'))
 
 import protobuffer.rpc_pb2 as proto
 import protobuffer.rpc_pb2_grpc as proto_rpc
-
-from core.rpc.hubrpc import acthubrpc_gen
 
 
 def set_duration(duration, stub):
@@ -48,17 +43,21 @@ class TransactionThread(Thread):
         self.request = proto.SendPaymentRequest()
 
     def run(self):
-        time.sleep(1.E-9 * self.transaction['time'] - self.time_shift)
-        self.request.sender = self.transaction['payment']['sender']
-        self.request.receiver = self.transaction['payment']['receiver']
-        self.request.amount = round(self.transaction['payment']['amount'])
-        self.stub.SendPayment(self.request)
-        print(self.request)
+        amount = round(self.transaction['payment']['amount'])
+        if amount > 0:
+            time.sleep(1.E-9 * self.transaction['time'] - self.time_shift)
+            self.request.sender = self.transaction['payment']['sender']
+            self.request.receiver = self.transaction['payment']['receiver']
+            self.request.amount = amount
+            try:
+                self.stub.SendPayment(self.request)
+            except Exception as er:
+                print(er, 'is skipped')
+            print(self.request)
 
 
 def sent_transactions(stub, transseq):
     time_init = time.time()
-    # for i in range(40):
     for i in range(len(transseq)):
         TransactionThread(stub, time.time() - time_init,
                           transseq[i]).start()
@@ -84,10 +83,6 @@ def actrpc_gen(file_name_inlet):
     set_duration(duration, stub)
 
     channels_id = open_channels(users_id, user_balances, stub)
-
-    time.sleep(1)
-    acthubrpc_gen(file_name_inlet='../../core/rpc/acthubrpc_inlet.json')
-    time.sleep(2)
 
     sent_transactions(stub, transseq)
 

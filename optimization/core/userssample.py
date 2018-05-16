@@ -14,7 +14,7 @@ class UsersSample:
         self.users_number = int()
 
     def calc_users_data(self):
-        users_id_list = []
+        users_id_list = list()
         for i in range(len(self.transseq)):
             users_id_list.append(self.transseq[i]["payment"]['sender'])
             users_id_list.append(

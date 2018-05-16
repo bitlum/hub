@@ -2,11 +2,11 @@ import sys
 import os
 import json
 
-from core.transsample import TransSample
-from samples.smartsample import SmartSample
-
 current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_path, '../'))
+
+from core.transsample import TransSample
+from samples.smartsample import SmartSample
 
 
 class TransStat(TransSample):

@@ -13,9 +13,9 @@ class SmartLog(RouterState):
 
     def __init__(self):
         super().__init__()
-        self.channel_changes = []
-        self.transseq = []
-        self.states = []
+        self.channel_changes = list()
+        self.transseq = list()
+        self.states = list()
 
     def append(self, message):
         if self.id['payment'] in message:

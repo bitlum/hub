@@ -1,13 +1,12 @@
 import sys
 import os
 import json
-import copy
-
-from core.flowstat import FlowStat
-from core.routersetts import RouterSetts
 
 current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_path, '../'))
+
+from core.flowstat import FlowStat
+from core.routersetts import RouterSetts
 
 
 class RouterMgt(FlowStat):
@@ -39,19 +38,17 @@ class RouterMgt(FlowStat):
 
     def calc_extremum(self):
         self.balances.clear()
-        self.balances = {
-            self.users_id[i]: self.setts.penalty / self.setts.commission
-            for i in range(self.users_number)}
-        if self.setts.income:
-            for i in range(self.users_number):
-                self.balances[self.users_id[i]] *= 2
+        for i in range(self.users_number):
+            user = self.users_id[i]
+            self.balances[user] = self.setts.penalty / self.setts.commission
+            if self.setts.income:
+                self.balances[user] *= 2
 
     def account_idle(self):
         self.lim_idle.clear()
-
-        self.lim_idle = [
-            self.flowvect_out[i] * self.setts.time_p / self.setts.alpha_p
-            for i in range(self.users_number)]
+        for i in range(self.users_number):
+            amount = self.flowvect_out[i] * self.setts.time_p
+            self.lim_idle.append(amount / self.setts.alpha_p)
 
         for i in range(self.users_number):
             lim = self.lim_idle[i]
@@ -61,8 +58,9 @@ class RouterMgt(FlowStat):
 
     def calc_periods_in_eff(self):
         self.periods_in_eff.clear()
+        for _ in range(self.users_number):
+            self.periods_in_eff.append(None)
 
-        self.periods_in_eff = [None for _ in range(self.users_number)]
         for i in range(self.users_number):
             for j in range(self.users_number):
                 period = self.smart_period[i][j].mean
@@ -76,8 +74,9 @@ class RouterMgt(FlowStat):
 
     def calc_periods_out_eff(self):
         self.periods_out_eff.clear()
+        for _ in range(self.users_number):
+            self.periods_out_eff.append(None)
 
-        self.periods_out_eff = [None for _ in range(self.users_number)]
         for i in range(self.users_number):
             for j in range(self.users_number):
                 period = self.smart_period[i][j].mean
@@ -92,7 +91,8 @@ class RouterMgt(FlowStat):
     def account_periods_in_eff(self):
 
         self.lim_period_in.clear()
-        self.lim_period_in = [None for _ in range(self.users_number)]
+        for _ in range(self.users_number):
+            self.lim_period_in.append(None)
 
         for i in range(self.users_number):
             periods_in_eff = self.periods_in_eff[i]
@@ -109,7 +109,8 @@ class RouterMgt(FlowStat):
     def calc_freqs_in(self):
 
         self.freqs_in.clear()
-        self.freqs_in = [None for _ in range(self.users_number)]
+        for _ in range(self.users_number):
+            self.freqs_in.append(None)
 
         for i in range(self.users_number):
             balance = self.balances[self.users_id[i]]
@@ -119,7 +120,8 @@ class RouterMgt(FlowStat):
     def calc_freqs_out(self):
 
         self.freqs_out.clear()
-        self.freqs_out = [None for _ in range(self.users_number)]
+        for _ in range(self.users_number):
+            self.freqs_out.append(None)
 
         for i in range(self.users_number):
             for j in range(self.users_number):
@@ -133,10 +135,14 @@ class RouterMgt(FlowStat):
     def calc_closure(self):
 
         self.wanes.clear()
-        self.wanes = {self.users_id[i]: None for i in range(self.users_number)}
+        for i in range(self.users_number):
+            user = self.users_id[i]
+            self.wanes[user] = None
 
         self.freqs.clear()
-        self.freqs = {self.users_id[i]: None for i in range(self.users_number)}
+        for i in range(self.users_number):
+            user = self.users_id[i]
+            self.freqs[user] = None
 
         for i in range(self.users_number):
             user_id = self.users_id[i]
@@ -148,8 +154,9 @@ class RouterMgt(FlowStat):
                 self.wanes[user_id] = False
 
         self.bounds.clear()
-        self.bounds = {self.users_id[i]: None
-                       for i in range(self.users_number)}
+        for i in range(self.users_number):
+            user = self.users_id[i]
+            self.bounds[user] = None
 
         for i in range(self.users_number):
             user_id = self.users_id[i]
@@ -224,6 +231,9 @@ if __name__ == '__main__':
 
     print('balances', router_mgt.balances)
     print('bounds', router_mgt.bounds)
+    print('flowvect_in', router_mgt.flowvect_in)
+    print('flowvect_out', router_mgt.flowvect_out)
+    print('flowvect_in_eff', router_mgt.flowvect_in_eff)
     print('freqs_in', router_mgt.freqs_in)
     print('freqs_out', router_mgt.freqs_out)
     print('freqs', router_mgt.freqs)

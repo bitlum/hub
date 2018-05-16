@@ -1,7 +1,0 @@
-{   
-    "periodmatr_mean_calc_file_name": "outlet/periodmatr_mean_calc.json",
-    "amountmatr_mean_calc_file_name": "outlet/amountmatr_mean_calc.json",
-	"flowmatr_calc_file_name": "outlet/flowmatr_calc.json",
-	"flowvect_out_calc_file_name": "outlet/flowvect_out_calc.json",
-	"flowvect_in_calc_file_name": "outlet/flowvect_in_calc.json"
-}

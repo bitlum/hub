@@ -3,10 +3,10 @@ import os
 import copy
 import json
 
-from core.userssample import UsersSample
-
 current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_path, '../'))
+
+from core.userssample import UsersSample
 
 
 class TransSample(UsersSample):

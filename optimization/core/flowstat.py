@@ -2,10 +2,10 @@ import sys
 import os
 import json
 
-from core.transstat import TransStat
-
 current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_path, '../'))
+
+from core.transstat import TransStat
 
 
 class FlowStat(TransStat):

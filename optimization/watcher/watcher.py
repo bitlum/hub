@@ -52,11 +52,6 @@ class Watcher(PattMatchEvHand):
                 self.router_mgt.calc_parameters()
 
                 self.update_set.clear()
-                print('wanes', self.router_mgt.wanes)
-                print('self.smart_log.router_balances',
-                      self.smart_log.router_balances)
-                print('bound', self.router_mgt.bounds)
-
                 for user, wane in self.router_mgt.wanes.items():
                     balance = 0
                     if user in self.smart_log.router_balances:
@@ -69,8 +64,6 @@ class Watcher(PattMatchEvHand):
                         if balance > bound or balance == 0:
                             self.update_set.add(user)
 
-                print('update_set', self.update_set)
-                print('router_mgt.balances', self.router_mgt.balances)
                 self.hubrpc.update()
 
             self.mgt_ticker += 1
