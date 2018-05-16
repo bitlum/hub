@@ -34,8 +34,8 @@ class RouterMgt(FlowStat):
         self.calc_periods_in_eff()
         self.calc_periods_out_eff()
         self.account_periods_in_eff()
-        # self.calc_freqs_out()
-        # self.calc_freqs_in()
+        self.calc_freqs_in()
+        self.calc_freqs_out()
         # self.calc_total_lim()
         # self.calc_closure()
         # self.calc_closure()
@@ -93,6 +93,7 @@ class RouterMgt(FlowStat):
                         self.periods_out_eff[i] += value
 
     def account_periods_in_eff(self):
+
         self.lim_period_in.clear()
         self.lim_period_in = [None for _ in range(self.users_number)]
 
@@ -108,21 +109,29 @@ class RouterMgt(FlowStat):
             if lim is None or lim > self.balances[user_id]:
                 self.balances[user_id] = lim
 
-    def calc_freqs_out(self):
-        self.freqs_out.clear()
-        self.freqs_out = [
-            self.flowvect_out[i] / self.balances[self.users_id[i]]
-            for i in range(self.users_number)]
-
     def calc_freqs_in(self):
+
         self.freqs_in.clear()
-        self.freqs_in = copy.deepcopy(self.freqs_out)
+        self.freqs_in = [None for _ in range(self.users_number)]
+
+        for i in range(self.users_number):
+            balance = self.balances[self.users_id[i]]
+            if balance is not None:
+                self.freqs_in[i] = self.flowvect_out[i] / balance
+
+    def calc_freqs_out(self):
+
+        self.freqs_out.clear()
+        self.freqs_out = [None for _ in range(self.users_number)]
 
         for i in range(self.users_number):
             for j in range(self.users_number):
-                freq = self.freqs_out[i]
-                if self.freqs_in[j] < freq:
-                    self.freqs_in[j] = freq
+                if self.smart_period[j][i].mean is not None:
+                    freq_in = self.freqs_in[i]
+                    freq_out = self.freqs_out[j]
+                    if freq_in is not None:
+                        if freq_out is None or freq_out > freq_in:
+                            self.freqs_out[j] = freq_in
 
     def calc_total_lim(self):
         self.total_lim.clear()
