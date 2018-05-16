@@ -486,3 +486,18 @@ func (r *Router) Done() chan error {
 func (r *Router) Asset() string {
 	return r.cfg.Asset
 }
+
+// SetFeeBase sets base number of milli units (i.e milli satoshis in
+// Bitcoin) which will be taken for every forwarding payment.
+func (r *Router) SetFeeBase(feeBase int64) error {
+	// TODO(andrew.shvv) Implement
+	return nil
+}
+
+// SetFeeProportional sets the number of milli units (i.e milli
+// satoshis in Bitcoin) which will be taken for every killo-unit of
+// forwarding payment amount as a forwarding fee.
+func (r *Router) SetFeeProportional(feeProportional int64) error {
+	// TODO(andrew.shvv) Implement
+	return nil
+}
