@@ -10,6 +10,10 @@ It is generated from these files:
 It has these top-level messages:
 	UpdateLinkRequest
 	UpdateLinkResponse
+	SetPaymentFeeBaseRequest
+	SetPaymentFeeBaseResponse
+	SetPaymentFeeProportionalRequest
+	SetPaymentFeeProportionalResponse
 */
 package hubrpc
 
@@ -74,9 +78,65 @@ func (m *UpdateLinkResponse) String() string            { return proto.CompactTe
 func (*UpdateLinkResponse) ProtoMessage()               {}
 func (*UpdateLinkResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{1} }
 
+type SetPaymentFeeBaseRequest struct {
+	PaymentFeeBase int64 `protobuf:"varint,1,opt,name=PaymentFeeBase,json=paymentFeeBase" json:"PaymentFeeBase,omitempty"`
+}
+
+func (m *SetPaymentFeeBaseRequest) Reset()                    { *m = SetPaymentFeeBaseRequest{} }
+func (m *SetPaymentFeeBaseRequest) String() string            { return proto.CompactTextString(m) }
+func (*SetPaymentFeeBaseRequest) ProtoMessage()               {}
+func (*SetPaymentFeeBaseRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{2} }
+
+func (m *SetPaymentFeeBaseRequest) GetPaymentFeeBase() int64 {
+	if m != nil {
+		return m.PaymentFeeBase
+	}
+	return 0
+}
+
+type SetPaymentFeeBaseResponse struct {
+}
+
+func (m *SetPaymentFeeBaseResponse) Reset()                    { *m = SetPaymentFeeBaseResponse{} }
+func (m *SetPaymentFeeBaseResponse) String() string            { return proto.CompactTextString(m) }
+func (*SetPaymentFeeBaseResponse) ProtoMessage()               {}
+func (*SetPaymentFeeBaseResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{3} }
+
+type SetPaymentFeeProportionalRequest struct {
+	PaymentFeeProportional int64 `protobuf:"varint,1,opt,name=PaymentFeeProportional,json=paymentFeeProportional" json:"PaymentFeeProportional,omitempty"`
+}
+
+func (m *SetPaymentFeeProportionalRequest) Reset()         { *m = SetPaymentFeeProportionalRequest{} }
+func (m *SetPaymentFeeProportionalRequest) String() string { return proto.CompactTextString(m) }
+func (*SetPaymentFeeProportionalRequest) ProtoMessage()    {}
+func (*SetPaymentFeeProportionalRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor0, []int{4}
+}
+
+func (m *SetPaymentFeeProportionalRequest) GetPaymentFeeProportional() int64 {
+	if m != nil {
+		return m.PaymentFeeProportional
+	}
+	return 0
+}
+
+type SetPaymentFeeProportionalResponse struct {
+}
+
+func (m *SetPaymentFeeProportionalResponse) Reset()         { *m = SetPaymentFeeProportionalResponse{} }
+func (m *SetPaymentFeeProportionalResponse) String() string { return proto.CompactTextString(m) }
+func (*SetPaymentFeeProportionalResponse) ProtoMessage()    {}
+func (*SetPaymentFeeProportionalResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor0, []int{5}
+}
+
 func init() {
 	proto.RegisterType((*UpdateLinkRequest)(nil), "hubrpc.UpdateLinkRequest")
 	proto.RegisterType((*UpdateLinkResponse)(nil), "hubrpc.UpdateLinkResponse")
+	proto.RegisterType((*SetPaymentFeeBaseRequest)(nil), "hubrpc.SetPaymentFeeBaseRequest")
+	proto.RegisterType((*SetPaymentFeeBaseResponse)(nil), "hubrpc.SetPaymentFeeBaseResponse")
+	proto.RegisterType((*SetPaymentFeeProportionalRequest)(nil), "hubrpc.SetPaymentFeeProportionalRequest")
+	proto.RegisterType((*SetPaymentFeeProportionalResponse)(nil), "hubrpc.SetPaymentFeeProportionalResponse")
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -96,6 +156,15 @@ type ManagerClient interface {
 	// channels betwwen user and router. This hook is used by third-parties
 	// to put new equilibritum state.
 	UpdateLink(ctx context.Context, in *UpdateLinkRequest, opts ...grpc.CallOption) (*UpdateLinkResponse, error)
+	//
+	// SetPaymentFeeBase sets base number of milli units (i.e milli satoshis in
+	// Bitcoin) which will be taken for every payment forwarding.
+	SetPaymentFeeBase(ctx context.Context, in *SetPaymentFeeBaseRequest, opts ...grpc.CallOption) (*SetPaymentFeeBaseResponse, error)
+	//
+	// SetPaymentFeeProportional sets the number of milli units (i.e milli
+	// satoshis in Bitcoin) which will be taken for every killounit of
+	// payment amount.
+	SetPaymentFeeProportional(ctx context.Context, in *SetPaymentFeeProportionalRequest, opts ...grpc.CallOption) (*SetPaymentFeeProportionalResponse, error)
 }
 
 type managerClient struct {
@@ -115,6 +184,24 @@ func (c *managerClient) UpdateLink(ctx context.Context, in *UpdateLinkRequest, o
 	return out, nil
 }
 
+func (c *managerClient) SetPaymentFeeBase(ctx context.Context, in *SetPaymentFeeBaseRequest, opts ...grpc.CallOption) (*SetPaymentFeeBaseResponse, error) {
+	out := new(SetPaymentFeeBaseResponse)
+	err := grpc.Invoke(ctx, "/hubrpc.Manager/SetPaymentFeeBase", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *managerClient) SetPaymentFeeProportional(ctx context.Context, in *SetPaymentFeeProportionalRequest, opts ...grpc.CallOption) (*SetPaymentFeeProportionalResponse, error) {
+	out := new(SetPaymentFeeProportionalResponse)
+	err := grpc.Invoke(ctx, "/hubrpc.Manager/SetPaymentFeeProportional", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Manager service
 
 type ManagerServer interface {
@@ -124,6 +211,15 @@ type ManagerServer interface {
 	// channels betwwen user and router. This hook is used by third-parties
 	// to put new equilibritum state.
 	UpdateLink(context.Context, *UpdateLinkRequest) (*UpdateLinkResponse, error)
+	//
+	// SetPaymentFeeBase sets base number of milli units (i.e milli satoshis in
+	// Bitcoin) which will be taken for every payment forwarding.
+	SetPaymentFeeBase(context.Context, *SetPaymentFeeBaseRequest) (*SetPaymentFeeBaseResponse, error)
+	//
+	// SetPaymentFeeProportional sets the number of milli units (i.e milli
+	// satoshis in Bitcoin) which will be taken for every killounit of
+	// payment amount.
+	SetPaymentFeeProportional(context.Context, *SetPaymentFeeProportionalRequest) (*SetPaymentFeeProportionalResponse, error)
 }
 
 func RegisterManagerServer(s *grpc.Server, srv ManagerServer) {
@@ -148,6 +244,42 @@ func _Manager_UpdateLink_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Manager_SetPaymentFeeBase_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetPaymentFeeBaseRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ManagerServer).SetPaymentFeeBase(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/hubrpc.Manager/SetPaymentFeeBase",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ManagerServer).SetPaymentFeeBase(ctx, req.(*SetPaymentFeeBaseRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Manager_SetPaymentFeeProportional_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetPaymentFeeProportionalRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ManagerServer).SetPaymentFeeProportional(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/hubrpc.Manager/SetPaymentFeeProportional",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ManagerServer).SetPaymentFeeProportional(ctx, req.(*SetPaymentFeeProportionalRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Manager_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "hubrpc.Manager",
 	HandlerType: (*ManagerServer)(nil),
@@ -155,6 +287,14 @@ var _Manager_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateLink",
 			Handler:    _Manager_UpdateLink_Handler,
+		},
+		{
+			MethodName: "SetPaymentFeeBase",
+			Handler:    _Manager_SetPaymentFeeBase_Handler,
+		},
+		{
+			MethodName: "SetPaymentFeeProportional",
+			Handler:    _Manager_SetPaymentFeeProportional_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -164,17 +304,24 @@ var _Manager_serviceDesc = grpc.ServiceDesc{
 func init() { proto.RegisterFile("hubrpc.proto", fileDescriptor0) }
 
 var fileDescriptor0 = []byte{
-	// 178 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0xc9, 0x28, 0x4d, 0x2a,
-	0x2a, 0x48, 0xd6, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x62, 0x83, 0xf0, 0x94, 0xd2, 0xb9, 0x04,
-	0x43, 0x0b, 0x52, 0x12, 0x4b, 0x52, 0x7d, 0x32, 0xf3, 0xb2, 0x83, 0x52, 0x0b, 0x4b, 0x53, 0x8b,
-	0x4b, 0x84, 0x84, 0xb8, 0x58, 0x4a, 0x32, 0x73, 0x53, 0x25, 0x18, 0x15, 0x18, 0x35, 0x58, 0x82,
-	0xc0, 0x6c, 0x21, 0x71, 0x2e, 0xf6, 0xd2, 0xe2, 0xd4, 0xa2, 0xf8, 0xcc, 0x14, 0x09, 0x26, 0x05,
-	0x46, 0x0d, 0xce, 0x20, 0x36, 0x10, 0xd7, 0x33, 0x45, 0x48, 0x95, 0x8b, 0xaf, 0x28, 0xbf, 0xb4,
-	0x24, 0xb5, 0x28, 0x3e, 0x29, 0x31, 0x27, 0x31, 0x2f, 0x39, 0x55, 0x82, 0x05, 0xac, 0x8d, 0x17,
-	0x22, 0xea, 0x04, 0x11, 0x54, 0x12, 0xe1, 0x12, 0x42, 0xb6, 0xa8, 0xb8, 0x20, 0x3f, 0xaf, 0x38,
-	0xd5, 0xc8, 0x8f, 0x8b, 0xdd, 0x37, 0x31, 0x2f, 0x31, 0x3d, 0xb5, 0x48, 0xc8, 0x99, 0x8b, 0x0b,
-	0xa1, 0x40, 0x48, 0x52, 0x0f, 0xea, 0x5c, 0x0c, 0xd7, 0x49, 0x49, 0x61, 0x93, 0x82, 0x98, 0x97,
-	0xc4, 0x06, 0xf6, 0x9d, 0x31, 0x20, 0x00, 0x00, 0xff, 0xff, 0x43, 0x58, 0xe7, 0xc2, 0xed, 0x00,
-	0x00, 0x00,
+	// 297 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x52, 0xc1, 0x4a, 0xc3, 0x40,
+	0x10, 0xa5, 0x35, 0xa4, 0x38, 0x68, 0xa0, 0x83, 0xd4, 0x34, 0x5e, 0xd2, 0x88, 0x12, 0x2f, 0x3d,
+	0x28, 0xf8, 0x01, 0x11, 0x04, 0x41, 0xa1, 0x44, 0x04, 0xf1, 0x52, 0x36, 0xcd, 0x50, 0x83, 0xed,
+	0xee, 0xba, 0xd9, 0x1c, 0xfc, 0x15, 0xbf, 0x56, 0xcc, 0x26, 0xd8, 0xd8, 0xb5, 0x78, 0xdb, 0x99,
+	0x37, 0xf3, 0xde, 0xcc, 0x9b, 0x85, 0x83, 0xd7, 0x2a, 0x53, 0x72, 0x31, 0x95, 0x4a, 0x68, 0x81,
+	0xae, 0x89, 0xa2, 0x25, 0x0c, 0x9f, 0x64, 0xce, 0x34, 0xdd, 0x17, 0xfc, 0x2d, 0xa5, 0xf7, 0x8a,
+	0x4a, 0x8d, 0x08, 0x8e, 0x2e, 0xd6, 0xe4, 0xf7, 0xc2, 0x5e, 0xec, 0xa4, 0xf5, 0x1b, 0x8f, 0x61,
+	0x50, 0x95, 0xa4, 0xe6, 0x45, 0xee, 0xf7, 0xc3, 0x5e, 0xbc, 0x9f, 0xba, 0xdf, 0xe1, 0x5d, 0x8e,
+	0x67, 0xe0, 0x29, 0x51, 0x69, 0x52, 0xf3, 0x8c, 0xad, 0x18, 0x5f, 0x90, 0xef, 0xd4, 0x6d, 0x87,
+	0x26, 0x9b, 0x98, 0x64, 0x74, 0x04, 0xb8, 0x29, 0x54, 0x4a, 0xc1, 0x4b, 0x8a, 0x12, 0xf0, 0x1f,
+	0x49, 0xcf, 0xd8, 0xc7, 0x9a, 0xb8, 0xbe, 0x25, 0x4a, 0x58, 0x49, 0xed, 0x14, 0xe7, 0xe0, 0x75,
+	0x81, 0x7a, 0x9e, 0xbd, 0xd4, 0x93, 0x9d, 0x6c, 0x74, 0x02, 0x63, 0x0b, 0x47, 0x23, 0xf0, 0x02,
+	0x61, 0x07, 0x9c, 0x29, 0x21, 0x85, 0xd2, 0x85, 0xe0, 0x6c, 0xd5, 0x0a, 0x5d, 0xc3, 0xc8, 0x5e,
+	0xd0, 0x08, 0x8e, 0xa4, 0x15, 0x8d, 0x4e, 0x61, 0xb2, 0x83, 0xdb, 0x0c, 0x70, 0xf9, 0xd9, 0x87,
+	0xc1, 0x03, 0xe3, 0x6c, 0x49, 0x0a, 0x6f, 0x00, 0x7e, 0x3c, 0xc0, 0xf1, 0xb4, 0xb9, 0xc8, 0xd6,
+	0x01, 0x82, 0xc0, 0x06, 0x19, 0x42, 0x7c, 0x86, 0xe1, 0xd6, 0xba, 0x18, 0xb6, 0x0d, 0x7f, 0xb9,
+	0x19, 0x4c, 0x76, 0x54, 0x34, 0xcc, 0xf2, 0x97, 0x91, 0x9b, 0xfb, 0x60, 0x6c, 0xed, 0xb7, 0xd8,
+	0x19, 0x5c, 0xfc, 0xa3, 0xd2, 0x28, 0x66, 0x6e, 0xfd, 0x19, 0xaf, 0xbe, 0x02, 0x00, 0x00, 0xff,
+	0xff, 0xfb, 0x94, 0xd9, 0x55, 0x9c, 0x02, 0x00, 0x00,
 }

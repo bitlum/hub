@@ -65,3 +65,23 @@ func (h *Hub) UpdateLink(_ context.Context,
 
 	return &UpdateLinkResponse{}, nil
 }
+
+//
+// SetPaymentFeeBase sets base number of milli units (i.e milli satoshis in
+// Bitcoin) which will be taken for every payment forwarding.
+func (h *Hub) SetPaymentFeeBase(_ context.Context,
+	req *SetPaymentFeeBaseRequest) (*SetPaymentFeeBaseResponse, error) {
+	err := h.router.SetFeeBase(req.PaymentFeeBase)
+	return &SetPaymentFeeBaseResponse{}, err
+}
+
+//
+// SetPaymentFeeProportional sets the number of milli units (i.e milli
+// satoshis in Bitcoin) which will be taken for every killounit of
+// payment amount.
+func (h *Hub) SetPaymentFeeProportional(_ context.Context,
+	req *SetPaymentFeeProportionalRequest) (*SetPaymentFeeProportionalResponse,
+	error) {
+	err := h.router.SetFeeProportional(req.PaymentFeeProportional)
+	return &SetPaymentFeeProportionalResponse{}, err
+}
