@@ -1,8 +1,0 @@
-{
-    "period_cut_frac": 0.7,
-    "trans_cut_frac": 0.7,
-    "periodmatr_calc_file_name": "outlet/periodmatr_calc.json",
-    "transmatr_calc_file_name": "outlet/transmatr_calc.json",
-    "periodmatr_mean_file_name": "outlet/periodmatr_mean.json",
-    "transmatr_mean_file_name": "outlet/transmatr_mean.json"
-}
