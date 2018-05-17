@@ -26,6 +26,11 @@ service Emulator {
     // to be generatedtime. This would impact channel creation, channel
     // update and channel close.
     rpc SetBlockGenDuration (SetBlockGenDurationRequest) returns (SetBlockGenDurationResponse);
+
+    //
+    // SetBlockchainFee is used to set the fee which blockchain takes for
+    // making an computation, transaction creation, i.e. channel updates.
+    rpc SetBlockchainFee (SetBlockchainFeeRequest) returns (SetBlockchainFeeResponse);
 }
 
 message SendPaymentRequest {
@@ -37,7 +42,7 @@ message SendPaymentRequest {
     // believe that router is the receiver.
     string receiver = 2;
 
-    uint64 amount = 4;
+    int64 amount = 4;
 }
 
 message SendPaymentResponse {
@@ -45,7 +50,7 @@ message SendPaymentResponse {
 
 message OpenChannelRequest {
     string user_id = 1;
-    uint64 locked_by_user = 2;
+    int64 locked_by_user = 2;
 }
 
 message OpenChannelResponse {
@@ -66,5 +71,16 @@ message SetBlockGenDurationRequest {
 }
 
 message SetBlockGenDurationResponse {
+}
+
+message SetBlockchainFeeRequest {
+    // fee is the number expressed in satoshis, which blockchain takes for
+    // making an computation, transaction creation, i.e. channel updates.
+    // TODO(andrew.shvv) Make it real world friendly - calculate fee
+    // depending on tx size and fee per kilobyte.
+    int64 fee = 3;
+}
+
+message SetBlockchainFeeResponse {
 }
 
