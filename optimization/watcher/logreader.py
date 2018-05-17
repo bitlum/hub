@@ -39,7 +39,7 @@ class LogReader:
 
                 self.convert()
 
-                # print(self.smart_log)
+                print(self.smart_log)
 
     def read_message(self):
         log = proto.Log()
