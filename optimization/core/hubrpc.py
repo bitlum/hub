@@ -22,11 +22,25 @@ class HubRPC:
         self.stub = proto_rpc_hub.ManagerStub(rpc_channel)
 
     def update_link(self, user_id, balance):
-        request_update = proto_hub.UpdateLinkRequest()
-        request_update.time = int(time.time() * 1E9)
-        request_update.user_id = user_id
-        request_update.router_balance = balance
-        self.stub.UpdateLink(request_update)
+        request = proto_hub.UpdateLinkRequest()
+        request.time = int(time.time() * 1E9)
+        request.user_id = user_id
+        request.router_balance = balance
+        self.stub.UpdateLink(request)
+
+    def set_payment_fee_base(self, value):
+        request = proto_hub.SetPaymentFeeBaseRequest()
+        request.payment_fee_base = value
+        print('set_payment_fee_base:')
+        print(request)
+        self.stub.SetPaymentFeeBase(request)
+
+    def set_payment_fee_proportional(self, value):
+        request = proto_hub.SetPaymentFeeProportionalRequest()
+        request.payment_fee_proportional = value
+        print('set_payment_fee_proportional:')
+        print(request)
+        self.stub.SetPaymentFeeProportional(request)
 
     def update(self):
         for user in self.update_set:
