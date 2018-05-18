@@ -23,16 +23,16 @@ def actmatr_gen(file_name_inlet):
     with open(inlet['periodmatr_stdev_file_name']) as f:
         periodmatr_stdev = json.load(f)['periodmatr_stdev']
 
-    with open(inlet['sizematr_mean_file_name']) as f:
-        sizematr_mean = json.load(f)['sizematr_mean']
+    with open(inlet['amountmatr_mean_file_name']) as f:
+        amountmatr_mean = json.load(f)['amountmatr_mean']
 
-    with open(inlet['sizematr_stdev_file_name']) as f:
-        sizematr_stdev = json.load(f)['sizematr_stdev']
+    with open(inlet['amountmatr_stdev_file_name']) as f:
+        amountmatr_stdev = json.load(f)['amountmatr_stdev']
 
     timematr = [[[] for _ in range(len(periodmatr_mean))] for _ in
                 range(len(periodmatr_mean))]
-    transmatr = [[[] for _ in range(len(periodmatr_mean))] for _ in
-                 range(len(periodmatr_mean))]
+    amountmatr = [[[] for _ in range(len(periodmatr_mean))] for _ in
+                  range(len(periodmatr_mean))]
 
     for i in range(len(periodmatr_mean)):
         for j in range(len(periodmatr_mean[i])):
@@ -41,16 +41,19 @@ def actmatr_gen(file_name_inlet):
                 for _ in range(
                         int(inlet['time_period'] / periodmatr_mean[i][j])):
                     timematr[i][j].append(random.gauss(periodmatr_mean[i][j],
+                                                       periodmatr_mean[i][j] *
                                                        periodmatr_stdev[i][j]))
 
                     if timematr[i][j][-1] <= 0:
                         timematr[i][j][-1] = periodmatr_mean[i][j]
 
-                    transmatr[i][j].append(random.gauss(sizematr_mean[i][j],
-                                                        sizematr_stdev[i][j]))
+                    amountmatr[i][j].append(
+                        random.gauss(amountmatr_mean[i][j],
+                                     amountmatr_mean[i][j] *
+                                     amountmatr_stdev[i][j]))
 
-                    if transmatr[i][j][-1] <= 0:
-                        transmatr[i][j][-1] = sizematr_mean[i][j]
+                    if amountmatr[i][j][-1] <= 0:
+                        amountmatr[i][j][-1] = amountmatr_mean[i][j]
 
                 for k in range(1, len(timematr[i][j])):
                     timematr[i][j][k] += timematr[i][j][k - 1]
@@ -62,8 +65,9 @@ def actmatr_gen(file_name_inlet):
 
     # write transaction time sequence matrix into a file
 
-    with open(inlet['transmatr_file_name'], 'w') as f:
-        json.dump({'transmatr': transmatr}, f, sort_keys=True, indent=4 * ' ')
+    with open(inlet['amountmatr_file_name'], 'w') as f:
+        json.dump({'amountmatr': amountmatr}, f, sort_keys=True,
+                  indent=4 * ' ')
 
 
 if __name__ == '__main__':

@@ -8,21 +8,22 @@ sys.path.append(os.path.join(current_path, '../'))
 
 import samples.erfcut as erfcut
 
+from samples.samplegen import generate_sample
+
 
 class SmartSample:
 
-    def __init__(self, value, prob_cut):
-        self.value = value[:]
-        self.number = 0
-        self.sum = 0.
-        self.mean = 0.
-        self.minimum = 0.
-        self.maximum = 0.
-        self.stdev = 0.
-        self.variance = 0.
-        self.cut = 0.
-        self.prob_cut = prob_cut
-        self.calcstatistic()
+    def __init__(self, sample):
+        self.sample = sample
+        self.number = int()
+        self.prob_cut = float()
+        self.sum = float()
+        self.mean = float()
+        self.minimum = float()
+        self.maximum = float()
+        self.stdev = float()
+        self.variance = float()
+        self.cut = float()
 
     def __str__(self):
         outstr = ''
@@ -37,21 +38,44 @@ class SmartSample:
         outstr += 'cut is ' + str('{:.3f}'.format(self.cut))
         return outstr
 
-    def calcstatistic(self):
-        self.number = len(self.value)
-        self.calcsum()
-        self.mean = statistics.mean(self.value)
-        self.minimum = min(self.value)
-        self.maximum = max(self.value)
-        self.stdev = statistics.stdev(self.value)
-        self.variance = statistics.variance(self.value)
-        self.erfcut()
+    def calc_stat(self, prob_cut=0.5):
+        self.prob_cut = prob_cut
+        self.number = len(self.sample)
+        if self.number == 0:
+            self.sum = None
+            self.mean = None
+            self.minimum = None
+            self.maximum = None
+            self.stdev = None
+            self.variance = None
+            self.cut = None
+        else:
+            self.calc_sum()
+            self.mean = statistics.mean(self.sample)
+            self.minimum = min(self.sample)
+            self.maximum = max(self.sample)
+            self.cut = self.mean
+            if self.number == 1:
+                self.stdev = 0
+                self.variance = 0
+            else:
+                self.stdev = statistics.stdev(self.sample)
+                self.variance = statistics.variance(self.sample)
+                if self.stdev > 0:
+                    self.calc_erfcut()
 
-    def calcsum(self):
+    def calc_sum(self):
         self.sum = 0.
         for i in range(self.number):
-            self.sum += self.value[i]
+            self.sum += self.sample[i]
 
-    def erfcut(self):
-        self.cut = erfcut.erf_cut_calc(self.prob_cut, self.mean, self.stdev,
-                                       erfcut.Method.newton, 1.E-5)
+    def calc_erfcut(self):
+        self.cut = erfcut.erfcut_calc(self.prob_cut, self.mean, self.stdev,
+                                      erfcut.Method.newton, 1.E-5)
+
+
+if __name__ == '__main__':
+    sample = generate_sample(100, 50, 30)
+    smart_sample = SmartSample(sample)
+    smart_sample.calc_stat()
+    print(smart_sample)

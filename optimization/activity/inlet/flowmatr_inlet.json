@@ -1,6 +1,6 @@
 {
-    "min_mult": 0.5,
-    "max_mult": 2.5,
+    "min_mult": 0.75,
+    "max_mult": 1.75,
     "flowvect_file_name": "outlet/flowvect.json",
     "flowmatr_file_name": "outlet/flowmatr.json"
 }
