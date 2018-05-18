@@ -63,4 +63,4 @@ class LogReader:
 
         self.smart_log.append(dict_massege)
 
-        print_massege(dict_massege)
+        # print_massege(dict_massege)
