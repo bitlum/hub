@@ -32,17 +32,38 @@ class SmartLog(RouterState):
                 self.set_change(message[self.id['change']])
 
     def __str__(self):
+        router_funds = 0
+        for _, balance in self.router_balances.items():
+            router_funds += balance
         out_str = ''
+        out_str += 'Profit is ' + str(self.profit) + '\n'
+        out_str += 'Router funds is ' + str(router_funds) + '\n'
         out_str += 'Number of channel_changes is ' + str(len(
             self.channel_changes)) + '\n'
         out_str += 'Number of payments is ' + str(len(
             self.transseq)) + '\n'
         out_str += 'Number of states is ' + str(len(self.states)) + '\n'
-        if len(self.transseq) > 0:
-            out_str += 'Last transaction: ' + self.sender + ' -> ' + \
-                       self.receiver + ' : ' + str(self.amount) + '\n'
 
-        for key in list(SortedDict(self.router_balances).keys()):
-            out_str += key + ' ' + str(self.router_balances[key]) + '\n'
+        lines_number = len(self.transseq)
+        if lines_number >= 20:
+            lines_number = 20
+        for _ in range(20 - lines_number):
+            print()
+
+        if len(self.transseq) > 0:
+            for i in range(lines_number):
+                ind = len(self.transseq) - lines_number + i
+                sender = self.transseq[ind]["payment"]["sender"]
+                receiver = self.transseq[ind]["payment"]["receiver"]
+                amount = str(self.transseq[ind]["payment"]["amount"])
+                earned = str(self.transseq[ind]["payment"]["earned"])
+                status = self.transseq[ind]["payment"]["status"]
+                out_str += '* ' + sender + ' -> ' + receiver + \
+                           ' :: ' + amount + ' : ' + earned + \
+                           ' : ' + status + '\n'
+
+            for key in list(SortedDict(self.router_balances).keys()):
+                out_str += key + ' ' + str(
+                    self.router_balances[key]) + '\n'
 
         return out_str

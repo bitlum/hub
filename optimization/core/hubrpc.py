@@ -31,15 +31,11 @@ class HubRPC:
     def set_payment_fee_base(self, value):
         request = proto_hub.SetPaymentFeeBaseRequest()
         request.payment_fee_base = value
-        print('set_payment_fee_base:')
-        print(request)
         self.stub.SetPaymentFeeBase(request)
 
     def set_payment_fee_proportional(self, value):
         request = proto_hub.SetPaymentFeeProportionalRequest()
         request.payment_fee_proportional = value
-        print('set_payment_fee_proportional:')
-        print(request)
         self.stub.SetPaymentFeeProportional(request)
 
     def update(self):

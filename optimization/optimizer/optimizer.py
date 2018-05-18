@@ -2,6 +2,7 @@ from watchdog.observers import Observer
 import time
 import sys
 import os
+import json
 
 current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_path, '../'))
@@ -11,24 +12,34 @@ from watcher.watcher import Watcher
 from watcher.protologutills import split_path_name
 from core.routersetts import RouterSetts
 
-router_setts = RouterSetts()
-router_setts.set_setts_from_file('../core/inlet/routermgt_inlet.json')
 
-smart_log = SmartLog()
+def optimize(file_name_inlet):
+    with open(file_name_inlet) as f:
+        inlet = json.load(f)
 
-log_file = '/Users/bigelk/data/tmp/manager/test.log'
+    router_setts = RouterSetts()
+    router_setts.set_setts_from_file(file_name_inlet)
 
-watcher = Watcher(log_file, smart_log, router_setts, 7)
+    smart_log = SmartLog()
 
-obser = Observer()
-obser.schedule(watcher, split_path_name(log_file)['path'])
+    log_file = inlet['log_file_name']
 
-obser.start()
+    optimizer_idle = inlet['optimizer_idle']
 
-try:
-    while True:
-        time.sleep(1)
-except KeyboardInterrupt:
-    obser.stop()
+    watcher = Watcher(log_file, smart_log, router_setts, optimizer_idle)
 
-obser.join()
+    obser = Observer()
+    obser.schedule(watcher, split_path_name(log_file)['path'])
+
+    obser.start()
+
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        obser.stop()
+
+    obser.join()
+
+
+optimize(file_name_inlet='routermgt_inlet.json')
