@@ -162,8 +162,8 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 		channel.UserBalance += router.BalanceUnit(req.Amount - routerFee)
 		defer func() {
 			if paymentFailed {
-				channel.RouterBalance += router.BalanceUnit(req.Amount + routerFee)
-				channel.UserBalance -= router.BalanceUnit(req.Amount + routerFee)
+				channel.RouterBalance += router.BalanceUnit(req.Amount - routerFee)
+				channel.UserBalance -= router.BalanceUnit(req.Amount - routerFee)
 			}
 		}()
 

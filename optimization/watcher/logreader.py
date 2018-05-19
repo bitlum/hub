@@ -39,7 +39,7 @@ class LogReader:
 
                 self.convert()
 
-                # print(self.smart_log)
+                print(self.smart_log)
 
     def read_message(self):
         log = proto.Log()
@@ -63,4 +63,4 @@ class LogReader:
 
         self.smart_log.append(dict_massege)
 
-        print_massege(dict_massege)
+        # print_massege(dict_massege)

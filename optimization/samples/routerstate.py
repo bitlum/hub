@@ -1,5 +1,6 @@
 import sys
 import os
+import time
 
 current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_path, '../'))
@@ -12,14 +13,17 @@ class RouterState:
         self.receiver = str()
         self.user = str()
         self.amount = int()
+        self.earned = int()
         self.router_balance = int()
         self.duration = int()
+        self.profit = int()
 
         self.id = {'payment': 'payment',
                    'state': 'state',
                    'change': 'channel_change',
                    'updated': 'udpated',
                    'amount': 'amount',
+                   'earned': 'earned',
                    'receiver': 'receiver',
                    'sender': 'sender',
                    'user': 'user_id',
@@ -30,14 +34,17 @@ class RouterState:
                    'success': 'success'
                    }
 
-    def set_amount(self, key, val):
-        self.router_balances[key] = self.router_balances[
-                                 key] + val if key in self.router_balances else val
+    def set_amount(self, user, value):
+        if user in self.router_balances:
+            self.router_balances[user] += value
+        else:
+            self.router_balances[user] = value
 
     def get_payment_data(self, message):
         self.receiver = message[self.id['receiver']]
         self.sender = message[self.id['sender']]
         self.amount = message[self.id['amount']]
+        self.earned = message[self.id['earned']]
 
     def get_change_data(self, message):
         self.user = message[self.id['user']]
@@ -47,7 +54,8 @@ class RouterState:
         if message[self.id['status']] == self.id['success']:
             self.get_payment_data(message)
             self.set_amount(self.sender, self.amount)
-            self.set_amount(self.receiver, -self.amount)
+            self.set_amount(self.receiver, -self.amount + self.earned)
+            self.profit += self.earned
 
     def set_state(self, message):
         self.router_balances.clear()

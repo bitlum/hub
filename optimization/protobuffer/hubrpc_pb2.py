@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='hubrpc.proto',
   package='hubrpc',
   syntax='proto3',
-  serialized_pb=_b('\n\x0chubrpc.proto\x12\x06hubrpc\"J\n\x11UpdateLinkRequest\x12\x0c\n\x04time\x18\x01 \x01(\x04\x12\x0f\n\x07user_id\x18\x02 \x01(\t\x12\x16\n\x0erouter_balance\x18\x04 \x01(\x04\"\x14\n\x12UpdateLinkResponse2N\n\x07Manager\x12\x43\n\nUpdateLink\x12\x19.hubrpc.UpdateLinkRequest\x1a\x1a.hubrpc.UpdateLinkResponseb\x06proto3')
+  serialized_pb=_b('\n\x0chubrpc.proto\x12\x06hubrpc\"J\n\x11UpdateLinkRequest\x12\x0c\n\x04time\x18\x01 \x01(\x04\x12\x0f\n\x07user_id\x18\x02 \x01(\t\x12\x16\n\x0erouter_balance\x18\x04 \x01(\x03\"\x14\n\x12UpdateLinkResponse\"4\n\x18SetPaymentFeeBaseRequest\x12\x18\n\x10payment_fee_base\x18\x01 \x01(\x03\"\x1b\n\x19SetPaymentFeeBaseResponse\"D\n SetPaymentFeeProportionalRequest\x12 \n\x18payment_fee_proportional\x18\x01 \x01(\x03\"#\n!SetPaymentFeeProportionalResponse2\x9a\x02\n\x07Manager\x12\x43\n\nUpdateLink\x12\x19.hubrpc.UpdateLinkRequest\x1a\x1a.hubrpc.UpdateLinkResponse\x12X\n\x11SetPaymentFeeBase\x12 .hubrpc.SetPaymentFeeBaseRequest\x1a!.hubrpc.SetPaymentFeeBaseResponse\x12p\n\x19SetPaymentFeeProportional\x12(.hubrpc.SetPaymentFeeProportionalRequest\x1a).hubrpc.SetPaymentFeeProportionalResponseb\x06proto3')
 )
 
 
@@ -48,7 +48,7 @@ _UPDATELINKREQUEST = _descriptor.Descriptor(
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='router_balance', full_name='hubrpc.UpdateLinkRequest.router_balance', index=2,
-      number=4, type=4, cpp_type=4, label=1,
+      number=4, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -93,8 +93,122 @@ _UPDATELINKRESPONSE = _descriptor.Descriptor(
   serialized_end=120,
 )
 
+
+_SETPAYMENTFEEBASEREQUEST = _descriptor.Descriptor(
+  name='SetPaymentFeeBaseRequest',
+  full_name='hubrpc.SetPaymentFeeBaseRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='payment_fee_base', full_name='hubrpc.SetPaymentFeeBaseRequest.payment_fee_base', index=0,
+      number=1, type=3, cpp_type=2, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=122,
+  serialized_end=174,
+)
+
+
+_SETPAYMENTFEEBASERESPONSE = _descriptor.Descriptor(
+  name='SetPaymentFeeBaseResponse',
+  full_name='hubrpc.SetPaymentFeeBaseResponse',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=176,
+  serialized_end=203,
+)
+
+
+_SETPAYMENTFEEPROPORTIONALREQUEST = _descriptor.Descriptor(
+  name='SetPaymentFeeProportionalRequest',
+  full_name='hubrpc.SetPaymentFeeProportionalRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='payment_fee_proportional', full_name='hubrpc.SetPaymentFeeProportionalRequest.payment_fee_proportional', index=0,
+      number=1, type=3, cpp_type=2, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=205,
+  serialized_end=273,
+)
+
+
+_SETPAYMENTFEEPROPORTIONALRESPONSE = _descriptor.Descriptor(
+  name='SetPaymentFeeProportionalResponse',
+  full_name='hubrpc.SetPaymentFeeProportionalResponse',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=275,
+  serialized_end=310,
+)
+
 DESCRIPTOR.message_types_by_name['UpdateLinkRequest'] = _UPDATELINKREQUEST
 DESCRIPTOR.message_types_by_name['UpdateLinkResponse'] = _UPDATELINKRESPONSE
+DESCRIPTOR.message_types_by_name['SetPaymentFeeBaseRequest'] = _SETPAYMENTFEEBASEREQUEST
+DESCRIPTOR.message_types_by_name['SetPaymentFeeBaseResponse'] = _SETPAYMENTFEEBASERESPONSE
+DESCRIPTOR.message_types_by_name['SetPaymentFeeProportionalRequest'] = _SETPAYMENTFEEPROPORTIONALREQUEST
+DESCRIPTOR.message_types_by_name['SetPaymentFeeProportionalResponse'] = _SETPAYMENTFEEPROPORTIONALRESPONSE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 UpdateLinkRequest = _reflection.GeneratedProtocolMessageType('UpdateLinkRequest', (_message.Message,), dict(
@@ -111,6 +225,34 @@ UpdateLinkResponse = _reflection.GeneratedProtocolMessageType('UpdateLinkRespons
   ))
 _sym_db.RegisterMessage(UpdateLinkResponse)
 
+SetPaymentFeeBaseRequest = _reflection.GeneratedProtocolMessageType('SetPaymentFeeBaseRequest', (_message.Message,), dict(
+  DESCRIPTOR = _SETPAYMENTFEEBASEREQUEST,
+  __module__ = 'hubrpc_pb2'
+  # @@protoc_insertion_point(class_scope:hubrpc.SetPaymentFeeBaseRequest)
+  ))
+_sym_db.RegisterMessage(SetPaymentFeeBaseRequest)
+
+SetPaymentFeeBaseResponse = _reflection.GeneratedProtocolMessageType('SetPaymentFeeBaseResponse', (_message.Message,), dict(
+  DESCRIPTOR = _SETPAYMENTFEEBASERESPONSE,
+  __module__ = 'hubrpc_pb2'
+  # @@protoc_insertion_point(class_scope:hubrpc.SetPaymentFeeBaseResponse)
+  ))
+_sym_db.RegisterMessage(SetPaymentFeeBaseResponse)
+
+SetPaymentFeeProportionalRequest = _reflection.GeneratedProtocolMessageType('SetPaymentFeeProportionalRequest', (_message.Message,), dict(
+  DESCRIPTOR = _SETPAYMENTFEEPROPORTIONALREQUEST,
+  __module__ = 'hubrpc_pb2'
+  # @@protoc_insertion_point(class_scope:hubrpc.SetPaymentFeeProportionalRequest)
+  ))
+_sym_db.RegisterMessage(SetPaymentFeeProportionalRequest)
+
+SetPaymentFeeProportionalResponse = _reflection.GeneratedProtocolMessageType('SetPaymentFeeProportionalResponse', (_message.Message,), dict(
+  DESCRIPTOR = _SETPAYMENTFEEPROPORTIONALRESPONSE,
+  __module__ = 'hubrpc_pb2'
+  # @@protoc_insertion_point(class_scope:hubrpc.SetPaymentFeeProportionalResponse)
+  ))
+_sym_db.RegisterMessage(SetPaymentFeeProportionalResponse)
+
 
 
 _MANAGER = _descriptor.ServiceDescriptor(
@@ -119,8 +261,8 @@ _MANAGER = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   options=None,
-  serialized_start=122,
-  serialized_end=200,
+  serialized_start=313,
+  serialized_end=595,
   methods=[
   _descriptor.MethodDescriptor(
     name='UpdateLink',
@@ -129,6 +271,24 @@ _MANAGER = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_UPDATELINKREQUEST,
     output_type=_UPDATELINKRESPONSE,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='SetPaymentFeeBase',
+    full_name='hubrpc.Manager.SetPaymentFeeBase',
+    index=1,
+    containing_service=None,
+    input_type=_SETPAYMENTFEEBASEREQUEST,
+    output_type=_SETPAYMENTFEEBASERESPONSE,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='SetPaymentFeeProportional',
+    full_name='hubrpc.Manager.SetPaymentFeeProportional',
+    index=2,
+    containing_service=None,
+    input_type=_SETPAYMENTFEEPROPORTIONALREQUEST,
+    output_type=_SETPAYMENTFEEPROPORTIONALRESPONSE,
     options=None,
   ),
 ])
