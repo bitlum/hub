@@ -12,6 +12,8 @@ class RouterSetts:
         self.income = bool(True)
         self.penalty = float(1)
         self.commission = float(0)
+        self.payment_fee_base = int()
+        self.payment_fee_proportional = int()
         self.time_p = float(0)
         self.alpha_p = float(1)
         self.alpha_T = float(1)
@@ -19,11 +21,15 @@ class RouterSetts:
 
     def set_settings(self, income,
                      penalty, commission,
+                     payment_fee_base,
+                     payment_fee_proportional,
                      time_p, alpha_p,
                      alpha_T, prob_cut=0.5):
         self.set_income(income)
         self.set_penalty(penalty)
         self.set_commission(commission)
+        self.set_payment_fee_base(payment_fee_base)
+        self.set_payment_fee_proportional(payment_fee_proportional)
         self.set_time_p(time_p)
         self.set_alpha_p(alpha_p)
         self.set_alpha_T(alpha_T)
@@ -35,6 +41,8 @@ class RouterSetts:
         self.set_income(inlet['income'])
         self.set_penalty(inlet['penalty'])
         self.set_commission(inlet['commission'])
+        self.set_payment_fee_base(inlet['payment_fee_base'])
+        self.set_payment_fee_proportional(inlet['payment_fee_proportional'])
         self.set_time_p(inlet['time_p'])
         self.set_alpha_p(inlet['alpha_p'])
         self.set_alpha_T(inlet['alpha_T'])
@@ -48,6 +56,12 @@ class RouterSetts:
 
     def set_commission(self, commission):
         self.commission = commission
+
+    def set_payment_fee_proportional(self, payment_fee_proportional):
+        self.payment_fee_proportional = payment_fee_proportional
+
+    def set_payment_fee_base(self, payment_fee_base):
+        self.payment_fee_base = payment_fee_base
 
     def set_time_p(self, time_p):
         self.time_p = time_p
@@ -66,6 +80,9 @@ class RouterSetts:
         out_str += 'income ' + str(self.income) + '\n'
         out_str += 'penalty ' + str(self.penalty) + '\n'
         out_str += 'commission ' + str(self.commission) + '\n'
+        out_str += 'payment_fee_proportional ' + str(
+            self.payment_fee_proportional) + '\n'
+        out_str += 'payment_fee_base ' + str(self.payment_fee_base) + '\n'
         out_str += 'time_p ' + str(self.time_p) + '\n'
         out_str += 'alpha_p ' + str(self.alpha_p) + '\n'
         out_str += 'alpha_T ' + str(self.alpha_T) + '\n'

@@ -25,8 +25,9 @@ class Watcher(PattMatchEvHand):
         self.mgt_ticker = int(0)
         self.update_set = set()
         self.hubrpc = HubRPC(self.router_mgt.balances, self.update_set)
-        self.hubrpc.set_payment_fee_base(1000)
-        self.hubrpc.set_payment_fee_proportional(100000)
+        self.hubrpc.set_payment_fee_base(router_setts.payment_fee_base)
+        self.hubrpc.set_payment_fee_proportional(
+            router_setts.payment_fee_proportional)
 
     def process(self, event):
         if (event.event_type == 'modified') and (
