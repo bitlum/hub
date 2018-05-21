@@ -1,6 +1,6 @@
 {
     "duration": 300,
-    "blockchain_fee": 1,
+    "blockchain_fee": 0,
     "transseq_file_name": "../outlet/transseq.json",
     "users_id_file_name": "../outlet/users_id.json",
     "user_balances_file_name": "../outlet/user_balances.json",

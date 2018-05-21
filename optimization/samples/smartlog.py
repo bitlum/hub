@@ -43,6 +43,7 @@ class SmartLog(RouterState):
         out_str += 'Number of payments is ' + str(len(
             self.transseq)) + '\n'
         out_str += 'Number of states is ' + str(len(self.states)) + '\n'
+        out_str += 'Free balance is ' + str(self.router_free_balance) + '\n'
 
         lines_number = len(self.transseq)
         if lines_number >= 20:
