@@ -549,6 +549,7 @@ func (r *Router) listenInvoiceUpdates() {
 				m.AddError(metrics.HighSeverity)
 				// Re-subscribe on lnd invoice updates by making subscription
 				// equal to nil.
+				log.Errorf("(payments updates) unable to receive: %v", err)
 				invoiceSubsc = nil
 				continue
 			}
