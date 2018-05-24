@@ -531,7 +531,7 @@ func (r *Router) listenInvoiceUpdates() {
 				log.Info("(payments updates) Trying to subscribe on payment" +
 					" updates...")
 
-				invoiceSubsc, err = r.client.SubscribeInvoices(getContext(),
+				invoiceSubsc, err = r.client.SubscribeInvoices(context.Background(),
 					&lnrpc.InvoiceSubscription{})
 				if err != nil {
 					m.AddError(metrics.HighSeverity)
