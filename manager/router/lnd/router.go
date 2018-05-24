@@ -10,7 +10,6 @@ import (
 	"google.golang.org/grpc/credentials"
 	"strconv"
 	"net"
-	"context"
 	"strings"
 	"github.com/bitlum/hub/manager/metrics/crypto"
 	"github.com/bitlum/hub/manager/metrics"
@@ -176,8 +175,7 @@ func (r *Router) Start() error {
 	r.client = lnrpc.NewLightningClient(r.conn)
 
 	reqInfo := &lnrpc.GetInfoRequest{}
-	ctx, _ := context.WithTimeout(context.Background(), time.Second*5)
-	respInfo, err := r.client.GetInfo(ctx, reqInfo)
+	respInfo, err := r.client.GetInfo(getContext(), reqInfo)
 	if err != nil {
 		m.AddError(metrics.HighSeverity)
 		return errors.Errorf("unable get lnd node info: %v", err)
@@ -264,7 +262,7 @@ func (r *Router) OpenChannel(id router.UserID, funds router.BalanceUnit) error {
 		Private: false,
 	}
 
-	_, err := r.client.OpenChannelSync(context.Background(), req)
+	_, err := r.client.OpenChannelSync(getContext(), req)
 	if err != nil {
 		return err
 	}
@@ -307,7 +305,7 @@ func (r *Router) CloseChannel(id router.ChannelID) error {
 		Force: false,
 	}
 
-	if _, err = r.client.CloseChannel(context.Background(), req); err != nil {
+	if _, err = r.client.CloseChannel(getContext(), req); err != nil {
 		m.AddError(metrics.HighSeverity)
 		log.Errorf("unable close the channel: %v", err)
 		return err
@@ -360,7 +358,7 @@ func (r *Router) Network() ([]*router.Channel, error) {
 
 	{
 		req := &lnrpc.PendingChannelsRequest{}
-		resp, err := r.client.PendingChannels(context.Background(), req)
+		resp, err := r.client.PendingChannels(getContext(), req)
 		if err != nil {
 			m.AddError(metrics.HighSeverity)
 			log.Errorf("unable to fetch pending channels: %v", err)
@@ -400,7 +398,7 @@ func (r *Router) Network() ([]*router.Channel, error) {
 
 	{
 		req := &lnrpc.ListChannelsRequest{}
-		resp, err := r.client.ListChannels(context.Background(), req)
+		resp, err := r.client.ListChannels(getContext(), req)
 		if err != nil {
 			m.AddError(metrics.HighSeverity)
 			log.Errorf("unable to fetch open channels: %v", err)
@@ -430,7 +428,7 @@ func (r *Router) FreeBalance() (router.BalanceUnit, error) {
 	defer m.Finish()
 
 	req := &lnrpc.WalletBalanceRequest{}
-	resp, err := r.client.WalletBalance(context.Background(), req)
+	resp, err := r.client.WalletBalance(getContext(), req)
 	if err != nil {
 		m.AddError(metrics.HighSeverity)
 		log.Errorf("unable to get wallet balance channels: %v", err)
@@ -449,7 +447,7 @@ func (r *Router) PendingBalance() (router.BalanceUnit, error) {
 	defer m.Finish()
 
 	req := &lnrpc.PendingChannelsRequest{}
-	resp, err := r.client.PendingChannels(context.Background(), req)
+	resp, err := r.client.PendingChannels(getContext(), req)
 	if err != nil {
 		m.AddError(metrics.HighSeverity)
 		log.Errorf("unable to fetch pending channels: %v", err)

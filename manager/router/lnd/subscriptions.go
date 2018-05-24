@@ -36,7 +36,7 @@ func (r *Router) updateNodeInfo() {
 			}
 
 			reqInfo := &lnrpc.GetInfoRequest{}
-			ctx, _ := context.WithTimeout(context.Background(), time.Second*5)
+			ctx, _ := context.WithTimeout(getContext(), time.Second*5)
 			respInfo, err := r.client.GetInfo(ctx, reqInfo)
 			if err != nil {
 				log.Errorf("unable get lnd node info: %v", err)
@@ -106,7 +106,7 @@ func (r *Router) syncTopologyUpdates() {
 	// state out of it. As far as those two operation are not atomic,
 	// it might happen that some channel sleeps away.
 	reqPending := &lnrpc.PendingChannelsRequest{}
-	respPending, err := r.client.PendingChannels(context.Background(), reqPending)
+	respPending, err := r.client.PendingChannels(getContext(), reqPending)
 	if err != nil {
 		m.AddError(metrics.HighSeverity)
 		log.Errorf("(topology updates) unable to fetch pending"+
@@ -115,7 +115,7 @@ func (r *Router) syncTopologyUpdates() {
 	}
 
 	reqOpen := &lnrpc.ListChannelsRequest{}
-	respOpen, err := r.client.ListChannels(context.Background(), reqOpen)
+	respOpen, err := r.client.ListChannels(getContext(), reqOpen)
 	if err != nil {
 		m.AddError(metrics.HighSeverity)
 		log.Errorf("(topology updates) unable to fetch list channels"+
@@ -434,7 +434,7 @@ func (r *Router) syncForwardingUpdate() {
 // given channel id.
 func (r *Router) getPubKeyByChainID(chanID uint64) (string, error) {
 	req := &lnrpc.ListChannelsRequest{}
-	resp, err := r.client.ListChannels(context.Background(), req)
+	resp, err := r.client.ListChannels(getContext(), req)
 	if err != nil {
 		return "", err
 	}
@@ -473,7 +473,7 @@ func (r *Router) getNewForwardingEvents(index uint32) (
 			NumMaxEvents: limit,
 		}
 
-		resp, err := r.client.ForwardingHistory(context.Background(), req)
+		resp, err := r.client.ForwardingHistory(getContext(), req)
 		if err != nil {
 			return nil, err
 		}
@@ -531,7 +531,7 @@ func (r *Router) listenInvoiceUpdates() {
 				log.Info("(payments updates) Trying to subscribe on payment" +
 					" updates...")
 
-				invoiceSubsc, err = r.client.SubscribeInvoices(context.Background(),
+				invoiceSubsc, err = r.client.SubscribeInvoices(getContext(),
 					&lnrpc.InvoiceSubscription{})
 				if err != nil {
 					m.AddError(metrics.HighSeverity)
