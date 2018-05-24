@@ -28,6 +28,10 @@ func enableChannelBalancing(r router.Router) {
 			links := make(map[router.UserID]link)
 
 			for _, channel := range channels {
+				if !channel.IsActive {
+					continue
+				}
+
 				l, ok := links[channel.UserID]
 				if !ok {
 					l = link{}
