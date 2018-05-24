@@ -264,6 +264,7 @@ func (r *Router) OpenChannel(id router.UserID, funds router.BalanceUnit) error {
 
 	_, err := r.client.OpenChannelSync(getContext(), req)
 	if err != nil {
+		m.AddError(metrics.HighSeverity)
 		return err
 	}
 
