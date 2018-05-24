@@ -4,6 +4,7 @@ import (
 	"github.com/bitlum/hub/manager/router"
 	"github.com/bitlum/btcutil"
 	"time"
+	"strings"
 )
 
 type link struct {
@@ -17,6 +18,8 @@ type link struct {
 // than some threshold of number of funds.
 func enableChannelBalancing(r router.Router) {
 	go func() {
+		notSupportMultipleChannels := make(map[router.UserID]struct{})
+
 		for {
 			channels, err := r.Network()
 			if err != nil {
@@ -29,6 +32,10 @@ func enableChannelBalancing(r router.Router) {
 
 			for _, channel := range channels {
 				if !channel.IsActive {
+					continue
+				}
+
+				if _, ok := notSupportMultipleChannels[channel.UserID]; ok {
 					continue
 				}
 
@@ -58,8 +65,16 @@ func enableChannelBalancing(r router.Router) {
 							" with user(%v), additional funds(%v)", userID,
 							btcutil.Amount(additionalFunds))
 
-						if err := r.OpenChannel(userID,
-							additionalFunds); err != nil {
+						if err := r.OpenChannel(userID, additionalFunds); err != nil {
+							if strings.Contains(err.Error(), "Multiple channels unsupported") {
+								// Skip nodes without support of multiple
+								// channels.
+								mainLog.Infof("Remove link for user(%v) which do not support multiple"+
+									" channels", userID)
+								notSupportMultipleChannels[userID] = struct{}{}
+								return
+							}
+
 							mainLog.Errorf("unable to create additional "+
 								"channel with user: %v", err)
 						}
