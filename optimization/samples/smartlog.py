@@ -46,9 +46,9 @@ class SmartLog(RouterState):
         out_str += 'Free balance is ' + str(self.router_free_balance) + '\n'
 
         lines_number = len(self.transseq)
-        if lines_number >= 20:
-            lines_number = 20
-        for _ in range(20 - lines_number):
+        if lines_number >= 19:
+            lines_number = 19
+        for _ in range(19 - lines_number):
             print()
 
         if len(self.transseq) > 0:
@@ -60,7 +60,7 @@ class SmartLog(RouterState):
                 earned = str(self.transseq[ind]["payment"]["earned"])
                 status = self.transseq[ind]["payment"]["status"]
                 out_str += '* ' + sender + ' -> ' + receiver + \
-                           ' :: ' + amount + ' : ' + earned + \
+                           'git d  :: ' + amount + ' : ' + earned + \
                            ' : ' + status + '\n'
 
             for key in list(SortedDict(self.router_balances).keys()):

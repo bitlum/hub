@@ -8,6 +8,7 @@
 	"alpha_p": 0.1,
 	"alpha_T": 1,
 	"prob_cut": 0.5,
-	"optimizer_idle": 4,
+	"mgt_freq": 4,
+	"draw_period_av": 10,
 	"log_file_name": "/Users/bigelk/data/tmp/manager/test.log"
 }
