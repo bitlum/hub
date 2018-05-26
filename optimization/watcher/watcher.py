@@ -10,11 +10,13 @@ from watcher.protologutills import split_path_name
 from watcher.logreader import LogReader
 from core.hubrpc import HubRPC
 from core.routermgt import RouterMgt
+from watcher.routermetrics import RouterMetrics
 
 
 class Watcher(PattMatchEvHand):
 
-    def __init__(self, file_name, smart_log, router_setts, mgt_freq):
+    def __init__(self, file_name, smart_log, router_setts, mgt_freq,
+                 draw_period_av):
         super().__init__(patterns='*' + split_path_name(file_name)['name'],
                          ignore_directories=True, case_sensitive=False)
 
@@ -25,32 +27,22 @@ class Watcher(PattMatchEvHand):
         self.mgt_ticker = int(0)
         self.update_set = set()
         self.hubrpc = HubRPC(self.router_mgt.balances, self.update_set)
-        self.hubrpc.set_payment_fee_base(1000)
-        self.hubrpc.set_payment_fee_proportional(100000)
+        self.hubrpc.set_payment_fee_base(router_setts.payment_fee_base)
+        self.hubrpc.set_payment_fee_proportional(
+            router_setts.payment_fee_proportional)
+
+        self.router_metrics = RouterMetrics(self.smart_log, time.time(),
+                                            draw_period_av)
 
     def process(self, event):
         if (event.event_type == 'modified') and (
                 event.src_path == self.log_reader.file_name):
             self.log_reader.process_log()
 
-            # print()
-            # print('balance_cur', self.smart_log.router_balances)
-            # print()
-            # print('freqs_out', self.router_mgt.freqs_out)
-            # print('freqs_in ', self.router_mgt.freqs_in)
-            # print('freqs ', self.router_mgt.freqs)
-            # print()
-            # print('balances', self.router_mgt.balances)
-            # print('bounds  ', self.router_mgt.bounds)
-            # print()
-            # print('flowvect_out', self.router_mgt.flowvect_out)
-            # print('flowvect_in ', self.router_mgt.flowvect_in)
-            # print('flowvect_in_eff', self.router_mgt.flowvect_in_eff)
-            # print()
-            # print('wanes', self.router_mgt.wanes)
-            # print('channels_change', self.channels_change)
-
             if self.mgt_ticker % self.mgt_freq == 0:
+
+                self.router_metrics.process()
+
                 self.router_mgt.calc_parameters()
 
                 self.update_set.clear()

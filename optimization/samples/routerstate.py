@@ -9,6 +9,7 @@ sys.path.append(os.path.join(current_path, '../'))
 class RouterState:
     def __init__(self):
         self.router_balances = dict()
+        self.router_free_balance = int()
         self.sender = str()
         self.receiver = str()
         self.user = str()
@@ -29,6 +30,7 @@ class RouterState:
                    'user': 'user_id',
                    'channels': 'channels',
                    'router_balance': 'router_balance',
+                   'free_balance': 'free_balance',
                    'duration': 'average_change_update_duration',
                    'status': 'status',
                    'success': 'success'
@@ -60,6 +62,7 @@ class RouterState:
     def set_state(self, message):
         self.router_balances.clear()
         self.duration = message[self.id['duration']]
+        self.router_free_balance = message[self.id['free_balance']]
         for channel in message[self.id['channels']]:
             self.router_balances[channel[self.id['user']]] = channel[
                 self.id['router_balance']]

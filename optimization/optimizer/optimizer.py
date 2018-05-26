@@ -24,9 +24,12 @@ def optimize(file_name_inlet):
 
     log_file = inlet['log_file_name']
 
-    optimizer_idle = inlet['optimizer_idle']
+    mgt_freq = inlet['mgt_freq']
 
-    watcher = Watcher(log_file, smart_log, router_setts, optimizer_idle)
+    draw_period_av = inlet['draw_period_av']
+
+    watcher = Watcher(log_file, smart_log, router_setts, mgt_freq,
+                      draw_period_av)
 
     obser = Observer()
     obser.schedule(watcher, split_path_name(log_file)['path'])

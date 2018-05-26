@@ -2,8 +2,12 @@
 	"income": true,
 	"penalty": 0.1,
 	"commission": 0.01,
+	"payment_fee_base": 1000,
+	"payment_fee_proportional": 100000,
 	"time_p": 0.003,
 	"alpha_p": 0.1,
-	"alpha_T": 2,
-	"prob_cut": 0.5
+	"alpha_T": 1,
+	"prob_cut": 0.5,
+	"optimizer_idle": 4,
+	"log_file_name": "/Users/bigelk/data/tmp/manager/test.log"
 }
