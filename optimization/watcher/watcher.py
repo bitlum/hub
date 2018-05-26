@@ -26,6 +26,7 @@ class Watcher(PattMatchEvHand):
         self.mgt_freq = int(mgt_freq)
         self.mgt_ticker = int(0)
         self.update_set = set()
+
         self.hubrpc = HubRPC(self.router_mgt.balances, self.update_set)
         self.hubrpc.set_payment_fee_base(router_setts.payment_fee_base)
         self.hubrpc.set_payment_fee_proportional(
@@ -47,16 +48,20 @@ class Watcher(PattMatchEvHand):
 
                 self.update_set.clear()
                 for user, wane in self.router_mgt.wanes.items():
-                    balance = 0
+                    balance_cur = 0
                     if user in self.smart_log.router_balances:
-                        balance = self.smart_log.router_balances[user]
+                        balance_cur = self.smart_log.router_balances[user]
                     bound = self.router_mgt.bounds[user]
+                    balance_opt = self.router_mgt.balances[user]
                     if wane:
-                        if balance < bound:
+                        if balance_cur < bound:
                             self.update_set.add(user)
                     else:
-                        if balance > bound or balance == 0:
+                        if balance_cur > bound or balance_cur < balance_opt:
                             self.update_set.add(user)
+
+                for user in self.smart_log.blockage_set:
+                    self.update_set.discard(user)
 
                 self.hubrpc.update()
 
