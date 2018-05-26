@@ -45,7 +45,9 @@ class RouterMetrics:
 
         self.profit.append(self.smart_log.profit)
 
-        self.income.append(self.profit[-1] / (self.time[-1] - self.time[-2]))
+        time_delta = self.time[-1] - self.time[-2]
+
+        self.income.append((self.profit[-1] - self.profit[-2]) / time_delta)
 
         self.balance_sum.append(int(0))
         for _, balance in self.smart_log.router_balances.items():
