@@ -17,6 +17,7 @@ class SmartLog(RouterState):
         self.transseq = list()
         self.states = list()
         self.blockage_set = set()
+        self.closure_set = set()
 
     def append(self, message):
         if self.id['payment'] in message:
@@ -36,11 +37,9 @@ class SmartLog(RouterState):
                 self.channel_changes.append(message)
                 self.set_change(message[self.id['change']])
             elif change_type == self.id['opened']:
-                # TODO process opened
-                pass
+                self.closure_set.discard(user)
             elif change_type == self.id['closed']:
-                # TODO process closed
-                pass
+                self.closure_set.add(user)
             else:
                 self.blockage_set.add(user)
 

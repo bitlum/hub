@@ -63,6 +63,9 @@ class Watcher(PattMatchEvHand):
                 for user in self.smart_log.blockage_set:
                     self.update_set.discard(user)
 
+                for user in self.smart_log.closure_set:
+                    self.update_set.discard(user)
+
                 self.hubrpc.update()
 
             self.mgt_ticker += 1
