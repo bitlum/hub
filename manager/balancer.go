@@ -10,6 +10,7 @@ import (
 type link struct {
 	routerFunds router.BalanceUnit
 	usersFunds  router.BalanceUnit
+	IsActive    bool
 }
 
 // enableChannelBalancing implements primitive channel balance. Is an goroutine
@@ -31,10 +32,6 @@ func enableChannelBalancing(r router.Router) {
 			links := make(map[router.UserID]link)
 
 			for _, channel := range channels {
-				if !channel.IsActive {
-					continue
-				}
-
 				if _, ok := notSupportMultipleChannels[channel.UserID]; ok {
 					continue
 				}
@@ -46,11 +43,16 @@ func enableChannelBalancing(r router.Router) {
 
 				l.routerFunds += channel.RouterBalance
 				l.usersFunds += channel.UserBalance
+				l.IsActive = l.IsActive || channel.IsActive
 				links[channel.UserID] = l
 			}
 
 			threshold := 0.2
 			for userID, l := range links {
+				if !l.IsActive {
+					continue
+				}
+
 				// If ratio of outer funds less than users funds than we
 				// should create additional channel.
 				ratio := float64(l.routerFunds) / float64(l.usersFunds)
