@@ -11,11 +11,14 @@ import protobuffer.hubrpc_pb2_grpc as proto_rpc_hub
 
 
 class HubRPC:
-    def __init__(self, balances, update_set):
+    def __init__(self, balances, router_setts):
         self.balances = balances
-        self.update_set = update_set
+        self.update_set = set()
         self.stub = None
         self.create_stub()
+        self.set_payment_fee_base(router_setts.payment_fee_base)
+        self.set_payment_fee_proportional(
+            router_setts.payment_fee_proportional)
 
     def create_stub(self):
         rpc_channel = grpc.insecure_channel('localhost:8686')

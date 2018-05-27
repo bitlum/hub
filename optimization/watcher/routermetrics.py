@@ -8,9 +8,9 @@ sys.path.append(os.path.join(current_path, '../'))
 
 
 class RouterMetrics:
-    def __init__(self, smart_log, init_time, period_av):
+    def __init__(self, smart_log, router_setts):
         self.smart_log = smart_log
-        self.init_time = init_time
+        self.init_time = time.time()
 
         self.time = list([float(0)])
 
@@ -24,7 +24,7 @@ class RouterMetrics:
         self.balance_sum_av = list([float(0)])
         self.ROI_av = list([float(0)])
 
-        self.period_av = period_av
+        self.draw_period = router_setts.draw_period
 
         Gnuplot.GnuplotOpts.default_term = 'qt'
         self.gnuplot = Gnuplot.Gnuplot()
@@ -66,7 +66,7 @@ class RouterMetrics:
 
         count = int(0)
         for i in range(len(self.time) - 1, - 1, -1):
-            if (self.time[-1] - self.time[i]) > self.period_av:
+            if (self.time[-1] - self.time[i]) > self.draw_period:
                 break
             else:
                 count += 1
@@ -87,7 +87,7 @@ class RouterMetrics:
                                     with_="lines lw 2")
 
         balance_sum_av_curve = Gnuplot.Data(self.time, self.balance_sum_av,
-                                            axes='x2y2',
+                                            axes='x1y2',
                                             title="locked funds",
                                             with_="lines lw 2")
 
