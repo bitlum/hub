@@ -193,7 +193,7 @@ func updateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 					Time: time.Now().UnixNano(),
 					Data: &logger.Log_ChannelChange{
 						ChannelChange: &logger.ChannelChange{
-							Type:          logger.ChannelChangeType_udpated,
+							Type:          logger.ChannelChangeType_udpating,
 							ChannelId:     string(u.ChannelID),
 							UserId:        string(u.UserID),
 							UserBalance:   uint64(u.UserBalance),

@@ -185,28 +185,6 @@ class RouterMgt(FlowStat):
             user_id = self.users_id[i]
             self.balances[user_id] = round(self.balances[user_id])
 
-        # TODO remove this:
-        for i in range(self.users_number):
-            user_id = self.users_id[i]
-            if self.freqs_out[i] is not None:
-                self.freqs_out[i] = round(self.freqs_out[i], 2)
-            if self.freqs_in[i] is not None:
-                self.freqs_in[i] = round(self.freqs_in[i], 2)
-            if self.freqs[user_id] is not None:
-                self.freqs[user_id] = round(self.freqs[user_id], 2)
-
-            if self.balances[user_id] is not None:
-                self.balances[user_id] = round(self.balances[user_id])
-            if self.bounds[user_id] is not None:
-                self.bounds[user_id] = round(self.bounds[user_id])
-
-            if self.flowvect_out[i] is not None:
-                self.flowvect_out[i] = round(self.flowvect_out[i], 2)
-            if self.flowvect_in[i] is not None:
-                self.flowvect_in[i] = round(self.flowvect_in[i], 2)
-            if self.flowvect_in_eff[i] is not None:
-                self.flowvect_in_eff[i] = round(self.flowvect_in_eff[i], 2)
-
 
 if __name__ == '__main__':
     file_inlet = 'inlet/routermgt_inlet.json'

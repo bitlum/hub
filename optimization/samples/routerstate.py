@@ -9,7 +9,9 @@ sys.path.append(os.path.join(current_path, '../'))
 class RouterState:
     def __init__(self):
         self.router_balances = dict()
+        self.router_free_balance_ini = int()
         self.router_free_balance = int()
+        self.router_balance_sum = int()
         self.sender = str()
         self.receiver = str()
         self.user = str()
@@ -23,6 +25,8 @@ class RouterState:
                    'state': 'state',
                    'change': 'channel_change',
                    'updated': 'udpated',
+                   'opened': 'opened',
+                   'closed': 'closed',
                    'amount': 'amount',
                    'earned': 'earned',
                    'receiver': 'receiver',
@@ -52,6 +56,15 @@ class RouterState:
         self.user = message[self.id['user']]
         self.router_balance = message[self.id['router_balance']]
 
+    def calc_router_balance_sum(self):
+        self.router_balance_sum = 0
+        for _, balance in self.router_balances.items():
+            self.router_balance_sum += balance
+
+    def calc_router_free_balance(self):
+        difference = self.router_balance_sum - self.profit
+        self.router_free_balance = self.router_free_balance_ini - difference
+
     def set_payment(self, message):
         if message[self.id['status']] == self.id['success']:
             self.get_payment_data(message)
@@ -59,14 +72,26 @@ class RouterState:
             self.set_amount(self.receiver, -self.amount + self.earned)
             self.profit += self.earned
 
+            self.calc_router_balance_sum()
+            self.calc_router_free_balance()
+
     def set_state(self, message):
         self.router_balances.clear()
         self.duration = message[self.id['duration']]
+
         self.router_free_balance = message[self.id['free_balance']]
+        difference = self.router_balance_sum - self.profit
+        self.router_free_balance_ini = self.router_free_balance + difference
+
         for channel in message[self.id['channels']]:
             self.router_balances[channel[self.id['user']]] = channel[
                 self.id['router_balance']]
 
+        self.calc_router_balance_sum()
+
     def set_change(self, message):
         self.get_change_data(message)
         self.router_balances[self.user] = self.router_balance
+
+        self.calc_router_balance_sum()
+        self.calc_router_free_balance()

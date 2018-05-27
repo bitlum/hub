@@ -7,32 +7,18 @@ import json
 current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_path, '../'))
 
-from samples.smartlog import SmartLog
 from watcher.watcher import Watcher
 from watcher.protologutills import split_path_name
 from core.routersetts import RouterSetts
 
 
 def optimize(file_name_inlet):
-    with open(file_name_inlet) as f:
-        inlet = json.load(f)
-
     router_setts = RouterSetts()
     router_setts.set_setts_from_file(file_name_inlet)
 
-    smart_log = SmartLog()
-
-    log_file = inlet['log_file_name']
-
-    mgt_freq = inlet['mgt_freq']
-
-    draw_period_av = inlet['draw_period_av']
-
-    watcher = Watcher(log_file, smart_log, router_setts, mgt_freq,
-                      draw_period_av)
-
     obser = Observer()
-    obser.schedule(watcher, split_path_name(log_file)['path'])
+    path = split_path_name(router_setts.log_file_name)['path']
+    obser.schedule(Watcher(router_setts), path)
 
     obser.start()
 

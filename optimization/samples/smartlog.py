@@ -16,6 +16,8 @@ class SmartLog(RouterState):
         self.channel_changes = list()
         self.transseq = list()
         self.states = list()
+        self.blockage_set = set()
+        self.closure_set = set()
 
     def append(self, message):
         if self.id['payment'] in message:
@@ -27,17 +29,24 @@ class SmartLog(RouterState):
             self.set_state(message[self.id['state']])
 
         if self.id['change'] in message:
-            if message[self.id['change']]['type'] == self.id['updated']:
+            user = message[self.id['change']]['user_id']
+            change_type = message[self.id['change']]['type']
+
+            self.blockage_set.discard(user)
+            if change_type == self.id['updated']:
                 self.channel_changes.append(message)
                 self.set_change(message[self.id['change']])
+            elif change_type == self.id['opened']:
+                self.closure_set.discard(user)
+            elif change_type == self.id['closed']:
+                self.closure_set.add(user)
+            else:
+                self.blockage_set.add(user)
 
     def __str__(self):
-        router_funds = 0
-        for _, balance in self.router_balances.items():
-            router_funds += balance
         out_str = ''
         out_str += 'Profit is ' + str(self.profit) + '\n'
-        out_str += 'Router funds is ' + str(router_funds) + '\n'
+        out_str += 'Router funds is ' + str(self.router_balance_sum) + '\n'
         out_str += 'Number of channel_changes is ' + str(len(
             self.channel_changes)) + '\n'
         out_str += 'Number of payments is ' + str(len(
@@ -60,7 +69,7 @@ class SmartLog(RouterState):
                 earned = str(self.transseq[ind]["payment"]["earned"])
                 status = self.transseq[ind]["payment"]["status"]
                 out_str += '* ' + sender + ' -> ' + receiver + \
-                           'git d  :: ' + amount + ' : ' + earned + \
+                           ' :: ' + amount + ' : ' + earned + \
                            ' : ' + status + '\n'
 
             for key in list(SortedDict(self.router_balances).keys()):
