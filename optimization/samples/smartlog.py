@@ -18,6 +18,8 @@ class SmartLog(RouterState):
         self.states = list()
         self.blockage_set = set()
         self.closure_set = set()
+        self.newbie_set = set()
+        self.just_opened_set = set()
 
     def append(self, message):
         if self.id['payment'] in message:
@@ -38,6 +40,8 @@ class SmartLog(RouterState):
                 self.set_change(message[self.id['change']])
             elif change_type == self.id['opened']:
                 self.closure_set.discard(user)
+                self.newbie_set.add(user)
+                self.just_opened_set.add(user)
             elif change_type == self.id['closed']:
                 self.closure_set.add(user)
             else:
