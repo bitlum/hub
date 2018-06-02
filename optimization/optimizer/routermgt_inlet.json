@@ -4,7 +4,7 @@
 	"commission": 0.01,
 	"payment_fee_base": 1000,
 	"payment_fee_proportional": 100000,
-	"time_p": 0.003,
+	"time_p": 5,
 	"alpha_p": 0.1,
 	"alpha_T": 1,
 	"prob_cut": 0.5,
