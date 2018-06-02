@@ -22,9 +22,11 @@ def flowvect_gen(file_name_inlet):
 
     # Initial flow vector
 
-    users_id = {i: str(i + 1) for i in range(inlet['users_number'])}
+    users_number = inlet['users_number']
 
-    flowvect = generate_sample(inlet['users_number'], inlet['flow_mean'],
+    users_id = {i: str(i) for i in range(users_number + 1)}
+
+    flowvect = generate_sample((users_number + 1), inlet['flow_mean'],
                                inlet['flow_mean'] * inlet['flow_stdev'])
 
     for i in range(len(flowvect)):
@@ -33,9 +35,9 @@ def flowvect_gen(file_name_inlet):
 
     # Gates accounting in the flow vector
 
-    gates_number = int(inlet['users_number'] * inlet['gates_frac'])
+    gates_number = int((users_number + 1) * inlet['gates_frac'])
 
-    gates_ind = [i for i in range(inlet['users_number'])]
+    gates_ind = [i for i in range(users_number + 1)]
 
     gates_ind = random.sample(range(len(gates_ind)), gates_number)
 
@@ -45,11 +47,12 @@ def flowvect_gen(file_name_inlet):
 
     # Recipient accounting
 
-    receivers = [False for _ in range(inlet['users_number'])]
+    receivers = [False for _ in range(users_number + 1)]
+    receivers[0] = True
 
-    receivers_number = int(inlet['users_number'] * inlet['receivers_frac'])
+    receivers_number = int((users_number + 1) * inlet['receivers_frac'])
 
-    receivers_ind = [i for i in range(inlet['users_number'])]
+    receivers_ind = [i for i in range((users_number + 1))]
 
     receivers_ind = random.sample(range(len(receivers_ind)), receivers_number)
 
