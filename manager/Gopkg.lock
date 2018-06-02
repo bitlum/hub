@@ -2,6 +2,12 @@
 
 
 [[projects]]
+  name = "github.com/AndrewSamokhvalov/go-spew"
+  packages = ["spew"]
+  revision = "346938d642f2ec3594ed81d874461961cd0faa76"
+  version = "v1.1.0"
+
+[[projects]]
   branch = "master"
   name = "github.com/beorn7/perks"
   packages = ["quantile"]
@@ -227,6 +233,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "04b52e6364a5609c911bcff68a1430d3ac8445d50dae4f35ef03b1a9415db4f3"
+  inputs-digest = "bb882ac16fcc5d8d20a9dfcf8c0c5438a9731cef914dc9b3ab8919122e413df3"
   solver-name = "gps-cdcl"
   solver-version = 1
