@@ -24,7 +24,7 @@ class RouterState:
         self.id = {'payment': 'payment',
                    'state': 'state',
                    'change': 'channel_change',
-                   'updated': 'udpated',
+                   'updated': 'updated',
                    'opened': 'opened',
                    'closed': 'closed',
                    'amount': 'amount',

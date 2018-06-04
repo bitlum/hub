@@ -61,7 +61,7 @@ message Payment {
 
 enum PaymentStatus {
     // Null is used to catch that field wasn't initialised.
-    null = 0;
+    status_null = 0;
 
     success = 1;
 
@@ -92,23 +92,25 @@ message ChannelChange {
 // apply to the channel.
 enum ChannelChangeType {
     // ...
-    openning = 0;
+    change_null = 0;
+
+    openning = 1;
 
     // Opened is used when this channel was just created, and haven't been in
     // local network before.
-    opened = 1;
+    opened = 2;
 
     // ...
-    closing = 2;
+    closing = 3;
 
     // Closed is used when number locked funds / balances of both channel
     // participant equal to zero.
-    closed = 3;
+    closed = 4;
 
     // ...
-    udpating = 4;
+    updating = 5;
 
-    // Udpated is used when one of the participants decides to update its
+    // Updated is used when one of the participants decides to update its
     // channel balance.
-    udpated = 5;
+    updated = 6;
 }
