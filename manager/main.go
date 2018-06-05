@@ -72,24 +72,6 @@ func backendMain() error {
 		defer emulationRouter.Stop()
 		r = emulationRouter
 	case "lnd":
-		storage := router.NewInMemoryHubStorage()
-
-		mainLog.Infof("Start GraphQL server serving on: %v",
-			net.JoinHostPort(config.GraphQL.ListenHost, config.GraphQL.ListenPort))
-		graphQLServer, err := graphql.NewServer(graphql.Config{
-			ListenIP:         config.GraphQL.ListenHost,
-			ListenPort:       config.GraphQL.ListenPort,
-			SecureListenPort: config.GraphQL.SecureListenPort,
-			Storage:          storage,
-		})
-		if err != nil {
-			return errors.New("unable to create GraphQL server: " +
-				err.Error())
-		}
-
-		graphQLServer.Start()
-		defer graphQLServer.Stop()
-
 		// Create or open database file to host the last state of
 		// synchronization.
 		mainLog.Infof("Opening BoltDB database, path: '%v'",
@@ -99,6 +81,22 @@ func backendMain() error {
 		if err != nil {
 			return errors.Errorf("unable to open database: %v", err)
 		}
+
+		mainLog.Infof("Start GraphQL server serving on: %v",
+			net.JoinHostPort(config.GraphQL.ListenHost, config.GraphQL.ListenPort))
+		graphQLServer, err := graphql.NewServer(graphql.Config{
+			ListenIP:         config.GraphQL.ListenHost,
+			ListenPort:       config.GraphQL.ListenPort,
+			SecureListenPort: config.GraphQL.SecureListenPort,
+			Storage:          database,
+		})
+		if err != nil {
+			return errors.New("unable to create GraphQL server: " +
+				err.Error())
+		}
+
+		graphQLServer.Start()
+		defer graphQLServer.Stop()
 
 		metricsBackend, err := crypto.InitMetricsBackend(config.LND.Network)
 		if err != nil {
@@ -112,10 +110,10 @@ func backendMain() error {
 			Host:           config.LND.GRPCHost,
 			Port:           config.LND.GRPCPort,
 			TlsCertPath:    config.LND.TlsCert,
-			DB:             database,
+			SyncStorage:    database,
 			MetricsBackend: metricsBackend,
 			Net:            config.LND.Network,
-			Storage:        storage,
+			InfoStorage:    database,
 			NeutrinoHost:   config.LND.NeutrinoHost,
 			NeutrinoPort:   config.LND.NeutrinoPort,
 			PeerHost:       config.LND.PeerHost,
