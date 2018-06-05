@@ -36,15 +36,15 @@ type Config struct {
 	// SyncStorage is used to store all data which needs to be persistent,
 	// exact implementation of database backend is unknown for the hub,
 	// in the simplest case it might be in-memory storage.
-	DB SyncStorage
+	SyncStorage SyncStorage
 
 	// MetricsBackend is used to send metrics about internal state of the
 	// router, and act on errors accordingly.
 	MetricsBackend crypto.MetricsBackend
 
-	// Storage is used to save information about lighting network node
+	// InfoStorage is used to save information about lighting network node
 	// fetched on the init stage.
-	Storage router.InfoStorage
+	InfoStorage router.InfoStorage
 
 	// Net is the blockchain network which hub should operate on,
 	// if hub trying to connect to the lnd with different network,
@@ -92,7 +92,7 @@ func (c *Config) validate() error {
 		return errors.Errorf("tlc cert path should be specified")
 	}
 
-	if c.DB == nil {
+	if c.SyncStorage == nil {
 		return errors.Errorf("db should be specified")
 	}
 

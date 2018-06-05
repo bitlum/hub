@@ -43,7 +43,7 @@ func (r *Router) updateNodeInfo() {
 				continue
 			}
 
-			if err := r.cfg.Storage.UpdateInfo(&router.DbInfo{
+			if err := r.cfg.InfoStorage.UpdateInfo(&router.DbInfo{
 				Version:     respInfo.Version,
 				Network:     r.cfg.Net,
 				BlockHeight: respInfo.BlockHeight,
@@ -139,7 +139,7 @@ func (r *Router) syncTopologyUpdates() {
 
 	// Fetch prev pending/closing/opened channels from db which
 	// corresponds to the old/previous channel state.
-	oldChannelsState, err := r.cfg.DB.ChannelsState()
+	oldChannelsState, err := r.cfg.SyncStorage.ChannelsState()
 	log.Debugf("(topology updates) Fetching channel state from db...")
 	if err != nil {
 		m.AddError(metrics.HighSeverity)
@@ -206,7 +206,7 @@ func (r *Router) syncTopologyUpdates() {
 		}
 
 		log.Debug("(topology updates) Putting channel state in db...")
-		if err := r.cfg.DB.PutChannelsState(newChannelsState); err != nil {
+		if err := r.cfg.SyncStorage.PutChannelsState(newChannelsState); err != nil {
 			m.AddError(metrics.HighSeverity)
 			log.Errorf("(topology updates) unable update channel"+
 				" states: %v", err)
@@ -342,8 +342,7 @@ func (r *Router) syncForwardingUpdate() {
 	// Try to fetch last index, and if fails than try after yet again after
 	// some time.
 	for {
-		log.Debug("(forwarding updates) Fetching last forwarding index...")
-		lastIndex, err = r.cfg.DB.LastForwardingIndex()
+		lastIndex, err = r.cfg.SyncStorage.LastForwardingIndex()
 		if err != nil {
 			m.AddError(metrics.HighSeverity)
 			log.Errorf("(forwarding updates) unable to get last"+
@@ -356,6 +355,8 @@ func (r *Router) syncForwardingUpdate() {
 			}
 		}
 
+		log.Debugf("(forwarding updates) Fetched last forwarding index(%v)",
+			lastIndex)
 		break
 	}
 
@@ -414,7 +415,7 @@ func (r *Router) syncForwardingUpdate() {
 	for {
 		log.Debugf("(forwarding updates) Save last forwarding index"+
 			" %v...", lastIndex)
-		if err := r.cfg.DB.PutLastForwardingIndex(lastIndex); err != nil {
+		if err := r.cfg.SyncStorage.PutLastForwardingIndex(lastIndex); err != nil {
 			m.AddError(metrics.HighSeverity)
 			log.Errorf("(forwarding updates) unable to get last"+
 				" forwarding index: %v", err)

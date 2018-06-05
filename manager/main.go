@@ -138,7 +138,7 @@ func backendMain() error {
 		}
 
 		gathererConf := &stats.Config{
-			Storage:        storage,
+			Storage:        database,
 			Router:         lndRouter,
 			MetricsBackend: statsBackend,
 		}
