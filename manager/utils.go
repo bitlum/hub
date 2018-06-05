@@ -98,7 +98,7 @@ func updateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 			// NOTE: If move open/close of the file out of this cycle than this
 			// would lead to optimisation third-party program unable to get and
 			// log update via watchdog package.
-			mainLog.Debugf("Open update log file(%v) to write an update: %v",
+			mainLog.Tracef("Open update log file(%v) to write an update: %v",
 				path, pretty.Sdump(logEntry))
 			updateLogFile, err := os.OpenFile(path, os.O_APPEND | os.O_RDWR|
 				os.O_CREATE, 0666)
