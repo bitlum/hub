@@ -7,9 +7,9 @@ import (
 )
 
 var (
-	lndBucket = []byte("lnd")
-	stateKey  = []byte("state_key")
-	indexKey  = []byte("index_key")
+	syncBucket = []byte("sync")
+	stateKey   = []byte("state_key")
+	indexKey   = []byte("index_key")
 )
 
 // Runtime check to ensure that DB implements lnd.SyncStorage interface.
@@ -22,7 +22,7 @@ var _ lnd.SyncStorage = (*DB)(nil)
 // NOTE: Part of the lnd.DB interface.
 func (d *DB) PutLastForwardingIndex(index uint32) error {
 	return d.Update(func(tx *bolt.Tx) error {
-		bucket, err := tx.CreateBucketIfNotExists(lndBucket)
+		bucket, err := tx.CreateBucketIfNotExists(syncBucket)
 		if err != nil {
 			return err
 		}
@@ -45,7 +45,7 @@ func (d *DB) LastForwardingIndex() (uint32, error) {
 	var index uint32
 
 	err := d.View(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket(lndBucket)
+		bucket := tx.Bucket(syncBucket)
 		if bucket == nil {
 			return nil
 		}
@@ -69,7 +69,7 @@ func (d *DB) LastForwardingIndex() (uint32, error) {
 // NOTE: Part of the lnd.DB interface.
 func (d *DB) PutChannelsState(state map[string]string) error {
 	return d.Update(func(tx *bolt.Tx) error {
-		bucket, err := tx.CreateBucketIfNotExists(lndBucket)
+		bucket, err := tx.CreateBucketIfNotExists(syncBucket)
 		if err != nil {
 			return err
 		}
@@ -92,7 +92,7 @@ func (d *DB) ChannelsState() (map[string]string, error) {
 	var state map[string]string
 
 	err := d.View(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket(lndBucket)
+		bucket := tx.Bucket(syncBucket)
 		if bucket == nil {
 			return nil
 		}
