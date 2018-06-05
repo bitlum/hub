@@ -467,8 +467,8 @@ func (r *Router) getNewForwardingEvents(index uint32) (
 	// overflow errors, lnd error response is restricted to ~50k updates.
 	for {
 		req := &lnrpc.ForwardingHistoryRequest{
-			StartTime:    0,
-			EndTime:      0,
+			StartTime:    1,
+			EndTime:      uint64(time.Now().Unix()),
 			IndexOffset:  index,
 			NumMaxEvents: limit,
 		}
