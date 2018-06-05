@@ -5,21 +5,21 @@ import (
 	"reflect"
 )
 
-func TestDB_PutLastForwardingIndex(t *testing.T) {
+func TestDB_PutLastForwardingTime(t *testing.T) {
 	db, clear, err := MakeTestDB()
 	if err != nil {
 		t.Fatalf("unable to create test database: %v", err)
 	}
 	defer clear()
 
-	if err := db.PutLastForwardingIndex(10); err != nil {
-		t.Fatalf("unable to put index: %v", err)
+	if err := db.PutLastForwardingTime(156347689); err != nil {
+		t.Fatalf("unable to put time: %v", err)
 	}
 
-	if index, err := db.LastForwardingIndex(); err != nil {
-		t.Fatalf("unable to get index: %v", err)
-	} else if index != 10 {
-		t.Fatalf("index is wrong")
+	if time, err := db.LastForwardingTime(); err != nil {
+		t.Fatalf("unable to get time: %v", err)
+	} else if time != 156347689 {
+		t.Fatalf("time is wrong")
 	}
 }
 

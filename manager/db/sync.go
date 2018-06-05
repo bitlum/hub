@@ -7,60 +7,60 @@ import (
 )
 
 var (
-	lndBucket = []byte("lnd")
-	stateKey  = []byte("state_key")
-	indexKey  = []byte("index_key")
+	syncBucket = []byte("sync")
+	stateKey   = []byte("state_key")
+	timeKey    = []byte("time_key")
 )
 
 // Runtime check to ensure that DB implements lnd.SyncStorage interface.
 var _ lnd.SyncStorage = (*DB)(nil)
 
-// PutLastForwardingIndex is used to save last forward pagination index
+// PutLastForwardingTime is used to save last forward pagination time
 // which was used for getting forwarding events. With this we avoid
 // processing of the same forwarding events twice.
 //
 // NOTE: Part of the lnd.DB interface.
-func (d *DB) PutLastForwardingIndex(index uint32) error {
+func (d *DB) PutLastForwardingTime(time int64) error {
 	return d.Update(func(tx *bolt.Tx) error {
-		bucket, err := tx.CreateBucketIfNotExists(lndBucket)
+		bucket, err := tx.CreateBucketIfNotExists(syncBucket)
 		if err != nil {
 			return err
 		}
 
 		// TODO(andrew.shvv) replace with binary representation?
-		data, err := json.Marshal(index)
+		data, err := json.Marshal(time)
 		if err != nil {
 			return err
 		}
 
-		return bucket.Put(indexKey, data)
+		return bucket.Put(timeKey, data)
 	})
 }
 
-// LastForwardingIndex return last lnd forwarding pagination index of
+// LastForwardingTime return last lnd forwarding pagination time of
 // which were preceded by the hub.
 //
 // NOTE: Part of the lnd.DB interface.
-func (d *DB) LastForwardingIndex() (uint32, error) {
-	var index uint32
+func (d *DB) LastForwardingTime() (int64, error) {
+	var syncTime int64
 
 	err := d.View(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket(lndBucket)
+		bucket := tx.Bucket(syncBucket)
 		if bucket == nil {
 			return nil
 		}
 
-		data := bucket.Get(indexKey)
+		data := bucket.Get(timeKey)
 		if data == nil {
-			// Equal to returning zero index
+			// Equal to returning zero time
 			return nil
 		}
 
 		// TODO(andrew.shvv) replace with binary representation?
-		return json.Unmarshal(data, &index)
+		return json.Unmarshal(data, &syncTime)
 	})
 
-	return index, err
+	return syncTime, err
 }
 
 // PutChannelsState is used to save the local topology of the router,
@@ -69,7 +69,7 @@ func (d *DB) LastForwardingIndex() (uint32, error) {
 // NOTE: Part of the lnd.DB interface.
 func (d *DB) PutChannelsState(state map[string]string) error {
 	return d.Update(func(tx *bolt.Tx) error {
-		bucket, err := tx.CreateBucketIfNotExists(lndBucket)
+		bucket, err := tx.CreateBucketIfNotExists(syncBucket)
 		if err != nil {
 			return err
 		}
@@ -92,14 +92,14 @@ func (d *DB) ChannelsState() (map[string]string, error) {
 	var state map[string]string
 
 	err := d.View(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket(lndBucket)
+		bucket := tx.Bucket(syncBucket)
 		if bucket == nil {
 			return nil
 		}
 
 		data := bucket.Get(stateKey)
 		if data == nil {
-			// Equal to returning zero index
+			// Equal to returning zero time
 			return nil
 		}
 
