@@ -15,12 +15,12 @@ func TestEncodeDecode(t *testing.T) {
 				&RouterState{
 					Channels: []*Channel{
 						{
-							UserId:        1,
+							UserId:        "1",
 							UserBalance:   1,
 							RouterBalance: 1,
 						},
 						{
-							UserId:        2,
+							UserId:        "2",
 							UserBalance:   2,
 							RouterBalance: 2,
 						},
