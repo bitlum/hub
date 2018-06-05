@@ -25,7 +25,7 @@ func AddKnownPeer(id router.UserID, alias string) {
 // identification of receiver/sender.
 func getRandomPseudonym() string {
 	rand.Seed(time.Now().UTC().UnixNano())
-	return "Random " + names[rand.Intn(len(names))]
+	return names[rand.Intn(len(names))]
 }
 
 // GetAlias return the alias by the given public key of the receiver/server,
