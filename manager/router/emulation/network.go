@@ -100,8 +100,8 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 
 	var paymentFailed bool
 
-	if req.Receiver == "" && req.Sender == "" {
-		return nil, errors.Errorf("both receiver and sender are zero")
+	if req.Receiver == "" || req.Sender == "" {
+		return nil, errors.Errorf("receiver or sender are empty")
 	}
 
 	// Calculate router fee which it takes for making the forwarding payment.
@@ -112,7 +112,7 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 		return nil, errors.Errorf("fee is greater than amount")
 	}
 
-	if req.Sender != "" {
+	if req.Sender != "0" {
 		// TODO(andrew.shvv) add multiple channels support
 		channel, ok := n.users[router.UserID(req.Sender)]
 		if !ok {
@@ -145,13 +145,13 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 		}
 	}
 
-	if req.Receiver != "" {
+	if req.Receiver != "0" {
 		// TODO(andrew.shvv) add multiple channels support
 		channel, ok := n.users[router.UserID(req.Receiver)]
 		if !ok {
 			paymentFailed = true
 			return nil, errors.Errorf("unable to find receiver with %v id",
-				req.Sender)
+				req.Receiver)
 		} else if channel.IsPending {
 			paymentFailed = true
 			return nil, errors.Errorf("channel %v is locked",

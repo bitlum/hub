@@ -9,7 +9,6 @@ import (
 	"google.golang.org/grpc"
 	"github.com/go-errors/errors"
 	"github.com/bitlum/hub/manager/router/broadcast"
-	"fmt"
 )
 
 func TestStartNetwork(t *testing.T) {
@@ -266,6 +265,51 @@ func TestEmulationNetwork(t *testing.T) {
 	}
 }
 
+func TestIncomingOutgoingPayments(t *testing.T) {
+	// Manually start the block notifier without starting the router.
+	r := NewRouter(100, time.Hour)
+	go r.network.blockNotifier.Start()
+	defer r.network.blockNotifier.Stop()
+
+	updates := r.RegisterOnUpdates()
+	defer updates.Stop()
+
+	if _, err := r.network.OpenChannel(context.Background(), &OpenChannelRequest{
+		UserId:       "1",
+		LockedByUser: 10,
+	}); err != nil {
+		t.Fatalf("unable to emulate user openning channel: %v", err)
+	}
+
+	if err := waitChannelUpdate(r, updates); err != nil {
+		t.Fatalf("haven't received channel update: %v", err)
+	}
+
+	if err := r.UpdateChannel("1", 10); err != nil {
+		t.Fatalf("unable to udpate channel balance: %v", err)
+	}
+
+	if err := waitChannelUpdate(r, updates); err != nil {
+		t.Fatalf("haven't received channel update: %v", err)
+	}
+
+	if _, err := r.network.SendPayment(context.Background(), &SendPaymentRequest{
+		Sender:   "1",
+		Receiver: "0",
+		Amount:   1,
+	}); err != nil {
+		t.Fatalf("unable to receive incoming payment: %v", err)
+	}
+
+	if r.network.channels["1"].UserBalance != 9 {
+		t.Fatalf("wrong baalnce")
+	}
+
+	if r.network.channels["1"].RouterBalance != 11 {
+		t.Fatalf("wrong baalnce")
+	}
+}
+
 func TestSimpleStrategy(t *testing.T) {
 	strategy := router.NewChannelUpdateStrategy()
 	r := NewRouter(100, time.Hour)
@@ -506,7 +550,55 @@ func TestForwardingPaymentFee(t *testing.T) {
 	}
 }
 
-func waitUpdate(receiver *broadcast.Receiver, obj interface{}) error {
+// waitChannelUpdate waits for open, update or close of channel.
+func waitChannelUpdate(r *RouterEmulation, updates *broadcast.Receiver) error {
+	select {
+	case update := <-updates.Read():
+		c1 := reflect.TypeOf(&router.UpdateChannelUpdating{}) != reflect.TypeOf(update)
+		c2 := reflect.TypeOf(&router.UpdateChannelOpening{}) != reflect.TypeOf(update)
+		c3 := reflect.TypeOf(&router.UpdateChannelClosing{}) != reflect.TypeOf(update)
+
+		if c1 && c2 && c3 {
+			return errors.Errorf("wrong update type, "+
+				"expected one of the channel updates, "+
+				"received: %v", reflect.TypeOf(update))
+		}
+	case <-time.After(time.Second * 2):
+		return errors.New("haven't received update")
+	}
+
+	// This subscription is used to understand when new block has been
+	// generated.
+	l := r.network.blockNotifier.Subscribe()
+
+	// Manually trigger block generation and wait for block notification to be
+	// received, with this channel should be updated.
+	r.network.blockNotifier.MineBlock()
+	select {
+	case <-l.Read():
+	case <-time.After(time.Second):
+		return errors.New("haven't received block notification")
+	}
+
+	select {
+	case update := <-updates.Read():
+		c1 := reflect.TypeOf(&router.UpdateChannelUpdated{}) != reflect.TypeOf(update)
+		c2 := reflect.TypeOf(&router.UpdateChannelOpened{}) != reflect.TypeOf(update)
+		c3 := reflect.TypeOf(&router.UpdateChannelClosed{}) != reflect.TypeOf(update)
+
+		if c1 && c2 && c3 {
+			return errors.Errorf("wrong update type, "+
+				"expected one of the channel updates, "+
+				"received: %v", reflect.TypeOf(update))
+		}
+	case <-time.After(time.Second * 2):
+		return errors.New("haven't received update")
+	}
+
+	return nil
+}
+
+func waitUpdate(receiver *broadcast.Receiver, obj ... interface{}) error {
 	desiredType := reflect.TypeOf(obj)
 
 	select {
