@@ -110,17 +110,21 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 
 	var incomingAmount int64
 	var outgoingAmount int64
+	var routerFee int64
+	var transferedAmount int64
 
 	if req.Sender == "0" {
 		// In this case sender is router (outgoing payment), so incoming
 		// amount - amount which is received from user is zero.
 		incomingAmount = 0
 		outgoingAmount = req.Amount
+		transferedAmount = outgoingAmount
 	} else if req.Receiver == "0" {
 		// In this case receiver is router (incoing payment), so outgoing
 		// amount - amount which is send from router to user is zero.
 		incomingAmount = req.Amount
 		outgoingAmount = 0
+		transferedAmount = incomingAmount
 	} else {
 		// In the case sender and receiver are users (forward payment).
 		// Calculate router fee which it takes for making the forwarding payment.
@@ -128,6 +132,7 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 			n.router.feeProportion)
 		incomingAmount = req.Amount
 		outgoingAmount = req.Amount - routerFee
+		transferedAmount = outgoingAmount
 
 		if outgoingAmount <= 0 {
 			return nil, errors.Errorf("fee is greater than amount")
@@ -200,7 +205,7 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 				Status:   router.InsufficientFunds,
 				Sender:   router.UserID(req.Sender),
 				Receiver: router.UserID(req.Receiver),
-				Amount:   router.BalanceUnit(incomingAmount),
+				Amount:   router.BalanceUnit(transferedAmount),
 			})
 
 			return &SendPaymentResponse{}, nil
@@ -212,8 +217,8 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 		Status:   router.Successful,
 		Sender:   router.UserID(req.Sender),
 		Receiver: router.UserID(req.Receiver),
-		Amount:   router.BalanceUnit(incomingAmount),
-		Earned:   router.BalanceUnit(incomingAmount - outgoingAmount),
+		Amount:   router.BalanceUnit(transferedAmount),
+		Earned:   router.BalanceUnit(routerFee),
 	})
 
 	return &SendPaymentResponse{}, nil
