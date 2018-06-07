@@ -319,6 +319,7 @@ func TestIncomingOutgoingPayments(t *testing.T) {
 			t.Fatalf("wrong amount")
 		}
 
+		// Fee exists only on forwarding payments.
 		if payment.Earned != 0 {
 			t.Fatalf("wrong router fee/earned")
 		}
@@ -508,10 +509,6 @@ func TestForwardingPaymentFee(t *testing.T) {
 	routerUpdates := r.RegisterOnUpdates()
 	defer routerUpdates.Stop()
 
-	// This subscription is used to understand when new block has been
-	// generated in the simulation network.
-	blocks := r.network.blockNotifier.Subscribe()
-
 	// Open first channel and update it update balance from router side.
 	if _, err := r.network.OpenChannel(context.Background(), &OpenChannelRequest{
 		UserId:       "1",
@@ -519,18 +516,18 @@ func TestForwardingPaymentFee(t *testing.T) {
 	}); err != nil {
 		t.Fatalf("unable to emulate user openning channel: %v", err)
 	}
-	skipUpdate(routerUpdates)
 
-	mineBlock(t, r, blocks)
-	skipUpdate(routerUpdates)
+	if err := waitChannelUpdate(r, routerUpdates); err != nil {
+		t.Fatalf("haven't received channel update: %v", err)
+	}
 
 	if err := r.UpdateChannel("1", 10); err != nil {
 		t.Fatalf("unable to update channel: %v", err)
 	}
-	skipUpdate(routerUpdates)
 
-	mineBlock(t, r, blocks)
-	skipUpdate(routerUpdates)
+	if err := waitChannelUpdate(r, routerUpdates); err != nil {
+		t.Fatalf("haven't received channel update: %v", err)
+	}
 
 	// Open second channel and update it update balance from router side.
 	if _, err := r.network.OpenChannel(context.Background(), &OpenChannelRequest{
@@ -539,18 +536,18 @@ func TestForwardingPaymentFee(t *testing.T) {
 	}); err != nil {
 		t.Fatalf("unable to emulate user openning channel: %v", err)
 	}
-	skipUpdate(routerUpdates)
 
-	mineBlock(t, r, blocks)
-	skipUpdate(routerUpdates)
+	if err := waitChannelUpdate(r, routerUpdates); err != nil {
+		t.Fatalf("haven't received channel update: %v", err)
+	}
 
 	if err := r.UpdateChannel("2", 10); err != nil {
 		t.Fatalf("unable to update channel: %v", err)
 	}
-	skipUpdate(routerUpdates)
 
-	mineBlock(t, r, blocks)
-	skipUpdate(routerUpdates)
+	if err := waitChannelUpdate(r, routerUpdates); err != nil {
+		t.Fatalf("haven't received channel update: %v", err)
+	}
 
 	// For every 10 satoshi we get 2 satoshi as proportional fee
 	r.SetFeeProportional(toMilli(200))
@@ -572,6 +569,12 @@ func TestForwardingPaymentFee(t *testing.T) {
 		Amount:   10,
 	}); err != nil {
 		t.Fatalf("user is unable to forward payment")
+	}
+
+	update := <-routerUpdates.Read()
+	payment := update.(*router.UpdatePayment)
+	if payment.Earned != 4 {
+		t.Fatalf("wrong earned / router fee")
 	}
 
 	if r.network.channels[router.ChannelID("1")].UserBalance != 0 {
