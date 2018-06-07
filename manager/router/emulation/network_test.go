@@ -274,6 +274,9 @@ func TestIncomingOutgoingPayments(t *testing.T) {
 	updates := r.RegisterOnUpdates()
 	defer updates.Stop()
 
+	// From every payment we get 2 satoshi
+	r.SetFeeBase(toMilli(1))
+
 	if _, err := r.network.OpenChannel(context.Background(), &OpenChannelRequest{
 		UserId:       "1",
 		LockedByUser: 10,
@@ -598,7 +601,7 @@ func waitChannelUpdate(r *RouterEmulation, updates *broadcast.Receiver) error {
 	return nil
 }
 
-func waitUpdate(receiver *broadcast.Receiver, obj ... interface{}) error {
+func waitUpdate(receiver *broadcast.Receiver, obj interface{}) error {
 	desiredType := reflect.TypeOf(obj)
 
 	select {

@@ -104,12 +104,34 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 		return nil, errors.Errorf("receiver or sender are empty")
 	}
 
-	// Calculate router fee which it takes for making the forwarding payment.
-	routerFee := calculateForwardingFee(req.Amount, n.router.feeBase,
-		n.router.feeProportion)
+	if req.Receiver == req.Sender {
+		return nil, errors.Errorf("receiver and sender are equal")
+	}
 
-	if req.Amount-routerFee <= 0 {
-		return nil, errors.Errorf("fee is greater than amount")
+	var incomingAmount int64
+	var outgoingAmount int64
+
+	if req.Sender == "0" {
+		// In this case sender is router (outgoing payment), so incoming
+		// amount - amount which is received from user is zero.
+		incomingAmount = 0
+		outgoingAmount = req.Amount
+	} else if req.Receiver == "0" {
+		// In this case receiver is router (incoing payment), so outgoing
+		// amount - amount which is send from router to user is zero.
+		incomingAmount = req.Amount
+		outgoingAmount = 0
+	} else {
+		// In the case sender and receiver are users (forward payment).
+		// Calculate router fee which it takes for making the forwarding payment.
+		routerFee := calculateForwardingFee(req.Amount, n.router.feeBase,
+			n.router.feeProportion)
+		incomingAmount = req.Amount
+		outgoingAmount = req.Amount - routerFee
+
+		if outgoingAmount <= 0 {
+			return nil, errors.Errorf("fee is greater than amount")
+		}
 	}
 
 	if req.Sender != "0" {
@@ -125,12 +147,12 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 				channel.ChannelID)
 		}
 
-		channel.UserBalance -= router.BalanceUnit(req.Amount)
-		channel.RouterBalance += router.BalanceUnit(req.Amount)
+		channel.UserBalance -= router.BalanceUnit(incomingAmount)
+		channel.RouterBalance += router.BalanceUnit(incomingAmount)
 		defer func() {
 			if paymentFailed {
-				channel.UserBalance += router.BalanceUnit(req.Amount)
-				channel.RouterBalance -= router.BalanceUnit(req.Amount)
+				channel.UserBalance += router.BalanceUnit(incomingAmount)
+				channel.RouterBalance -= router.BalanceUnit(incomingAmount)
 			}
 		}()
 
@@ -158,12 +180,12 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 				channel.ChannelID)
 		}
 
-		channel.RouterBalance -= router.BalanceUnit(req.Amount - routerFee)
-		channel.UserBalance += router.BalanceUnit(req.Amount - routerFee)
+		channel.RouterBalance -= router.BalanceUnit(outgoingAmount)
+		channel.UserBalance += router.BalanceUnit(outgoingAmount)
 		defer func() {
 			if paymentFailed {
-				channel.RouterBalance += router.BalanceUnit(req.Amount - routerFee)
-				channel.UserBalance -= router.BalanceUnit(req.Amount - routerFee)
+				channel.RouterBalance += router.BalanceUnit(outgoingAmount)
+				channel.UserBalance -= router.BalanceUnit(outgoingAmount)
 			}
 		}()
 
@@ -178,7 +200,7 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 				Status:   router.InsufficientFunds,
 				Sender:   router.UserID(req.Sender),
 				Receiver: router.UserID(req.Receiver),
-				Amount:   router.BalanceUnit(req.Amount),
+				Amount:   router.BalanceUnit(incomingAmount),
 			})
 
 			return &SendPaymentResponse{}, nil
@@ -190,8 +212,8 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 		Status:   router.Successful,
 		Sender:   router.UserID(req.Sender),
 		Receiver: router.UserID(req.Receiver),
-		Amount:   router.BalanceUnit(req.Amount),
-		Earned:   router.BalanceUnit(routerFee),
+		Amount:   router.BalanceUnit(incomingAmount),
+		Earned:   router.BalanceUnit(incomingAmount - outgoingAmount),
 	})
 
 	return &SendPaymentResponse{}, nil
