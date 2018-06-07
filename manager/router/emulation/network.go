@@ -128,7 +128,7 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 	} else {
 		// In the case sender and receiver are users (forward payment).
 		// Calculate router fee which it takes for making the forwarding payment.
-		routerFee := calculateForwardingFee(req.Amount, n.router.feeBase,
+		routerFee = calculateForwardingFee(req.Amount, n.router.feeBase,
 			n.router.feeProportion)
 		incomingAmount = req.Amount
 		outgoingAmount = req.Amount - routerFee
