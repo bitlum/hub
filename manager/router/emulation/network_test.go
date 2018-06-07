@@ -296,20 +296,59 @@ func TestIncomingOutgoingPayments(t *testing.T) {
 		t.Fatalf("haven't received channel update: %v", err)
 	}
 
-	if _, err := r.network.SendPayment(context.Background(), &SendPaymentRequest{
-		Sender:   "1",
-		Receiver: "0",
-		Amount:   1,
-	}); err != nil {
-		t.Fatalf("unable to receive incoming payment: %v", err)
-	}
+	{
+		if _, err := r.network.SendPayment(context.Background(), &SendPaymentRequest{
+			Sender:   "1",
+			Receiver: "0",
+			Amount:   1,
+		}); err != nil {
+			t.Fatalf("unable to receive incoming payment: %v", err)
+		}
 
-	if r.network.channels["1"].UserBalance != 9 {
-		t.Fatalf("wrong baalnce")
-	}
+		if r.network.channels["1"].UserBalance != 9 {
+			t.Fatalf("wrong baalnce")
+		}
 
-	if r.network.channels["1"].RouterBalance != 11 {
-		t.Fatalf("wrong baalnce")
+		if r.network.channels["1"].RouterBalance != 11 {
+			t.Fatalf("wrong baalnce")
+		}
+
+		update := <-updates.Read()
+		payment := update.(*router.UpdatePayment)
+		if payment.Amount != 1 {
+			t.Fatalf("wrong amount")
+		}
+
+		if payment.Earned != 0 {
+			t.Fatalf("wrong router fee/earned")
+		}
+	}
+	{
+		if _, err := r.network.SendPayment(context.Background(), &SendPaymentRequest{
+			Sender:   "0",
+			Receiver: "1",
+			Amount:   1,
+		}); err != nil {
+			t.Fatalf("unable to receive incoming payment: %v", err)
+		}
+
+		if r.network.channels["1"].UserBalance != 10 {
+			t.Fatalf("wrong baalnce")
+		}
+
+		if r.network.channels["1"].RouterBalance != 10 {
+			t.Fatalf("wrong baalnce")
+		}
+
+		update := <-updates.Read()
+		payment := update.(*router.UpdatePayment)
+		if payment.Amount != 1 {
+			t.Fatalf("wrong amount")
+		}
+
+		if payment.Earned != 0 {
+			t.Fatalf("wrong router fee/earned")
+		}
 	}
 }
 
