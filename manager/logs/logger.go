@@ -1,4 +1,4 @@
-package logger
+package logs
 
 import (
 	"github.com/golang/protobuf/proto"

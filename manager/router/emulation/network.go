@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 	"strconv"
-	"github.com/bitlum/hub/manager/router/broadcast"
+	"github.com/bitlum/hub/manager/common/broadcast"
 )
 
 // emulationNetwork is used to emulate activity of users in router local
@@ -120,7 +120,7 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 		outgoingAmount = req.Amount
 		transferedAmount = outgoingAmount
 	} else if req.Receiver == "0" {
-		// In this case receiver is router (incoing payment), so outgoing
+		// In this case receiver is router (incoming payment), so outgoing
 		// amount - amount which is send from router to user is zero.
 		incomingAmount = req.Amount
 		outgoingAmount = 0

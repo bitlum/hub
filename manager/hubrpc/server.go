@@ -4,6 +4,7 @@ import (
 	"golang.org/x/net/context"
 	"github.com/bitlum/hub/manager/router"
 	"github.com/go-errors/errors"
+	"github.com/bitlum/hub/manager/optimisation"
 )
 
 // Hub is an implementation of gRPC server which receive the message from
@@ -11,11 +12,11 @@ import (
 // router accordingly with initialised re-balancing strategy.
 type Hub struct {
 	router   router.Router
-	strategy router.RouterStateStrategy
+	strategy optimisation.RouterStateStrategy
 }
 
 // NewHub creates new instance of the Hub.
-func NewHub(r router.Router, s router.RouterStateStrategy) *Hub {
+func NewHub(r router.Router, s optimisation.RouterStateStrategy) *Hub {
 	return &Hub{
 		router:   r,
 		strategy: s,

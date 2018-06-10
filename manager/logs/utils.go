@@ -1,7 +1,6 @@
-package main
+package logs
 
 import (
-	"github.com/bitlum/hub/manager/logger"
 	"time"
 	"github.com/bitlum/hub/manager/router"
 	"github.com/go-errors/errors"
@@ -10,8 +9,8 @@ import (
 	"reflect"
 )
 
-// getState...
-func getState(r router.Router) (*logger.Log, error) {
+// getState converts router topology into state log.
+func getState(r router.Router) (*Log, error) {
 	// Get the router local network in order to write it on log file,
 	// so that external optimisation program could sync it state.
 	routerChannels, err := r.Network()
@@ -42,9 +41,9 @@ func getState(r router.Router) (*logger.Log, error) {
 	}
 	milliseconds := duration.Nanoseconds() / int64(time.Millisecond)
 
-	channels := make([]*logger.Channel, len(routerChannels))
+	channels := make([]*Channel, len(routerChannels))
 	for i, c := range routerChannels {
-		channels[i] = &logger.Channel{
+		channels[i] = &Channel{
 			ChannelId:     string(c.ChannelID),
 			UserId:        string(c.UserID),
 			UserBalance:   uint64(c.UserBalance),
@@ -53,10 +52,10 @@ func getState(r router.Router) (*logger.Log, error) {
 		}
 	}
 
-	return &logger.Log{
+	return &Log{
 		Time: time.Now().UnixNano(),
-		Data: &logger.Log_State{
-			State: &logger.RouterState{
+		Data: &Log_State{
+			State: &RouterState{
 				FreeBalance:                 uint64(freeBalance),
 				PendingBalance:              uint64(pendingBalance),
 				AverageChangeUpdateDuration: uint64(milliseconds),
@@ -66,12 +65,12 @@ func getState(r router.Router) (*logger.Log, error) {
 	}, nil
 }
 
-// updateLogFile subscribe on routers topology update and update the log with
-// the current router state and channel updates.
+// UpdateLogFileGoroutine subscribe on routers topology update and update
+// the log with the current router state and channel updates.
 //
 // NOTE: Should be run as goroutine.
-func updateLogFileGoroutine(r router.Router, path string, errChan chan error) {
-	var logEntry *logger.Log
+func UpdateLogFileGoroutine(r router.Router, path string, errChan chan error) {
+	var logEntry *Log
 
 	// Ensure that gRPC structures are printed properly
 	pretty := spew.NewDefaultConfig()
@@ -98,7 +97,7 @@ func updateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 			// NOTE: If move open/close of the file out of this cycle than this
 			// would lead to optimisation third-party program unable to get and
 			// log update via watchdog package.
-			mainLog.Tracef("Open update log file(%v) to write an update: %v",
+			log.Tracef("Open update log file(%v) to write an update: %v",
 				path, pretty.Sdump(logEntry))
 			updateLogFile, err := os.OpenFile(path, os.O_APPEND | os.O_RDWR|
 				os.O_CREATE, 0666)
@@ -107,7 +106,7 @@ func updateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 				return
 			}
 
-			if err := logger.WriteLog(updateLogFile, logEntry); err != nil {
+			if err := WriteLog(updateLogFile, logEntry); err != nil {
 				fail(errChan, "unable to write new log entry: %v", err)
 				return
 			}
@@ -122,18 +121,18 @@ func updateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 		select {
 		case update, ok := <-receiver.Read():
 			if !ok {
-				mainLog.Info("Router update channel close, " +
+				log.Info("Router update channel close, " +
 					"exiting log update goroutine")
 				return
 			}
 
 			switch u := update.(type) {
 			case *router.UpdateChannelClosing:
-				logEntry = &logger.Log{
+				logEntry = &Log{
 					Time: time.Now().UnixNano(),
-					Data: &logger.Log_ChannelChange{
-						ChannelChange: &logger.ChannelChange{
-							Type:          logger.ChannelChangeType_closing,
+					Data: &Log_ChannelChange{
+						ChannelChange: &ChannelChange{
+							Type:          ChannelChangeType_closing,
 							ChannelId:     string(u.ChannelID),
 							UserId:        string(u.UserID),
 							UserBalance:   0,
@@ -144,11 +143,11 @@ func updateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 				}
 
 			case *router.UpdateChannelClosed:
-				logEntry = &logger.Log{
+				logEntry = &Log{
 					Time: time.Now().UnixNano(),
-					Data: &logger.Log_ChannelChange{
-						ChannelChange: &logger.ChannelChange{
-							Type:          logger.ChannelChangeType_closed,
+					Data: &Log_ChannelChange{
+						ChannelChange: &ChannelChange{
+							Type:          ChannelChangeType_closed,
 							ChannelId:     string(u.ChannelID),
 							UserId:        string(u.UserID),
 							UserBalance:   0,
@@ -159,11 +158,11 @@ func updateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 				}
 
 			case *router.UpdateChannelOpening:
-				logEntry = &logger.Log{
+				logEntry = &Log{
 					Time: time.Now().UnixNano(),
-					Data: &logger.Log_ChannelChange{
-						ChannelChange: &logger.ChannelChange{
-							Type:          logger.ChannelChangeType_openning,
+					Data: &Log_ChannelChange{
+						ChannelChange: &ChannelChange{
+							Type:          ChannelChangeType_openning,
 							ChannelId:     string(u.ChannelID),
 							UserId:        string(u.UserID),
 							UserBalance:   uint64(u.UserBalance),
@@ -174,11 +173,11 @@ func updateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 				}
 
 			case *router.UpdateChannelOpened:
-				logEntry = &logger.Log{
+				logEntry = &Log{
 					Time: time.Now().UnixNano(),
-					Data: &logger.Log_ChannelChange{
-						ChannelChange: &logger.ChannelChange{
-							Type:          logger.ChannelChangeType_opened,
+					Data: &Log_ChannelChange{
+						ChannelChange: &ChannelChange{
+							Type:          ChannelChangeType_opened,
 							ChannelId:     string(u.ChannelID),
 							UserId:        string(u.UserID),
 							UserBalance:   uint64(u.UserBalance),
@@ -189,11 +188,11 @@ func updateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 				}
 
 			case *router.UpdateChannelUpdating:
-				logEntry = &logger.Log{
+				logEntry = &Log{
 					Time: time.Now().UnixNano(),
-					Data: &logger.Log_ChannelChange{
-						ChannelChange: &logger.ChannelChange{
-							Type:          logger.ChannelChangeType_updating,
+					Data: &Log_ChannelChange{
+						ChannelChange: &ChannelChange{
+							Type:          ChannelChangeType_updating,
 							ChannelId:     string(u.ChannelID),
 							UserId:        string(u.UserID),
 							UserBalance:   uint64(u.UserBalance),
@@ -204,11 +203,11 @@ func updateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 				}
 
 			case *router.UpdateChannelUpdated:
-				logEntry = &logger.Log{
+				logEntry = &Log{
 					Time: time.Now().UnixNano(),
-					Data: &logger.Log_ChannelChange{
-						ChannelChange: &logger.ChannelChange{
-							Type:          logger.ChannelChangeType_updated,
+					Data: &Log_ChannelChange{
+						ChannelChange: &ChannelChange{
+							Type:          ChannelChangeType_updated,
 							ChannelId:     string(u.ChannelID),
 							UserId:        string(u.UserID),
 							UserBalance:   uint64(u.UserBalance),
@@ -221,23 +220,23 @@ func updateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 			case *router.UpdateLinkAverageUpdateDuration:
 				// With this update we just trigger state update
 			case *router.UpdatePayment:
-				var status logger.PaymentStatus
+				var status PaymentStatus
 				switch u.Status {
 				case router.InsufficientFunds:
-					status = logger.PaymentStatus_unsufficient_funds
+					status = PaymentStatus_unsufficient_funds
 				case router.Successful:
-					status = logger.PaymentStatus_success
+					status = PaymentStatus_success
 				case router.ExternalFail:
-					status = logger.PaymentStatus_external_fail
+					status = PaymentStatus_external_fail
 				default:
 					fail(errChan, "unknown status: %v", u.Status)
 					return
 				}
 
-				logEntry = &logger.Log{
+				logEntry = &Log{
 					Time: time.Now().UnixNano(),
-					Data: &logger.Log_Payment{
-						Payment: &logger.Payment{
+					Data: &Log_Payment{
+						Payment: &Payment{
 							Status:   status,
 							Sender:   string(u.Sender),
 							Receiver: string(u.Receiver),
@@ -248,7 +247,7 @@ func updateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 				}
 
 			default:
-				mainLog.Errorf("unhandled type of update: %v",
+				log.Errorf("unhandled type of update: %v",
 					reflect.TypeOf(u))
 				continue
 			}
@@ -258,7 +257,7 @@ func updateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 			triggerStateWrite()
 
 		case <-needWriteState:
-			mainLog.Info("Synchronise state of the router and write state in the log")
+			log.Info("Synchronise state of the router and write state in the log")
 
 			logEntry, err = getState(r)
 			if err != nil {

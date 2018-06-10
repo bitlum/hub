@@ -1,4 +1,4 @@
-package main
+package optimisation
 
 import (
 	"github.com/bitlum/hub/manager/router"
@@ -13,18 +13,18 @@ type link struct {
 	IsActive    bool
 }
 
-// enableChannelBalancing implements primitive channel balance. Is an goroutine
+// EnableChannelBalancing implements primitive channel balance. Is an goroutine
 // which listens for change of topology of router and react on it accordingly.
 // In current implementation its creating the channel to user if we have less
 // than some threshold of number of funds.
-func enableChannelBalancing(r router.Router) {
+func EnableChannelBalancing(r router.Router) {
 	go func() {
 		notSupportMultipleChannels := make(map[router.UserID]struct{})
 
 		for {
 			channels, err := r.Network()
 			if err != nil {
-				mainLog.Errorf("unable to fetch network: %v", err)
+				log.Errorf("unable to fetch network: %v", err)
 				<-time.After(time.Second * 10)
 				continue
 			}
@@ -57,13 +57,13 @@ func enableChannelBalancing(r router.Router) {
 				// should create additional channel.
 				ratio := float64(l.routerFunds) / float64(l.usersFunds)
 
-				mainLog.Debugf("Calculate %v ratio with user %v", ratio, userID)
+				log.Debugf("Calculate %v ratio with user %v", ratio, userID)
 
 				if ratio < threshold {
 					additionalFunds := l.usersFunds - l.routerFunds
 
 					go func(userID router.UserID, additionalFunds router.BalanceUnit) {
-						mainLog.Infof("Trying to create additional channel"+
+						log.Infof("Trying to create additional channel"+
 							" with user(%v), additional funds(%v)", userID,
 							btcutil.Amount(additionalFunds))
 
@@ -71,13 +71,13 @@ func enableChannelBalancing(r router.Router) {
 							if strings.Contains(err.Error(), "Multiple channels unsupported") {
 								// Skip nodes without support of multiple
 								// channels.
-								mainLog.Infof("Remove link for user(%v) which do not support multiple"+
+								log.Infof("Remove link for user(%v) which do not support multiple"+
 									" channels", userID)
 								notSupportMultipleChannels[userID] = struct{}{}
 								return
 							}
 
-							mainLog.Errorf("unable to create additional "+
+							log.Errorf("unable to create additional "+
 								"channel with user: %v", err)
 						}
 					}(userID, additionalFunds)

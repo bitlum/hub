@@ -5,7 +5,7 @@ import (
 	"github.com/go-errors/errors"
 	"time"
 	"strconv"
-	"github.com/bitlum/hub/manager/router/broadcast"
+	"github.com/bitlum/hub/manager/common/broadcast"
 )
 
 // RouterEmulation is an implementation of router. Router interface which

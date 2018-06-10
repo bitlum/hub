@@ -14,7 +14,7 @@ import (
 	"github.com/bitlum/hub/manager/metrics/crypto"
 	"github.com/bitlum/hub/manager/metrics"
 	"github.com/bitlum/hub/manager/router"
-	"github.com/bitlum/hub/manager/router/broadcast"
+	"github.com/bitlum/hub/manager/common/broadcast"
 	"github.com/bitlum/hub/manager/router/registry"
 )
 

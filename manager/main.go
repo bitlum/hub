@@ -19,10 +19,12 @@ import (
 	"context"
 	"github.com/bitlum/hub/manager/metrics/crypto"
 	"github.com/bitlum/hub/manager/metrics/network"
-	"github.com/bitlum/hub/manager/router/stats"
 	"github.com/bitlum/hub/manager/db"
 	"github.com/bitlum/hub/manager/graphql"
 	"github.com/bitlum/hub/manager/router/registry"
+	"github.com/bitlum/hub/manager/processing"
+	"github.com/bitlum/hub/manager/optimisation"
+	"github.com/bitlum/hub/manager/logs"
 )
 
 var (
@@ -137,13 +139,13 @@ func backendMain() error {
 				"", err)
 		}
 
-		gathererConf := &stats.Config{
-			Storage:        database,
+		gathererConf := &processing.Config{
+			InfoStorage:    database,
 			Router:         lndRouter,
 			MetricsBackend: statsBackend,
 		}
 
-		statsGatherer := stats.NewNetworkStatsGatherer(gathererConf)
+		statsGatherer := processing.NewStats(gathererConf)
 		statsGatherer.Start()
 		defer statsGatherer.Stop()
 
@@ -157,20 +159,20 @@ func backendMain() error {
 		r = lndRouter
 
 		// Start maintaining the balance of funds locked with users.
-		enableChannelBalancing(lndRouter)
+		optimisation.EnableChannelBalancing(lndRouter)
 
 	default:
 		return errors.Errorf("unhandled backend name: '%v'", config.Backend)
 	}
 
-	go updateLogFileGoroutine(r, config.UpdateLogFile, errChan)
+	go logs.UpdateLogFileGoroutine(r, config.UpdateLogFile, errChan)
 
 	// Setup gRPC endpoint to receive the management commands, and initialise
 	// optimisation strategy which will dictate us how to convert from one
 	// router state to another.
 	grpcServer := grpc.NewServer([]grpc.ServerOption{}...)
 
-	s := router.NewChannelUpdateStrategy()
+	s := optimisation.NewChannelUpdateStrategy()
 	hub := hubrpc.NewHub(r, s)
 	hubrpc.RegisterManagerServer(grpcServer, hub)
 
@@ -229,5 +231,21 @@ func main() {
 			fmt.Fprintln(os.Stderr, err)
 		}
 		os.Exit(1)
+	}
+}
+
+func fail(errChan chan error, format string, params ...interface{}) {
+	err := errors.Errorf(format, params...)
+	select {
+	case _, ok := <-errChan:
+		if !ok {
+			return
+		}
+	default:
+	}
+
+	select {
+	case errChan <- err:
+	default:
 	}
 }

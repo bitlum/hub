@@ -1,16 +1,18 @@
-package router
+package optimisation
+
+import "github.com/bitlum/hub/manager/router"
 
 // Defer is function which changes the state of the router, but executed a bit
 // afterward.
-type Defer func(r Router) error
+type Defer func(r router.Router) error
 
 // RouterStateStrategy represent the entity which takes the current router
 // network state, desired one, and return set of actions which needed to apply
 // to router to get it to optimum state.
 type RouterStateStrategy interface {
 	// TODO(andrew.shvv) Remove that because we switched to the UpdateChannel
-	GenerateActions(oldState []*Channel,
-		newState []*Channel) []Defer
+	GenerateActions(oldState []*router.Channel,
+		newState []*router.Channel) []Defer
 }
 
 // channelRebalance implements the RouterStateStrategy interface and represent
@@ -31,8 +33,8 @@ func NewChannelUpdateStrategy() *channelUpdate {
 
 // GenerateActions generates the sequence of actions needed to bring the
 // state to the optimisation equilibrium.
-func (r *channelUpdate) GenerateActions(oldState []*Channel,
-	newState []*Channel) []Defer {
+func (r *channelUpdate) GenerateActions(oldState []*router.Channel,
+	newState []*router.Channel) []Defer {
 
 	oldStateMap := listToMap(oldState)
 	newStateMap := listToMap(newState)
@@ -44,14 +46,14 @@ func (r *channelUpdate) GenerateActions(oldState []*Channel,
 			// If new channel in the old channel map,
 			// than the router balance has change.
 			if newChan != oldChan {
-				actions = append(actions, func(r Router) error {
+				actions = append(actions, func(r router.Router) error {
 					return r.UpdateChannel(chanIDCur, newChan.RouterBalance)
 				})
 			}
 		} else {
 			// If new channel not in the old channel map, that channel was
 			// removed.
-			actions = append(actions, func(r Router) error {
+			actions = append(actions, func(r router.Router) error {
 				return r.CloseChannel(chanIDCur)
 			})
 		}
@@ -61,7 +63,7 @@ func (r *channelUpdate) GenerateActions(oldState []*Channel,
 		if _, ok := oldStateMap[chanID]; !ok {
 			// If old channel not in the new channel map, that channel was
 			// added.
-			actions = append(actions, func(r Router) error {
+			actions = append(actions, func(r router.Router) error {
 				return r.OpenChannel(newChan.UserID, newChan.RouterBalance)
 			})
 		}

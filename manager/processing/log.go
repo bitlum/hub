@@ -1,4 +1,4 @@
-package stats
+package processing
 
 import "github.com/btcsuite/btclog"
 

@@ -12,7 +12,8 @@ import (
 	"github.com/jrick/logrotate/rotator"
 	"github.com/bitlum/hub/manager/router/emulation"
 	"github.com/bitlum/hub/manager/router/lnd"
-	"github.com/bitlum/hub/manager/router/stats"
+	"github.com/bitlum/hub/manager/processing"
+	"github.com/bitlum/hub/manager/optimisation"
 )
 
 // logWriter implements an io.Writer that outputs to both standard output and
@@ -48,25 +49,28 @@ var (
 	// It is written to by the Write method of the logWriter type.
 	logRotatorPipe *io.PipeWriter
 
-	mainLog     = backendLog.Logger("MAIN")
-	emulatorLog = backendLog.Logger("EMULATOR")
-	lndLog      = backendLog.Logger("LND")
-	netStatsLog = backendLog.Logger("NSTATS")
+	mainLog         = backendLog.Logger("MAIN")
+	emulatorLog     = backendLog.Logger("EMUL")
+	lndLog          = backendLog.Logger("LND")
+	procLog         = backendLog.Logger("PROC")
+	optimisationLog = backendLog.Logger("OPTI")
 )
 
 // Initialize package-global logger variables.
 func init() {
 	emulation.UseLogger(emulatorLog)
 	lnd.UseLogger(lndLog)
-	stats.UseLogger(netStatsLog)
+	processing.UseLogger(procLog)
+	optimisation.UseLogger(optimisationLog)
 }
 
 // subsystemLoggers maps each subsystem identifier to its associated logger.
 var subsystemLoggers = map[string]btclog.Logger{
-	"BACKEND":  mainLog,
-	"EMULATOR": emulatorLog,
-	"LND":      lndLog,
-	"NSTATS":   netStatsLog,
+	"BACKEND": mainLog,
+	"EMUL":    emulatorLog,
+	"LND":     lndLog,
+	"PROC":    procLog,
+	"OPTI":    optimisationLog,
 }
 
 // initLogRotator initializes the logging rotator to write logs to logFile and

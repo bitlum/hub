@@ -14,7 +14,7 @@ It has these top-level messages:
 	Payment
 	ChannelChange
 */
-package logger
+package logs
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"

@@ -8,7 +8,8 @@ import (
 	"time"
 	"google.golang.org/grpc"
 	"github.com/go-errors/errors"
-	"github.com/bitlum/hub/manager/router/broadcast"
+	"github.com/bitlum/hub/manager/common/broadcast"
+	"github.com/bitlum/hub/manager/optimisation"
 )
 
 func TestStartNetwork(t *testing.T) {
@@ -354,7 +355,7 @@ func TestIncomingOutgoingPayments(t *testing.T) {
 }
 
 func TestSimpleStrategy(t *testing.T) {
-	strategy := router.NewChannelUpdateStrategy()
+	strategy := optimisation.NewChannelUpdateStrategy()
 	r := NewRouter(100, time.Hour)
 
 	updates := r.RegisterOnUpdates()

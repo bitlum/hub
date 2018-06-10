@@ -2,7 +2,7 @@ package router
 
 import (
 	"time"
-	"github.com/bitlum/hub/manager/router/broadcast"
+	"github.com/bitlum/hub/manager/common/broadcast"
 )
 
 // Router aka payment provider, aka hub, aka lightning network node.
