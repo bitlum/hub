@@ -1,4 +1,4 @@
-package db
+package sqlite
 
 import (
 	"io/ioutil"
@@ -16,16 +16,16 @@ func MakeTestDB() (*DB, func(), error) {
 		return nil, nil, err
 	}
 
-	// Next, create channeldb for the first time.
-	cdb, err := Open(tempDirName, "db")
+	db, err := Open(tempDirName, "sqlite.db")
 	if err != nil {
 		return nil, nil, err
 	}
 
 	cleanUp := func() {
-		cdb.Close()
+		db.Close()
 		os.RemoveAll(tempDirName)
 	}
 
-	return cdb, cleanUp, nil
+	return db, cleanUp, nil
 }
+

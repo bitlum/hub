@@ -1,4 +1,4 @@
-package db
+package boltdb
 
 import (
 	"github.com/coreos/bbolt"

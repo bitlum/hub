@@ -1,4 +1,4 @@
-package db
+package sqlite
 
 import (
 	"testing"
@@ -15,11 +15,13 @@ func TestPeersStorage(t *testing.T) {
 
 	peersBefore := []*router.DbPeer{
 		{
+			PubKey:       "1",
 			Alias:        "a",
 			LockedByPeer: 1,
 			LockedByHub:  1,
 		},
 		{
+			PubKey:       "2",
 			Alias:        "b",
 			LockedByPeer: 2,
 			LockedByHub:  2,

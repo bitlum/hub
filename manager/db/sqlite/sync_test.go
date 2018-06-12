@@ -1,4 +1,4 @@
-package db
+package sqlite
 
 import (
 	"testing"
@@ -44,6 +44,23 @@ func TestDB_PutChannelsState(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(state1, state2) {
+		t.Fatal("state are different")
+	}
+
+	state3 := map[string]string{
+		"kek1": "kek100",
+	}
+
+	if err := db.PutChannelsState(state3); err != nil {
+		t.Fatalf("unable to put state: %v", err)
+	}
+
+	state4, err := db.ChannelsState()
+	if err != nil {
+		t.Fatalf("unable to get state: %v", err)
+	}
+
+	if !reflect.DeepEqual(state3, state4) {
 		t.Fatal("state are different")
 	}
 }

@@ -1,4 +1,4 @@
-package db
+package boltdb
 
 import (
 	"github.com/bitlum/hub/manager/router/lnd"
