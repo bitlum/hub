@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package logger;
+package logs;
 
 // Log is the main object in the file which represent the log entry in the
 // log file.
@@ -83,15 +83,20 @@ message ChannelChange {
     uint64 user_balance = 4;
     uint64 router_balance = 5;
 
-    // Fee which was taken by blockchain decentrilized computer / mainers or
-    // some other form of smart contract manager.
+    // Fee which was taken by blockchain decentrilized computer /
+    // mainers or some other form of smart contract manager.
     uint64 fee = 6;
+
+    // Duration which was taken by blockchain decentrilized computer to apply
+    // this change (open, close, update).
+    int64 duration = 7;
 }
 
 // ChannelChangeType represent the type of action which were attempted to
 // apply to the channel.
 enum ChannelChangeType {
-    // ...
+    // ChangeNull identifies the null state of channel change, so that
+    // receiver could identify that some mistake has happened.
     change_null = 0;
 
     openning = 1;
