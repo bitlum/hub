@@ -71,3 +71,7 @@
 
 [[constraint]]
   name = "gopkg.in/macaroon.v2"
+  
+[[constraint]]
+  name = "github.com/jinzhu/gorm"
+  version = "1.9.1"
