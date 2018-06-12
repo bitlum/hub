@@ -102,6 +102,10 @@ type UpdateChannelClosed struct {
 	// some other form of smart contract manager from initiator of the
 	// channel. By initiator we means the side which created the channel.
 	Fee BalanceUnit
+
+	// Duration is a period of time which was needed to proceed the channel
+	// update by blockchain decentralised computer.
+	Duration time.Duration
 }
 
 // UpdateChannelUpdating is used to notify that one of the participants
@@ -140,6 +144,10 @@ type UpdateChannelUpdated struct {
 	// some other form of smart contract manager from initiator of the
 	// channel. By initiator we means the side which created the channel.
 	Fee BalanceUnit
+
+	// Duration is a period of time which was needed to proceed the channel
+	// update by blockchain decentralised computer.
+	Duration time.Duration
 }
 
 // UpdateChannelOpening is used as notifications from router or network that
@@ -168,6 +176,10 @@ type UpdateChannelOpened struct {
 	// some other form of smart contract manager from initiator of the
 	// channel. By initiator we means the side which created the channel.
 	Fee BalanceUnit
+
+	// Duration is a period of time which was needed to proceed the channel
+	// update by blockchain decentralised computer.
+	Duration time.Duration
 }
 
 type UpdatePayment struct {

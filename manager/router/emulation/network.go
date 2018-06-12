@@ -289,6 +289,7 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 
 	// Channel is able to operate only after block is generated.
 	// Send update that channel is opened only after it is unlocked.
+	start := time.Now()
 	go func() {
 		defer l.Stop()
 		<-l.Read()
@@ -303,6 +304,7 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 			UserBalance:   router.BalanceUnit(c.UserBalance),
 			RouterBalance: router.BalanceUnit(c.RouterBalance),
 			Fee:           openChannelFee,
+			Duration:      time.Now().Sub(start),
 		})
 
 		log.Tracef("Channel(%v) with user(%v) unlocked", chanID, userID)
@@ -348,6 +350,7 @@ func (n *emulationNetwork) CloseChannel(_ context.Context, req *CloseChannelRequ
 
 	// Update router free balance only after block is mined and increase
 	// router balance on amount which we locked on our side in this channel.
+	start := time.Now()
 	go func() {
 		defer l.Stop()
 		<-l.Read()
@@ -359,6 +362,7 @@ func (n *emulationNetwork) CloseChannel(_ context.Context, req *CloseChannelRequ
 			UserID:    channel.UserID,
 			ChannelID: channel.ChannelID,
 			Fee:       channel.CloseFee,
+			Duration:  time.Now().Sub(start),
 		})
 
 		delete(n.channels, chanID)

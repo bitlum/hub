@@ -126,6 +126,7 @@ func (r *RouterEmulation) OpenChannel(userID router.UserID,
 
 	// Channel is able to operate only after block is generated.
 	// Send update that channel is opened only after it is unlocked.
+	start := time.Now()
 	go func() {
 		defer l.Stop()
 		<-l.Read()
@@ -140,6 +141,7 @@ func (r *RouterEmulation) OpenChannel(userID router.UserID,
 			UserBalance:   router.BalanceUnit(c.UserBalance),
 			RouterBalance: router.BalanceUnit(c.RouterBalance),
 			Fee:           openChannelFee,
+			Duration:      time.Now().Sub(start),
 		})
 
 		log.Tracef("Channel(%v) with user(%v) unlocked", chanID, userID)
@@ -184,6 +186,7 @@ func (r *RouterEmulation) CloseChannel(id router.ChannelID) error {
 
 			// Update router free balance only after block is mined and increase
 			// router balance on amount which we locked on our side in this channel.
+			start := time.Now()
 			go func() {
 				defer l.Stop()
 				<-l.Read()
@@ -201,6 +204,7 @@ func (r *RouterEmulation) CloseChannel(id router.ChannelID) error {
 					UserID:    userID,
 					ChannelID: id,
 					Fee:       channel.CloseFee,
+					Duration:  time.Now().Sub(start),
 				})
 
 				log.Tracef("Router received %v money previously locked in"+
@@ -253,7 +257,7 @@ func (r *RouterEmulation) UpdateChannel(id router.ChannelID,
 		sliceOutFunds := -diff
 
 		// Redundant check, left here just for security if input values would
-		if sliceOutFunds + fee > channel.RouterBalance {
+		if sliceOutFunds+fee > channel.RouterBalance {
 			return errors.Errorf("insufficient funds in channel")
 		}
 
@@ -278,6 +282,7 @@ func (r *RouterEmulation) UpdateChannel(id router.ChannelID,
 
 	// Update router free balance only after block is mined and increase
 	// router balance on amount which we locked on our side in this channel.
+	start := time.Now()
 	go func() {
 		defer l.Stop()
 		<-l.Read()
@@ -311,6 +316,7 @@ func (r *RouterEmulation) UpdateChannel(id router.ChannelID,
 			UserBalance:   channel.UserBalance,
 			RouterBalance: channel.RouterBalance,
 			Fee:           fee,
+			Duration:      time.Now().Sub(start),
 		})
 	}()
 
