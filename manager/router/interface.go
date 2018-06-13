@@ -78,10 +78,23 @@ type Channel struct {
 	UserID        UserID
 	UserBalance   BalanceUnit
 	RouterBalance BalanceUnit
-	IsPending     bool
-	IsActive      bool
+	State         ChannelState
+	Status        ChannelStatus
 	Initiator     string
 	CloseFee      BalanceUnit
+}
+
+func (c *Channel) IsPending() bool {
+	// TODO(andrew.shvv) Channel is not pending if it is in update mode,
+	// because of the dynamic mode, for more info watch lightning labs conner
+	// l2 summit watchtower video.
+	return c.State == ChannelOpening ||
+		c.State == ChannelClosing ||
+		c.State == ChannelUpdating
+}
+
+func (c *Channel) IsActive() bool {
+	return c.Status == ChannelActive
 }
 
 type UpdateChannelClosing struct {
@@ -202,6 +215,44 @@ type UpdatePayment struct {
 type UpdateLinkAverageUpdateDuration struct {
 	AverageUpdateDuration time.Duration
 }
+
+type ChannelState string
+
+const (
+	// ChannelOpening denotes that channel open request has been sent in
+	// blockchain network, and that we wait for its approval.
+	ChannelOpening ChannelState = "opening"
+
+	// ChannelOpened denotes that channel open request was approved in blockchain,
+	// and it could be used for routing the payments.
+	ChannelOpened ChannelState = "opened"
+
+	// ChannelClosing denotes that channel close request has been sent in
+	// blockchain network, and that we wait for its approval.
+	// Channel couldn't be used for routing payments,
+	// and funds in this channel are still couldn't be used.
+	ChannelClosing ChannelState = "closing"
+
+	// ChannelClosed denotes that channel close request was approved in blockchain,
+	// and couldn't be used for routing payment anymore, locked on our side
+	// funds now are back in wallet.
+	ChannelClosed ChannelState = "closed"
+
+	// ChannelUpdating denotes that channel overall capacity is updating,
+	// either decreasing or increasing. During this update previous channel
+	// should stay in operational mode i.e. being able to route payments.
+	ChannelUpdating ChannelState = "updating"
+)
+
+// ChannelStatus identifies does the channel could be used for routing the
+// payments. Channel is active when we have a tcp connection with remote
+// node, and channel in the operational mode.
+type ChannelStatus string
+
+const (
+	ChannelActive    ChannelStatus = "active"
+	ChannelNonActive ChannelStatus = "nonactive"
+)
 
 type PaymentStatus string
 

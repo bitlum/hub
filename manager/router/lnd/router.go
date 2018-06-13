@@ -394,7 +394,8 @@ func (r *Router) Network() ([]*router.Channel, error) {
 				UserID:        router.UserID(entry.Channel.RemoteNodePub),
 				UserBalance:   router.BalanceUnit(entry.Channel.RemoteBalance),
 				RouterBalance: router.BalanceUnit(entry.Channel.LocalBalance),
-				IsPending:     true,
+				State:         router.ChannelOpening,
+				Status:        router.ChannelNonActive,
 			})
 		}
 
@@ -404,7 +405,8 @@ func (r *Router) Network() ([]*router.Channel, error) {
 				UserID:        router.UserID(entry.Channel.RemoteNodePub),
 				UserBalance:   router.BalanceUnit(entry.Channel.RemoteBalance),
 				RouterBalance: router.BalanceUnit(entry.Channel.LocalBalance),
-				IsPending:     true,
+				State:         router.ChannelClosing,
+				Status:        router.ChannelNonActive,
 			})
 		}
 
@@ -414,7 +416,8 @@ func (r *Router) Network() ([]*router.Channel, error) {
 				UserID:        router.UserID(entry.Channel.RemoteNodePub),
 				UserBalance:   router.BalanceUnit(entry.Channel.RemoteBalance),
 				RouterBalance: router.BalanceUnit(entry.Channel.LocalBalance),
-				IsPending:     true,
+				State:         router.ChannelClosing,
+				Status:        router.ChannelNonActive,
 			})
 		}
 	}
@@ -434,8 +437,8 @@ func (r *Router) Network() ([]*router.Channel, error) {
 				UserID:        router.UserID(c.RemotePubkey),
 				UserBalance:   router.BalanceUnit(c.RemoteBalance),
 				RouterBalance: router.BalanceUnit(c.LocalBalance),
-				IsPending:     false,
-				IsActive:      c.Active,
+				State:         router.ChannelOpened,
+				Status:        router.ChannelActive,
 			})
 		}
 	}

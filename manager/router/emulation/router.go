@@ -101,8 +101,8 @@ func (r *RouterEmulation) OpenChannel(userID router.UserID,
 		UserID:        userID,
 		UserBalance:   0,
 		RouterBalance: routerBalance,
-		IsPending:     true,
-		IsActive:      false,
+		State:         router.ChannelOpening,
+		Status:        router.ChannelNonActive,
 		Initiator:     router.RouterInitiator,
 		CloseFee:      closeChannelFee,
 	}
@@ -134,7 +134,8 @@ func (r *RouterEmulation) OpenChannel(userID router.UserID,
 		r.network.Lock()
 		defer r.network.Unlock()
 
-		c.IsPending = false
+		c.State = router.ChannelOpened
+		c.Status = router.ChannelActive
 		r.network.broadcaster.Write(&router.UpdateChannelOpened{
 			UserID:        c.UserID,
 			ChannelID:     c.ChannelID,
@@ -157,7 +158,7 @@ func (r *RouterEmulation) CloseChannel(id router.ChannelID) error {
 
 	if channel, ok := r.network.channels[id]; !ok {
 		return errors.Errorf("unable to find channel with %v id: %v", id)
-	} else if channel.IsPending {
+	} else if channel.IsPending() {
 		return errors.Errorf("channel %v is locked",
 			channel.ChannelID)
 	}
@@ -171,7 +172,8 @@ func (r *RouterEmulation) CloseChannel(id router.ChannelID) error {
 			// Lock the channel and send the closing notification.
 			// Wait for block to be generated and only after that remove it
 			// from router network.
-			channel.IsPending = true
+			channel.State = router.ChannelClosing
+			channel.Status = router.ChannelNonActive
 			r.network.broadcaster.Write(&router.UpdateChannelClosing{
 				UserID:    userID,
 				ChannelID: id,
@@ -228,7 +230,7 @@ func (r *RouterEmulation) UpdateChannel(id router.ChannelID,
 	channel, ok := r.network.channels[id]
 	if !ok {
 		return errors.Errorf("unable to find the channel with %v id", id)
-	} else if channel.IsPending {
+	} else if channel.IsPending() {
 		return errors.Errorf("channel %v is locked",
 			channel.ChannelID)
 	}
@@ -267,7 +269,8 @@ func (r *RouterEmulation) UpdateChannel(id router.ChannelID,
 
 	// During channel update make it locked, so that it couldn't be used by
 	// both sides.
-	channel.IsPending = true
+	channel.State = router.ChannelUpdating
+	channel.Status = router.ChannelNonActive
 	r.network.broadcaster.Write(&router.UpdateChannelUpdating{
 		UserID:        channel.UserID,
 		ChannelID:     channel.ChannelID,
@@ -309,7 +312,8 @@ func (r *RouterEmulation) UpdateChannel(id router.ChannelID,
 		log.Tracef("Update channel(%v) balance, old(%v) => new(%v)",
 			channel.RouterBalance, newRouterBalance)
 
-		channel.IsPending = false
+		channel.State = router.ChannelOpened
+		channel.Status = router.ChannelActive
 		r.network.broadcaster.Write(&router.UpdateChannelUpdated{
 			UserID:        channel.UserID,
 			ChannelID:     channel.ChannelID,
@@ -343,11 +347,14 @@ func (r *RouterEmulation) Network() ([]*router.Channel, error) {
 	var channels []*router.Channel
 	for _, channel := range r.network.channels {
 		channels = append(channels, &router.Channel{
-			IsPending:     channel.IsPending,
 			ChannelID:     channel.ChannelID,
 			UserID:        channel.UserID,
 			UserBalance:   channel.UserBalance,
 			RouterBalance: channel.RouterBalance,
+			Status:        channel.Status,
+			State:         channel.State,
+			Initiator:     channel.Initiator,
+			CloseFee:      channel.CloseFee,
 		})
 	}
 

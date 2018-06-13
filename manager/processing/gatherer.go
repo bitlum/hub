@@ -94,7 +94,7 @@ func (s *Stats) scrapeRouterInfo() {
 
 			users := make(map[router.UserID]*router.DbPeer)
 			for _, channel := range channels {
-				if channel.IsPending {
+				if channel.IsPending() {
 					numPendingChannels++
 					continue
 				}
@@ -102,7 +102,7 @@ func (s *Stats) scrapeRouterInfo() {
 				totalLockedByUsers += channel.UserBalance
 				totalLockedByRouter += channel.RouterBalance
 
-				if !channel.IsActive {
+				if !channel.IsActive() {
 					numNonActiveChannels++
 					continue
 				} else {

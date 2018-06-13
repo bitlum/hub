@@ -146,7 +146,7 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 			paymentFailed = true
 			return nil, errors.Errorf("unable to find sender with %v id",
 				req.Sender)
-		} else if channel.IsPending {
+		} else if channel.IsPending() {
 			paymentFailed = true
 			return nil, errors.Errorf("channel %v is locked",
 				channel.ChannelID)
@@ -179,7 +179,7 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 			paymentFailed = true
 			return nil, errors.Errorf("unable to find receiver with %v id",
 				req.Receiver)
-		} else if channel.IsPending {
+		} else if channel.IsPending() {
 			paymentFailed = true
 			return nil, errors.Errorf("channel %v is locked",
 				channel.ChannelID)
@@ -264,8 +264,8 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 		UserID:        userID,
 		UserBalance:   router.BalanceUnit(userBalance),
 		RouterBalance: 0,
-		IsPending:     true,
-		IsActive:      false,
+		State:         router.ChannelOpening,
+		Status:        router.ChannelNonActive,
 		Initiator:     router.UserInitiator,
 		CloseFee:      closeChannelFee,
 	}
@@ -297,7 +297,8 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 		n.Lock()
 		defer n.Unlock()
 
-		c.IsPending = false
+		c.State = router.ChannelOpened
+		c.Status = router.ChannelActive
 		n.broadcaster.Write(&router.UpdateChannelOpened{
 			UserID:        c.UserID,
 			ChannelID:     c.ChannelID,
@@ -328,14 +329,15 @@ func (n *emulationNetwork) CloseChannel(_ context.Context, req *CloseChannelRequ
 	channel, ok := n.channels[chanID]
 	if !ok {
 		return nil, errors.Errorf("unable to find the channel with %v id", chanID)
-	} else if channel.IsPending {
+	} else if channel.IsPending() {
 		return nil, errors.Errorf("channel %v is locked",
 			channel.ChannelID)
 	}
 
 	// Increase the pending balance till block is generated.
 	n.router.pendingBalance += channel.RouterBalance
-	channel.IsPending = true
+	channel.State = router.ChannelClosing
+	channel.Status = router.ChannelNonActive
 	n.broadcaster.Write(&router.UpdateChannelClosing{
 		UserID:    channel.UserID,
 		ChannelID: channel.ChannelID,
@@ -358,6 +360,8 @@ func (n *emulationNetwork) CloseChannel(_ context.Context, req *CloseChannelRequ
 		n.Lock()
 		defer n.Unlock()
 
+		channel.State = router.ChannelClosed
+		channel.Status = router.ChannelNonActive
 		n.broadcaster.Write(&router.UpdateChannelClosed{
 			UserID:    channel.UserID,
 			ChannelID: channel.ChannelID,
