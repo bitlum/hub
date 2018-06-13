@@ -111,7 +111,8 @@ func (s *Stats) scrapeRouterInfo() {
 
 				if _, ok := users[channel.UserID]; !ok {
 					users[channel.UserID] = &router.DbPeer{
-						Alias: registry.GetAlias(channel.UserID),
+						PubKey: string(channel.UserID),
+						Alias:  registry.GetAlias(channel.UserID),
 					}
 				}
 

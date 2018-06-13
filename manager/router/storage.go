@@ -46,6 +46,7 @@ type DbInfo struct {
 }
 
 type DbPeer struct {
+	PubKey       string
 	Alias        string
 	LockedByPeer int64
 	LockedByHub  int64
