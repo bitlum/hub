@@ -12,7 +12,6 @@ class UsersSample:
         self.users_id = dict()
         self.users_ind = dict()
         self.users_number = int()
-        self.receiver_activity = dict()
 
     def calc_users_data(self):
         users_id_list = list()
@@ -31,13 +30,6 @@ class UsersSample:
         self.users_ind.clear()
         self.users_ind = {users_id_list[i]: i for i in
                           range(self.users_number)}
-
-        self.receiver_activity.clear()
-        for _, user in self.users_id.items():
-            self.receiver_activity[user] = int(0)
-
-        for trans in self.transseq:
-            self.receiver_activity[trans['payment']['receiver']] += 1
 
 
 if __name__ == '__main__':

@@ -28,10 +28,10 @@ class Watcher(PattMatchEvHand):
         self.router_metrics = RouterMetrics(self.smart_log, router_setts)
 
         self.init_locked_funds = router_setts.init_locked_funds
-        self.init_trans_number = router_setts.init_trans_number
+        self.init_time_period = router_setts.init_time_period
 
         self.mgt_period = router_setts.mgt_period
-        self.time_start = time.time()
+        self.time_mgt_start = time.time()
 
     def process(self, event):
         if (event.event_type == 'modified') and (
@@ -39,13 +39,13 @@ class Watcher(PattMatchEvHand):
 
             self.log_reader.process_log()
 
-            if time.time() - self.time_start >= self.mgt_period:
+            if time.time() - self.time_mgt_start >= self.mgt_period:
                 self.router_metrics.process()
                 self.router_mgt.calc_parameters()
                 self.calc_update_set()
                 self.set_init_update()
                 self.hubrpc.update()
-                self.time_start = time.time()
+                self.time_mgt_start = time.time()
 
     def on_modified(self, event):
         self.process(event)
@@ -74,23 +74,26 @@ class Watcher(PattMatchEvHand):
                 if balance_cur > bound or balance_cur < balance_opt:
                     self.hubrpc.update_set.add(user)
 
+        print('update_set', self.hubrpc.update_set)
         for user in self.smart_log.blockage_set:
             self.hubrpc.update_set.discard(user)
-
+        print('update_set', self.hubrpc.update_set)
         for user in self.smart_log.closure_set:
             self.hubrpc.update_set.discard(user)
+        print('update_set', self.hubrpc.update_set)
 
         discard_newbie_set = set()
         for user in self.smart_log.newbie_set:
-            if user in self.router_mgt.receiver_activity:
-                init_number = self.init_trans_number
-                if self.router_mgt.receiver_activity[user] > init_number:
-                    discard_newbie_set.add(user)
+            period = time.time() - self.smart_log.open_time[user]
+            if period > self.init_time_period:
+                discard_newbie_set.add(user)
         for user in discard_newbie_set:
             self.smart_log.newbie_set.discard(user)
 
         for user in self.smart_log.newbie_set:
             self.hubrpc.update_set.discard(user)
+        print('update_set', self.hubrpc.update_set)
+        print()
 
     def set_init_update(self):
         for user in self.smart_log.just_opened_set:
