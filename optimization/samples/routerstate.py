@@ -69,9 +69,9 @@ class RouterState:
         if message[self.id['status']] == self.id['success']:
             self.get_payment_data(message)
             if self.sender != '0':
-                self.set_amount(self.sender, self.amount)
+                self.set_amount(self.sender, self.amount + self.earned)
             if self.receiver != '0':
-                self.set_amount(self.receiver, -self.amount + self.earned)
+                self.set_amount(self.receiver, -self.amount)
             self.profit += self.earned
 
             self.calc_router_balance_sum()
