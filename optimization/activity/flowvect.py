@@ -26,6 +26,12 @@ def flowvect_gen(file_name_inlet):
 
     users_id = {i: str(i) for i in range(users_number + 1)}
 
+    pretty_id = ['0', 'alice', 'bob', 'carol', 'ted']
+
+    if len(users_id) <= 5:
+        for i in range(len(users_id)):
+            users_id[i] = pretty_id[i]
+
     flowvect = generate_sample((users_number + 1), inlet['flow_mean'],
                                inlet['flow_mean'] * inlet['flow_stdev'])
 
