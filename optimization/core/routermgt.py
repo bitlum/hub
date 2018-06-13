@@ -178,12 +178,12 @@ class RouterMgt(FlowStat):
             if self.balances[user_id] is None:
                 self.balances[user_id] = float(0)
 
-        for user_id, ind in self.indexes.items():            
+        for user_id, ind in self.indexes.items():
             self.balances[user_id] = round(self.balances[user_id])
 
 
 if __name__ == '__main__':
-    file_inlet = 'inlet/routermgt_inlet.json'
+    file_inlet = '../optimizer/routermgt_inlet.json'
 
     with open(file_inlet) as f:
         inlet = json.load(f)
