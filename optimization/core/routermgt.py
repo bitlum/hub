@@ -68,7 +68,7 @@ class RouterMgt(FlowStat):
         for user_id, ind in self.indexes.items():
             self.periods_in_eff[user_id] = None
 
-        for _, i in self.indexes.items():
+        for _, i in self.users_ind.items():
             for user_id, j in self.indexes.items():
                 period = self.smart_period[i][j].mean
                 flow = self.flowmatr[i][j]
@@ -85,7 +85,7 @@ class RouterMgt(FlowStat):
             self.periods_out_eff[user_id] = None
 
         for user_id, i in self.indexes.items():
-            for _, j in self.indexes.items():
+            for _, j in self.users_ind.items():
                 period = self.smart_period[i][j].mean
                 flow = self.flowmatr[i][j]
                 if period is not None:
