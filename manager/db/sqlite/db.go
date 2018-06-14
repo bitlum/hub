@@ -26,12 +26,13 @@ func Open(dbPath string, dbName string) (*DB, error) {
 		return nil, err
 	}
 
-	gdb.CreateTable(
+	err = gdb.AutoMigrate(
 		&Counters{},
 		&Channel{},
 		&Payment{},
-		&Peer{})
-	if gdb.Error != nil {
+		&Peer{},
+		&State{}).Error
+	if err != nil {
 		return nil, err
 	}
 
