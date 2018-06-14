@@ -1,5 +1,7 @@
 package lnd
 
+import "github.com/bitlum/hub/manager/router"
+
 // SyncStorage is the storage which is needed for keeping the info about hub
 // synchronisation state.
 type SyncStorage interface {
@@ -12,13 +14,15 @@ type SyncStorage interface {
 	// which were preceded by the hub.
 	LastForwardingIndex() (uint32, error)
 
-	// PutChannelsState is used to save the local topology of the router,
-	// in order to later determine what has changed.
-	PutChannelsState(map[string]string) error
+	// SaveChannels...
+	SaveChannels(channels ...*router.Channel) error
+
+	// RemoveChannels...
+	RemoveChannels(channels ...*router.Channel) error
 
 	// ChannelsState is used to return previously saved local topology of the
 	// router.
-	ChannelsState() (map[string]string, error)
+	Channels() ([]*router.Channel, error)
 }
 
 type InMemorySyncStorage struct {
