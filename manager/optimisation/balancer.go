@@ -43,7 +43,7 @@ func EnableChannelBalancing(r router.Router) {
 
 				l.routerFunds += channel.RouterBalance
 				l.usersFunds += channel.UserBalance
-				l.IsActive = l.IsActive || (channel.Status == router.ChannelActive)
+				l.IsActive = l.IsActive || channel.IsActive()
 				links[channel.UserID] = l
 			}
 
