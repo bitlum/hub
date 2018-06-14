@@ -96,25 +96,20 @@ func (r *RouterEmulation) OpenChannel(userID router.UserID,
 	openChannelFee := router.BalanceUnit(r.network.blockchainFee)
 	closeChannelFee := router.BalanceUnit(r.network.blockchainFee)
 	routerBalance := funds - openChannelFee - closeChannelFee
-	c := &router.Channel{
-		ChannelID:     chanID,
-		UserID:        userID,
-		UserBalance:   0,
-		RouterBalance: routerBalance,
-		State:         router.ChannelOpening,
-		Status:        router.ChannelNonActive,
-		Initiator:     router.RouterInitiator,
-		CloseFee:      closeChannelFee,
-	}
+	fundingAmount := funds
 
-	r.network.users[userID] = c
-	r.network.channels[chanID] = c
+	channel := router.NewChannel(chanID, userID, fundingAmount, 0,
+		routerBalance, closeChannelFee, router.UserInitiator)
 
+	r.network.users[userID] = channel
+	r.network.channels[chanID] = channel
+
+	channel.SetOpeningState()
 	r.network.broadcaster.Write(&router.UpdateChannelOpening{
-		UserID:        c.UserID,
-		ChannelID:     c.ChannelID,
-		UserBalance:   router.BalanceUnit(c.UserBalance),
-		RouterBalance: router.BalanceUnit(c.RouterBalance),
+		UserID:        channel.UserID,
+		ChannelID:     channel.ChannelID,
+		UserBalance:   channel.UserBalance,
+		RouterBalance: channel.RouterBalance,
 		Fee:           openChannelFee,
 	})
 
@@ -134,13 +129,12 @@ func (r *RouterEmulation) OpenChannel(userID router.UserID,
 		r.network.Lock()
 		defer r.network.Unlock()
 
-		c.State = router.ChannelOpened
-		c.Status = router.ChannelActive
+		channel.SetOpenedState()
 		r.network.broadcaster.Write(&router.UpdateChannelOpened{
-			UserID:        c.UserID,
-			ChannelID:     c.ChannelID,
-			UserBalance:   router.BalanceUnit(c.UserBalance),
-			RouterBalance: router.BalanceUnit(c.RouterBalance),
+			UserID:        channel.UserID,
+			ChannelID:     channel.ChannelID,
+			UserBalance:   channel.UserBalance,
+			RouterBalance: channel.RouterBalance,
 			Fee:           openChannelFee,
 			Duration:      time.Now().Sub(start),
 		})
@@ -172,8 +166,7 @@ func (r *RouterEmulation) CloseChannel(id router.ChannelID) error {
 			// Lock the channel and send the closing notification.
 			// Wait for block to be generated and only after that remove it
 			// from router network.
-			channel.State = router.ChannelClosing
-			channel.Status = router.ChannelNonActive
+			channel.SetClosingState()
 			r.network.broadcaster.Write(&router.UpdateChannelClosing{
 				UserID:    userID,
 				ChannelID: id,
@@ -269,8 +262,7 @@ func (r *RouterEmulation) UpdateChannel(id router.ChannelID,
 
 	// During channel update make it locked, so that it couldn't be used by
 	// both sides.
-	channel.State = router.ChannelUpdating
-	channel.Status = router.ChannelNonActive
+	channel.SetClosedState()
 	r.network.broadcaster.Write(&router.UpdateChannelUpdating{
 		UserID:        channel.UserID,
 		ChannelID:     channel.ChannelID,
@@ -312,8 +304,7 @@ func (r *RouterEmulation) UpdateChannel(id router.ChannelID,
 		log.Tracef("Update channel(%v) balance, old(%v) => new(%v)",
 			channel.RouterBalance, newRouterBalance)
 
-		channel.State = router.ChannelOpened
-		channel.Status = router.ChannelActive
+		channel.SetOpenedState()
 		r.network.broadcaster.Write(&router.UpdateChannelUpdated{
 			UserID:        channel.UserID,
 			ChannelID:     channel.ChannelID,
@@ -346,16 +337,7 @@ func (r *RouterEmulation) Network() ([]*router.Channel, error) {
 
 	var channels []*router.Channel
 	for _, channel := range r.network.channels {
-		channels = append(channels, &router.Channel{
-			ChannelID:     channel.ChannelID,
-			UserID:        channel.UserID,
-			UserBalance:   channel.UserBalance,
-			RouterBalance: channel.RouterBalance,
-			Status:        channel.Status,
-			State:         channel.State,
-			Initiator:     channel.Initiator,
-			CloseFee:      channel.CloseFee,
-		})
+		channels = append(channels, channel)
 	}
 
 	return channels, nil

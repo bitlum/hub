@@ -259,25 +259,20 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 	openChannelFee := router.BalanceUnit(n.blockchainFee)
 	closeChannelFee := router.BalanceUnit(n.blockchainFee)
 	userBalance := router.BalanceUnit(req.LockedByUser) - openChannelFee - closeChannelFee
-	c := &router.Channel{
-		ChannelID:     chanID,
-		UserID:        userID,
-		UserBalance:   router.BalanceUnit(userBalance),
-		RouterBalance: 0,
-		State:         router.ChannelOpening,
-		Status:        router.ChannelNonActive,
-		Initiator:     router.UserInitiator,
-		CloseFee:      closeChannelFee,
-	}
+	fundingAmount := router.BalanceUnit(req.LockedByUser)
 
-	n.users[userID] = c
-	n.channels[chanID] = c
+	channel := router.NewChannel(chanID, userID, fundingAmount, userBalance, 0,
+		closeChannelFee, router.UserInitiator)
 
+	n.users[userID] = channel
+	n.channels[chanID] = channel
+
+	channel.SetOpeningState()
 	n.broadcaster.Write(&router.UpdateChannelOpening{
-		UserID:        c.UserID,
-		ChannelID:     c.ChannelID,
-		UserBalance:   router.BalanceUnit(c.UserBalance),
-		RouterBalance: router.BalanceUnit(c.RouterBalance),
+		UserID:        channel.UserID,
+		ChannelID:     channel.ChannelID,
+		UserBalance:   channel.UserBalance,
+		RouterBalance: channel.RouterBalance,
 		Fee:           openChannelFee,
 	})
 
@@ -297,13 +292,12 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 		n.Lock()
 		defer n.Unlock()
 
-		c.State = router.ChannelOpened
-		c.Status = router.ChannelActive
+		channel.SetOpenedState()
 		n.broadcaster.Write(&router.UpdateChannelOpened{
-			UserID:        c.UserID,
-			ChannelID:     c.ChannelID,
-			UserBalance:   router.BalanceUnit(c.UserBalance),
-			RouterBalance: router.BalanceUnit(c.RouterBalance),
+			UserID:        channel.UserID,
+			ChannelID:     channel.ChannelID,
+			UserBalance:   router.BalanceUnit(channel.UserBalance),
+			RouterBalance: router.BalanceUnit(channel.RouterBalance),
 			Fee:           openChannelFee,
 			Duration:      time.Now().Sub(start),
 		})
@@ -336,8 +330,8 @@ func (n *emulationNetwork) CloseChannel(_ context.Context, req *CloseChannelRequ
 
 	// Increase the pending balance till block is generated.
 	n.router.pendingBalance += channel.RouterBalance
-	channel.State = router.ChannelClosing
-	channel.Status = router.ChannelNonActive
+
+	channel.SetClosingState()
 	n.broadcaster.Write(&router.UpdateChannelClosing{
 		UserID:    channel.UserID,
 		ChannelID: channel.ChannelID,
@@ -360,8 +354,7 @@ func (n *emulationNetwork) CloseChannel(_ context.Context, req *CloseChannelRequ
 		n.Lock()
 		defer n.Unlock()
 
-		channel.State = router.ChannelClosed
-		channel.Status = router.ChannelNonActive
+		channel.SetClosedState()
 		n.broadcaster.Write(&router.UpdateChannelClosed{
 			UserID:    channel.UserID,
 			ChannelID: channel.ChannelID,
