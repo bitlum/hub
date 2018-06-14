@@ -377,70 +377,16 @@ func (r *Router) Network() ([]*router.Channel, error) {
 	m := crypto.NewMetric(r.cfg.Asset, "Network", r.cfg.MetricsBackend)
 	defer m.Finish()
 
-	var channels []*router.Channel
-
-	{
-		req := &lnrpc.PendingChannelsRequest{}
-		resp, err := r.client.PendingChannels(getContext(), req)
-		if err != nil {
-			m.AddError(metrics.HighSeverity)
-			log.Errorf("unable to fetch pending channels: %v", err)
-			return nil, err
-		}
-
-		for _, entry := range resp.PendingOpenChannels {
-			channels = append(channels, &router.Channel{
-				ChannelID:     router.ChannelID(entry.Channel.ChannelPoint),
-				UserID:        router.UserID(entry.Channel.RemoteNodePub),
-				UserBalance:   router.BalanceUnit(entry.Channel.RemoteBalance),
-				RouterBalance: router.BalanceUnit(entry.Channel.LocalBalance),
-				State:         router.ChannelOpening,
-				Status:        router.ChannelNonActive,
-			})
-		}
-
-		for _, entry := range resp.PendingForceClosingChannels {
-			channels = append(channels, &router.Channel{
-				ChannelID:     router.ChannelID(entry.Channel.ChannelPoint),
-				UserID:        router.UserID(entry.Channel.RemoteNodePub),
-				UserBalance:   router.BalanceUnit(entry.Channel.RemoteBalance),
-				RouterBalance: router.BalanceUnit(entry.Channel.LocalBalance),
-				State:         router.ChannelClosing,
-				Status:        router.ChannelNonActive,
-			})
-		}
-
-		for _, entry := range resp.PendingClosingChannels {
-			channels = append(channels, &router.Channel{
-				ChannelID:     router.ChannelID(entry.Channel.ChannelPoint),
-				UserID:        router.UserID(entry.Channel.RemoteNodePub),
-				UserBalance:   router.BalanceUnit(entry.Channel.RemoteBalance),
-				RouterBalance: router.BalanceUnit(entry.Channel.LocalBalance),
-				State:         router.ChannelClosing,
-				Status:        router.ChannelNonActive,
-			})
-		}
+	channelsMap, err := r.cfg.SyncStorage.Channels()
+	if err != nil {
+		m.AddError(metrics.HighSeverity)
+		log.Errorf("unable to fetch channels from sync storage: %v", err)
+		return nil, err
 	}
 
-	{
-		req := &lnrpc.ListChannelsRequest{}
-		resp, err := r.client.ListChannels(getContext(), req)
-		if err != nil {
-			m.AddError(metrics.HighSeverity)
-			log.Errorf("unable to fetch open channels: %v", err)
-			return nil, err
-		}
-
-		for _, c := range resp.Channels {
-			channels = append(channels, &router.Channel{
-				ChannelID:     router.ChannelID(c.ChannelPoint),
-				UserID:        router.UserID(c.RemotePubkey),
-				UserBalance:   router.BalanceUnit(c.RemoteBalance),
-				RouterBalance: router.BalanceUnit(c.LocalBalance),
-				State:         router.ChannelOpened,
-				Status:        router.ChannelActive,
-			})
-		}
+	var channels []*router.Channel
+	for _, channel := range channelsMap {
+		channels = append(channels, channel)
 	}
 
 	return channels, nil
