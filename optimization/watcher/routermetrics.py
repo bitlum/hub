@@ -2,6 +2,7 @@ import sys
 import os
 import time
 import Gnuplot
+import json
 
 current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_path, '../'))
@@ -39,6 +40,7 @@ class RouterMetrics:
         self.set_data()
         self.calc_data_av()
         self.draw()
+        self.json_outlet()
 
     def set_data(self):
         self.time.append(time.time() - self.init_time)
@@ -92,3 +94,13 @@ class RouterMetrics:
                                             with_="lines lw 2")
 
         self.gnuplot.plot(balance_sum_av_curve, ROI_av_curve)
+
+    def json_outlet(self):
+
+        with open('outlet/statistics.json', 'w') as f:
+            json.dump({'time': self.time,
+                       'profit_av': self.profit_av,
+                       'income_av': self.income_av,
+                       'balance_sum_av': self.balance_sum_av,
+                       'ROI_av': self.ROI_av},
+                      f, sort_keys=True, indent=4 * ' ')

@@ -74,13 +74,11 @@ class Watcher(PattMatchEvHand):
                 if balance_cur > bound or balance_cur < balance_opt:
                     self.hubrpc.update_set.add(user)
 
-        print('update_set', self.hubrpc.update_set)
         for user in self.smart_log.blockage_set:
             self.hubrpc.update_set.discard(user)
-        print('update_set', self.hubrpc.update_set)
+
         for user in self.smart_log.closure_set:
             self.hubrpc.update_set.discard(user)
-        print('update_set', self.hubrpc.update_set)
 
         discard_newbie_set = set()
         for user in self.smart_log.newbie_set:
@@ -92,8 +90,6 @@ class Watcher(PattMatchEvHand):
 
         for user in self.smart_log.newbie_set:
             self.hubrpc.update_set.discard(user)
-        print('update_set', self.hubrpc.update_set)
-        print()
 
     def set_init_update(self):
         for user in self.smart_log.just_opened_set:
