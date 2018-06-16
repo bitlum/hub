@@ -8,9 +8,8 @@
 	"alpha_p": 0.1,
 	"alpha_T": 1,
 	"prob_cut": 0.5,
-	"init_locked_funds": 1000,
 	"init_time_period": 10,
-	"mgt_period": 3,
+	"mgt_period": 1,
 	"draw_period": 10,
 	"log_file_name": "/Users/bigelk/data/tmp/manager/test.log"
 }

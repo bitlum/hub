@@ -27,7 +27,6 @@ class Watcher(PattMatchEvHand):
         self.hubrpc = HubRPC(self.router_mgt.balances, router_setts)
         self.router_metrics = RouterMetrics(self.smart_log, router_setts)
 
-        self.init_locked_funds = router_setts.init_locked_funds
         self.init_time_period = router_setts.init_time_period
 
         self.mgt_period = router_setts.mgt_period
@@ -94,5 +93,6 @@ class Watcher(PattMatchEvHand):
     def set_init_update(self):
         for user in self.smart_log.just_opened_set:
             self.hubrpc.update_set.add(user)
-            self.router_mgt.balances[user] = self.init_locked_funds
+            user_balance_ini = self.smart_log.users_balance_ini[user]
+            self.router_mgt.balances[user] = user_balance_ini
         self.smart_log.just_opened_set.clear()
