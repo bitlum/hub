@@ -11,5 +11,5 @@
 	"init_time_period": 10,
 	"mgt_period": 1,
 	"draw_period": 10,
-	"log_file_name": "/Users/bigelk/data/tmp/manager/test.log"
+	"log_file_name": "../router_log.log"
 }
