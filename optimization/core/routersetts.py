@@ -21,13 +21,12 @@ class RouterSetts:
         self.init_time_period = int()
         self.mgt_period = float(1)
         self.draw_period = float(1)
-        self.log_file_name = str()
 
     def set_settings(self, income, penalty, commission,
                      payment_fee_base, payment_fee_proportional,
                      time_p, alpha_p, alpha_T, prob_cut,
                      init_time_period, mgt_period,
-                     draw_period, log_file_name):
+                     draw_period):
         self.set_income(income)
         self.set_penalty(penalty)
         self.set_commission(commission)
@@ -40,7 +39,6 @@ class RouterSetts:
         self.set_init_time_period(init_time_period)
         self.set_mgt_period(mgt_period)
         self.set_draw_period(draw_period)
-        self.set_log_file_name(log_file_name)
 
     def set_setts_from_file(self, file_name):
         with open(file_name) as f:
@@ -57,7 +55,6 @@ class RouterSetts:
         self.set_init_time_period(inlet['init_time_period'])
         self.set_mgt_period(inlet['mgt_period'])
         self.set_draw_period(inlet['draw_period'])
-        self.set_log_file_name(inlet['log_file_name'])
 
     def set_income(self, income):
         self.income = income
@@ -95,9 +92,6 @@ class RouterSetts:
     def set_draw_period(self, draw_period):
         self.draw_period = draw_period
 
-    def set_log_file_name(self, log_file_name):
-        self.log_file_name = log_file_name
-
     def __str__(self):
         out_str = 'router settings:\n'
         out_str += 'income ' + str(self.income) + '\n'
@@ -112,6 +106,5 @@ class RouterSetts:
         out_str += 'prob_cut ' + str(self.prob_cut) + '\n'
         out_str += 'init_time_period ' + str(self.init_time_period) + '\n'
         out_str += 'mgt_period ' + str(self.mgt_period) + '\n'
-        out_str += 'draw_period ' + str(self.draw_period) + '\n'
-        out_str += 'log_file_name ' + str(self.log_file_name)
+        out_str += 'draw_period ' + str(self.draw_period)
         return out_str

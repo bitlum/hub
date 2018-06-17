@@ -16,13 +16,13 @@ from watcher.routermetrics import RouterMetrics
 
 class Watcher(PattMatchEvHand):
 
-    def __init__(self, router_setts):
+    def __init__(self, router_setts, log_file_name):
         super().__init__(
-            patterns='*' + split_path_name(router_setts.log_file_name)['name'],
+            patterns='*' + split_path_name(log_file_name)['name'],
             ignore_directories=True, case_sensitive=False)
 
         self.smart_log = SmartLog()
-        self.log_reader = LogReader(router_setts.log_file_name, self.smart_log)
+        self.log_reader = LogReader(log_file_name, self.smart_log)
         self.router_mgt = RouterMgt(self.smart_log.transseq, router_setts)
         self.hubrpc = HubRPC(self.router_mgt.balances, router_setts)
         self.router_metrics = RouterMetrics(self.smart_log, router_setts)

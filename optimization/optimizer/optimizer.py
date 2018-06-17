@@ -2,7 +2,6 @@ from watchdog.observers import Observer
 import time
 import sys
 import os
-import json
 
 current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_path, '../'))
@@ -12,13 +11,13 @@ from watcher.protologutills import split_path_name
 from core.routersetts import RouterSetts
 
 
-def optimize(file_name_inlet):
+def optimize(file_name_inlet, log_file_name):
     router_setts = RouterSetts()
     router_setts.set_setts_from_file(file_name_inlet)
 
     obser = Observer()
-    path = split_path_name(router_setts.log_file_name)['path']
-    obser.schedule(Watcher(router_setts), path)
+    path = split_path_name(log_file_name)['path']
+    obser.schedule(Watcher(router_setts, log_file_name), path)
 
     obser.start()
 
@@ -31,4 +30,4 @@ def optimize(file_name_inlet):
     obser.join()
 
 
-optimize(file_name_inlet='routermgt_inlet.json')
+optimize(file_name_inlet='routermgt_inlet.json', log_file_name=sys.argv[1])
