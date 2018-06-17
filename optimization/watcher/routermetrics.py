@@ -27,7 +27,7 @@ class RouterMetrics:
 
         self.draw_period = router_setts.draw_period
 
-        Gnuplot.GnuplotOpts.default_term = 'qt'
+        Gnuplot.GnuplotOpts.default_term = 'qt noraise'
         self.gnuplot = Gnuplot.Gnuplot()
         self.gnuplot.title("metrics vs time")
         self.gnuplot("set y2tics")
