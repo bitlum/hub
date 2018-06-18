@@ -20,13 +20,16 @@ class RouterSetts:
         self.prob_cut = float(0.5)
         self.init_time_period = int()
         self.mgt_period = float(1)
-        self.draw_period = float(1)
+        self.stat_period = float(1)
+        self.make_drawing = bool(True)
+        self.output_statistics = bool(True)
+        self.show_log = bool(True)
 
     def set_settings(self, income, penalty, commission,
                      payment_fee_base, payment_fee_proportional,
                      time_p, alpha_p, alpha_T, prob_cut,
                      init_time_period, mgt_period,
-                     draw_period):
+                     stat_period, make_drawing, output_statistics, show_log):
         self.set_income(income)
         self.set_penalty(penalty)
         self.set_commission(commission)
@@ -38,7 +41,10 @@ class RouterSetts:
         self.set_prob_cut(prob_cut)
         self.set_init_time_period(init_time_period)
         self.set_mgt_period(mgt_period)
-        self.set_draw_period(draw_period)
+        self.set_stat_period(stat_period)
+        self.set_make_drawing(make_drawing)
+        self.set_output_statistics(output_statistics)
+        self.set_show_log(show_log)
 
     def set_setts_from_file(self, file_name):
         with open(file_name) as f:
@@ -54,7 +60,10 @@ class RouterSetts:
         self.set_prob_cut(inlet['prob_cut'])
         self.set_init_time_period(inlet['init_time_period'])
         self.set_mgt_period(inlet['mgt_period'])
-        self.set_draw_period(inlet['draw_period'])
+        self.set_stat_period(inlet['stat_period'])
+        self.set_make_drawing(inlet['make_drawing'])
+        self.set_output_statistics(inlet['output_statistics'])
+        self.set_show_log(inlet['show_log'])
 
     def set_income(self, income):
         self.income = income
@@ -89,8 +98,17 @@ class RouterSetts:
     def set_mgt_period(self, mgt_period):
         self.mgt_period = mgt_period
 
-    def set_draw_period(self, draw_period):
-        self.draw_period = draw_period
+    def set_stat_period(self, stat_period):
+        self.stat_period = stat_period
+
+    def set_make_drawing(self, make_drawing):
+        self.make_drawing = make_drawing
+
+    def set_output_statistics(self, output_statistics):
+        self.output_statistics = output_statistics
+
+    def set_show_log(self, show_log):
+        self.show_log = show_log
 
     def __str__(self):
         out_str = 'router settings:\n'
@@ -106,5 +124,8 @@ class RouterSetts:
         out_str += 'prob_cut ' + str(self.prob_cut) + '\n'
         out_str += 'init_time_period ' + str(self.init_time_period) + '\n'
         out_str += 'mgt_period ' + str(self.mgt_period) + '\n'
-        out_str += 'draw_period ' + str(self.draw_period)
+        out_str += 'stat_period ' + str(self.stat_period) + '\n'
+        out_str += 'make_drawing ' + str(self.make_drawing) + '\n'
+        out_str += 'output_statistics ' + str(self.output_statistics) + '\n'
+        out_str += 'show_log ' + str(self.show_log)
         return out_str

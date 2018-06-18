@@ -22,7 +22,8 @@ class Watcher(PattMatchEvHand):
             ignore_directories=True, case_sensitive=False)
 
         self.smart_log = SmartLog()
-        self.log_reader = LogReader(log_file_name, self.smart_log)
+        self.log_reader = LogReader(log_file_name, self.smart_log,
+                                    router_setts)
         self.router_mgt = RouterMgt(self.smart_log.transseq, router_setts)
         self.hubrpc = HubRPC(self.router_mgt.balances, router_setts)
         self.router_metrics = RouterMetrics(self.smart_log, router_setts)

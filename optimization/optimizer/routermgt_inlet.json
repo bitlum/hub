@@ -10,5 +10,8 @@
 	"prob_cut": 0.5,
 	"init_time_period": 10,
 	"mgt_period": 1,
-	"draw_period": 10
+	"stat_period": 10,
+	"make_drawing": true,
+	"output_statistics": true,
+	"show_log": false
 }
