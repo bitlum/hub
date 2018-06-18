@@ -80,6 +80,8 @@ def actrpc_gen(file_name_inlet):
     with open(inlet['users_id_file_name']) as f:
         users_id = json.load(f)['users_id']
 
+    del users_id['0']
+
     with open(inlet['user_balances_file_name']) as f:
         user_balances = json.load(f)['balances']
 

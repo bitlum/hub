@@ -32,7 +32,8 @@ def transseq_gen(file_name_inlet):
                         dict(time=1.E9 * timematr[i][j][k],
                              payment=dict(sender=users_id[str(i)],
                                           receiver=users_id[str(j)],
-                                          amount=round(amountmatr[i][j][k]))))
+                                          amount=round(amountmatr[i][j][k]),
+                                          earned=int(0))))
 
     def take_time(trans):
         return trans['time']

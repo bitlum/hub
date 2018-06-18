@@ -1,5 +1,6 @@
 import sys
 import os
+import time
 
 from sortedcontainers import SortedDict
 
@@ -18,6 +19,10 @@ class SmartLog(RouterState):
         self.states = list()
         self.blockage_set = set()
         self.closure_set = set()
+        self.newbie_set = set()
+        self.just_opened_set = set()
+        self.open_time = dict()
+        self.users_balance_ini = dict()
 
     def append(self, message):
         if self.id['payment'] in message:
@@ -37,7 +42,12 @@ class SmartLog(RouterState):
                 self.channel_changes.append(message)
                 self.set_change(message[self.id['change']])
             elif change_type == self.id['opened']:
+                user_balance_ini = message[self.id['change']]['user_balance']
+                self.users_balance_ini[user] = user_balance_ini
                 self.closure_set.discard(user)
+                self.newbie_set.add(user)
+                self.just_opened_set.add(user)
+                self.open_time[user] = time.time()
             elif change_type == self.id['closed']:
                 self.closure_set.add(user)
             else:

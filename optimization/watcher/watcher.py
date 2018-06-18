@@ -27,8 +27,10 @@ class Watcher(PattMatchEvHand):
         self.hubrpc = HubRPC(self.router_mgt.balances, router_setts)
         self.router_metrics = RouterMetrics(self.smart_log, router_setts)
 
+        self.init_time_period = router_setts.init_time_period
+
         self.mgt_period = router_setts.mgt_period
-        self.time_start = time.time()
+        self.time_mgt_start = time.time()
 
     def process(self, event):
         if (event.event_type == 'modified') and (
@@ -36,12 +38,13 @@ class Watcher(PattMatchEvHand):
 
             self.log_reader.process_log()
 
-            if time.time() - self.time_start >= self.mgt_period:
+            if time.time() - self.time_mgt_start >= self.mgt_period:
                 self.router_metrics.process()
                 self.router_mgt.calc_parameters()
                 self.calc_update_set()
+                self.set_init_update()
                 self.hubrpc.update()
-                self.time_start = time.time()
+                self.time_mgt_start = time.time()
 
     def on_modified(self, event):
         self.process(event)
@@ -75,3 +78,21 @@ class Watcher(PattMatchEvHand):
 
         for user in self.smart_log.closure_set:
             self.hubrpc.update_set.discard(user)
+
+        discard_newbie_set = set()
+        for user in self.smart_log.newbie_set:
+            period = time.time() - self.smart_log.open_time[user]
+            if period > self.init_time_period:
+                discard_newbie_set.add(user)
+        for user in discard_newbie_set:
+            self.smart_log.newbie_set.discard(user)
+
+        for user in self.smart_log.newbie_set:
+            self.hubrpc.update_set.discard(user)
+
+    def set_init_update(self):
+        for user in self.smart_log.just_opened_set:
+            self.hubrpc.update_set.add(user)
+            user_balance_ini = self.smart_log.users_balance_ini[user]
+            self.router_mgt.balances[user] = user_balance_ini
+        self.smart_log.just_opened_set.clear()

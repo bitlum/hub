@@ -40,10 +40,10 @@ def print_massege(massege, nesting=-4):
     elif type(massege) == list:
         print('')
         nesting += 4
-        for ind in range(len(massege)):
+        for user_state in massege:
             print(nesting * ' ', end='')
-            print(ind, end=': ')
-            print_massege(massege[ind], nesting)
+            print(user_state['user_id'], end=': ')
+            print_massege(user_state, nesting)
     else:
         print(massege)
 

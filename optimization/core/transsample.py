@@ -40,7 +40,7 @@ class TransSample(UsersSample):
             delta = self.transseq[i]['time'] - self.transseq[0]['time']
             self.timematr[sender][receiver].append(1.E-9 * delta)
 
-            amount = payment['amount']
+            amount = payment['amount'] + payment['earned']
             self.amountmatr[sender][receiver].append(amount)
 
         self.periodmatr = copy.deepcopy(self.timematr)
