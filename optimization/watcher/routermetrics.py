@@ -25,9 +25,12 @@ class RouterMetrics:
         self.balance_sum_av = list([float(0)])
         self.ROI_av = list([float(0)])
 
-        self.draw_period = router_setts.draw_period
+        self.stat_period = router_setts.stat_period
 
-        Gnuplot.GnuplotOpts.default_term = 'qt'
+        self.make_drawing = router_setts.make_drawing
+        self.output_statistics = router_setts.output_statistics
+
+        Gnuplot.GnuplotOpts.default_term = 'qt noraise'
         self.gnuplot = Gnuplot.Gnuplot()
         self.gnuplot.title("metrics vs time")
         self.gnuplot("set y2tics")
@@ -39,8 +42,10 @@ class RouterMetrics:
     def process(self):
         self.set_data()
         self.calc_data_av()
-        self.draw()
-        self.json_outlet()
+        if self.make_drawing:
+            self.draw()
+        if self.output_statistics:
+            self.statistics()
 
     def set_data(self):
         self.time.append(time.time() - self.init_time)
@@ -68,7 +73,7 @@ class RouterMetrics:
 
         count = int(0)
         for i in range(len(self.time) - 1, - 1, -1):
-            if (self.time[-1] - self.time[i]) > self.draw_period:
+            if (self.time[-1] - self.time[i]) > self.stat_period:
                 break
             else:
                 count += 1
@@ -95,7 +100,7 @@ class RouterMetrics:
 
         self.gnuplot.plot(balance_sum_av_curve, ROI_av_curve)
 
-    def json_outlet(self):
+    def statistics(self):
 
         with open('outlet/statistics.json', 'w') as f:
             json.dump({'time': self.time,

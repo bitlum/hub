@@ -78,6 +78,10 @@ class SmartLog(RouterState):
                 amount = str(self.transseq[ind]["payment"]["amount"])
                 earned = str(self.transseq[ind]["payment"]["earned"])
                 status = self.transseq[ind]["payment"]["status"]
+                if sender == '0':
+                    sender = 'bridge'
+                if receiver == '0':
+                    receiver = 'bridge'
                 out_str += '* ' + sender + ' -> ' + receiver + \
                            ' :: ' + amount + ' : ' + earned + \
                            ' : ' + status + '\n'

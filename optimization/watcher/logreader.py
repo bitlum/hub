@@ -13,7 +13,7 @@ from samples.protolog import ProtoLog
 
 class LogReader:
 
-    def __init__(self, file_name, smart_log):
+    def __init__(self, file_name, smart_log, router_setts):
         self.file_name = file_name
         self.proto_log = ProtoLog()
         self.smart_log = smart_log
@@ -22,6 +22,7 @@ class LogReader:
         self.size_file = int(0)
         self.file = None
         self.message_names = ['payment', 'state', 'channel_change']
+        self.show_log = router_setts.show_log
 
     def process_log(self):
         with open(self.file_name, "rb") as self.file:
@@ -39,7 +40,8 @@ class LogReader:
 
                 self.convert()
 
-                print(self.smart_log)
+                if not self.show_log:
+                    print(self.smart_log)
 
     def read_message(self):
         log = proto.Log()
@@ -63,4 +65,5 @@ class LogReader:
 
         self.smart_log.append(dict_massege)
 
-        # print_massege(dict_massege)
+        if self.show_log:
+            print_massege(dict_massege)
