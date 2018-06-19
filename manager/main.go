@@ -19,7 +19,7 @@ import (
 	"context"
 	"github.com/bitlum/hub/manager/metrics/crypto"
 	"github.com/bitlum/hub/manager/metrics/network"
-	"github.com/bitlum/hub/manager/db/boltdb"
+	"github.com/bitlum/hub/manager/db/sqlite"
 	"github.com/bitlum/hub/manager/graphql"
 	"github.com/bitlum/hub/manager/router/registry"
 	"github.com/bitlum/hub/manager/processing"
@@ -76,10 +76,10 @@ func backendMain() error {
 	case "lnd":
 		// Create or open database file to host the last state of
 		// synchronization.
-		mainLog.Infof("Opening BoltDB database, path: '%v'",
+		mainLog.Infof("Opening database, path: '%v'",
 			config.LND.DataDir)
 
-		database, err := boltdb.Open(config.LND.DataDir, "lnd")
+		database, err := sqlite.Open(config.LND.DataDir, "lnd.sqlite")
 		if err != nil {
 			return errors.Errorf("unable to open database: %v", err)
 		}
