@@ -28,7 +28,7 @@ class Watcher(PattMatchEvHand):
         self.hubrpc = HubRPC(self.router_mgt.balances, router_setts)
         self.router_metrics = RouterMetrics(self.smart_log, router_setts)
 
-        self.init_time_period = router_setts.init_time_period
+        self.init_period = router_setts.init_period
         self.init_mult = router_setts.init_mult
 
         self.mgt_period = router_setts.mgt_period
@@ -84,7 +84,7 @@ class Watcher(PattMatchEvHand):
         discard_newbie_set = set()
         for user in self.smart_log.newbie_set:
             period = time.time() - self.smart_log.open_time[user]
-            if period > self.init_time_period:
+            if period > self.init_period:
                 discard_newbie_set.add(user)
         for user in discard_newbie_set:
             self.smart_log.newbie_set.discard(user)
