@@ -97,7 +97,7 @@ clean:
 
 build:
 		@$(call print, "Building hub...")
-		GOOS=linux GOARCH=amd64 go build -v -i -o ./docker/hub/hub
+		GOOS=linux GOARCH=amd64 CC=/usr/local/gcc-4.8.1-for-linux64/bin/x86_64-pc-linux-gcc CGO_ENABLED=1 go build -v -i -o ./docker/hub/hub
 
 ifeq ($(HOOK),)
 simnet-deploy:
