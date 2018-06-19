@@ -2,6 +2,8 @@ package router
 
 import (
 	"time"
+	"github.com/bitlum/hub/manager/common/broadcast"
+	"github.com/go-errors/errors"
 )
 
 // ChannelID uniquely identifies the channel in the lightning network.
@@ -100,12 +102,32 @@ const (
 	RouterInitiator ChannelInitiator = "router"
 )
 
+type ChannelConfig struct {
+	// Broadcast is used to by the channel to send channel notifications updates
+	// to it, usually it is populated by the router broadcaster.
+	Broadcaster *broadcast.Broadcaster
+
+	// Storage is used by channel to keep important data persistent.
+	Storage ChannelStorage
+}
+
+func (c *ChannelConfig) validate() error {
+	if c.Broadcaster == nil {
+		return errors.Errorf("broadcaster is empty")
+	}
+
+	if c.Storage == nil {
+		return errors.Errorf("storage is empty")
+	}
+
+	return nil
+}
+
 // Channel represent the Lightning Network channel.
 type Channel struct {
 	ChannelID ChannelID
 	UserID    UserID
 
-	FundingAmount BalanceUnit
 	UserBalance   BalanceUnit
 	RouterBalance BalanceUnit
 
@@ -117,21 +139,39 @@ type Channel struct {
 	// commitment transaction size and fee rate in the network.
 	CloseFee BalanceUnit
 
+	// CloseFee is the number of funds which were needed to open the channel
+	// and lock funds.
+	OpenFee BalanceUnit
+
 	// States...
 	States []*ChannelState
+
+	cfg *ChannelConfig
 }
 
-func NewChannel(channelID ChannelID, userID UserID, fundingAmount, userBalance,
-routerBalance, closeFee BalanceUnit, initiator ChannelInitiator) *Channel {
-	return &Channel{
+func NewChannel(channelID ChannelID, userID UserID, openFee, userBalance,
+routerBalance, closeFee BalanceUnit, initiator ChannelInitiator,
+	cfg *ChannelConfig) (*Channel, error) {
+
+	c := &Channel{
 		ChannelID:     channelID,
 		UserID:        userID,
-		FundingAmount: fundingAmount,
+		OpenFee:       openFee,
 		UserBalance:   userBalance,
 		RouterBalance: routerBalance,
 		Initiator:     initiator,
 		CloseFee:      closeFee,
 	}
+
+	if err := c.SetConfig(cfg); err != nil {
+		return nil, err
+	}
+
+	return c, nil
+}
+
+func (c *Channel) Save() error {
+	return c.cfg.Storage.AddChannel(c)
 }
 
 func (c *Channel) CurrentState() *ChannelState {
@@ -146,44 +186,146 @@ func (c *Channel) PrevState() *ChannelState {
 	}
 }
 
-func (c *Channel) SetOpeningState() {
+func (c *Channel) SetOpeningState() error {
 	c.States = append(c.States, &ChannelState{
 		Time:   time.Now(),
 		Name:   ChannelOpening,
 		Status: ChannelNonActive,
 	})
+
+	err := c.cfg.Storage.AddChannelState(c.ChannelID, c.CurrentState())
+	if err != nil {
+		return errors.Errorf("unable save channel: %v", err)
+	}
+
+	c.cfg.Broadcaster.Write(&UpdateChannelOpening{
+		UserID:        c.UserID,
+		ChannelID:     c.ChannelID,
+		UserBalance:   c.UserBalance,
+		RouterBalance: c.RouterBalance,
+		Fee:           c.FundingFee(),
+	})
+
+	return nil
 }
 
-func (c *Channel) SetOpenedState() {
+func (c *Channel) SetOpenedState() error {
+	lastStateTime := c.CurrentState().Time
+
 	c.States = append(c.States, &ChannelState{
 		Time:   time.Now(),
 		Name:   ChannelOpened,
 		Status: ChannelActive,
 	})
+
+	err := c.cfg.Storage.AddChannelState(c.ChannelID, c.CurrentState())
+	if err != nil {
+		return errors.Errorf("unable to save channel state: %v", err)
+	}
+
+	c.cfg.Broadcaster.Write(&UpdateChannelOpened{
+		UserID:        c.UserID,
+		ChannelID:     c.ChannelID,
+		UserBalance:   c.UserBalance,
+		RouterBalance: c.RouterBalance,
+		Fee:           c.FundingFee(),
+		Duration:      time.Now().Sub(lastStateTime),
+	})
+
+	return nil
 }
 
-func (c *Channel) SetUpdatingState() {
+func (c *Channel) SetUpdatingState(fee BalanceUnit) error {
 	c.States = append(c.States, &ChannelState{
 		Time:   time.Now(),
 		Name:   ChannelUpdating,
 		Status: ChannelNonActive,
 	})
+
+	err := c.cfg.Storage.AddChannelState(c.ChannelID, c.CurrentState())
+	if err != nil {
+		return errors.Errorf("unable save channel: %v", err)
+	}
+
+	c.cfg.Broadcaster.Write(&UpdateChannelUpdating{
+		UserID:        c.UserID,
+		ChannelID:     c.ChannelID,
+		UserBalance:   c.UserBalance,
+		RouterBalance: c.RouterBalance,
+		Fee:           fee,
+	})
+
+	return nil
 }
 
-func (c *Channel) SetClosingState() {
+func (c *Channel) SetUpdatedState(fee BalanceUnit) error {
+	lastStateTime := c.CurrentState().Time
+
+	c.States = append(c.States, &ChannelState{
+		Time:   time.Now(),
+		Name:   ChannelOpened,
+		Status: ChannelActive,
+	})
+
+	err := c.cfg.Storage.AddChannelState(c.ChannelID, c.CurrentState())
+	if err != nil {
+		return errors.Errorf("unable to save channel state: %v", err)
+	}
+
+	c.cfg.Broadcaster.Write(&UpdateChannelUpdated{
+		UserID:        c.UserID,
+		ChannelID:     c.ChannelID,
+		UserBalance:   c.UserBalance,
+		RouterBalance: c.RouterBalance,
+		Fee:           fee,
+		Duration:      time.Now().Sub(lastStateTime),
+	})
+
+	return nil
+}
+
+func (c *Channel) SetClosingState() error {
 	c.States = append(c.States, &ChannelState{
 		Time:   time.Now(),
 		Name:   ChannelClosing,
 		Status: ChannelNonActive,
 	})
+
+	err := c.cfg.Storage.AddChannelState(c.ChannelID, c.CurrentState())
+	if err != nil {
+		return errors.Errorf("unable save channel: %v", err)
+	}
+
+	c.cfg.Broadcaster.Write(&UpdateChannelClosing{
+		UserID:    c.UserID,
+		ChannelID: c.ChannelID,
+		Fee:       c.CloseFee,
+	})
+
+	return nil
 }
 
-func (c *Channel) SetClosedState() {
+func (c *Channel) SetClosedState() error {
+	lastStateTime := c.CurrentState().Time
 	c.States = append(c.States, &ChannelState{
 		Time:   time.Now(),
 		Name:   ChannelClosed,
 		Status: ChannelNonActive,
 	})
+
+	// NOTE: If remove this, be aware of double notification
+	if err := c.cfg.Storage.RemoveChannel(c); err != nil {
+		return errors.Errorf("unable remove channel: %v", err)
+	}
+
+	c.cfg.Broadcaster.Write(&UpdateChannelClosed{
+		UserID:    c.UserID,
+		ChannelID: c.ChannelID,
+		Fee:       c.CloseFee,
+		Duration:  time.Now().Sub(lastStateTime),
+	})
+
+	return nil
 }
 
 func (c *Channel) IsPending() bool {
@@ -202,8 +344,17 @@ func (c *Channel) IsActive() bool {
 
 func (c *Channel) FundingFee() BalanceUnit {
 	if c.Initiator == RouterInitiator {
-		return c.FundingAmount - (c.RouterBalance + c.UserBalance)
+		return c.OpenFee
 	}
 
 	return 0
+}
+
+func (c *Channel) SetConfig(cfg *ChannelConfig) error {
+	if err := cfg.validate(); err != nil {
+		return err
+	}
+
+	c.cfg = &(*cfg)
+	return nil
 }
