@@ -16,9 +16,8 @@ class HubRPC:
         self.update_set = set()
         self.stub = None
         self.create_stub()
-        self.set_payment_fee_base(router_setts.payment_fee_base)
-        self.set_payment_fee_proportional(
-            router_setts.payment_fee_proportional)
+        self.set_payment_fee_base(router_setts.pmnt_fee_base)
+        self.set_payment_fee_proportional(router_setts.pmnt_fee_prop)
 
     def create_stub(self):
         rpc_channel = grpc.insecure_channel('localhost:8686')

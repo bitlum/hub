@@ -48,15 +48,17 @@ class RouterMgt(FlowStat):
     def calc_extremum(self):
         self.balances.clear()
         for user_id, ind in self.indexes.items():
-            self.balances[user_id] = self.setts.penalty / self.setts.commission
+            value = self.setts.blch_fee / self.setts.pmnt_fee_prop
+            self.balances[user_id] = 1.E+6 * value
+
             if self.setts.income:
                 self.balances[user_id] *= 2
 
     def account_idle(self):
         self.lim_idle.clear()
         for user_id, ind in self.indexes.items():
-            amount = self.flowvect_out[ind] * self.setts.time_p
-            self.lim_idle[user_id] = amount / self.setts.alpha_p
+            amount = self.flowvect_out[ind] * self.setts.blockchain_period
+            self.lim_idle[user_id] = amount / self.setts.idle_mult
 
         for user_id, ind in self.indexes.items():
             lim = self.lim_idle[user_id]
@@ -105,7 +107,7 @@ class RouterMgt(FlowStat):
             period = self.periods_in_eff[user_id]
             if period is not None:
                 self.lim_period_in[user_id] = self.flowvect_in[ind] * period
-                self.lim_period_in[user_id] *= self.setts.alpha_T
+                self.lim_period_in[user_id] *= self.setts.period_mult
 
         for user_id, ind in self.indexes.items():
             lim = self.lim_period_in[user_id]
@@ -191,11 +193,11 @@ if __name__ == '__main__':
     router_setts = RouterSetts()
 
     router_setts.set_income(inlet['income'])
-    router_setts.set_penalty(inlet['penalty'])
-    router_setts.set_commission(inlet['commission'])
-    router_setts.set_time_p(inlet['time_p'])
-    router_setts.set_alpha_p(inlet['alpha_p'])
-    router_setts.set_alpha_T(inlet['alpha_T'])
+    router_setts.set_blch_fee(inlet['blch_fee'])
+    router_setts.set_pmnt_fee_prop(inlet['pmnt_fee_prop'])
+    router_setts.set_blockchain_period(inlet['blockchain_period'])
+    router_setts.set_idle_mult(inlet['idle_mult'])
+    router_setts.set_period_mult(inlet['period_mult'])
 
     with open('../activity/outlet/transseq.json') as f:
         transseq = json.load(f)['transseq']
