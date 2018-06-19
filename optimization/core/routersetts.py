@@ -21,6 +21,7 @@ class RouterSetts:
         self.init_time_period = int()
         self.mgt_period = float(1)
         self.stat_period = float(1)
+        self.init_mult = float(1)
         self.make_drawing = bool(True)
         self.output_statistics = bool(True)
         self.show_log = bool(True)
@@ -29,7 +30,8 @@ class RouterSetts:
                      payment_fee_base, payment_fee_proportional,
                      time_p, alpha_p, alpha_T, prob_cut,
                      init_time_period, mgt_period,
-                     stat_period, make_drawing, output_statistics, show_log):
+                     stat_period, init_mult, make_drawing,
+                     output_statistics, show_log):
         self.set_income(income)
         self.set_penalty(penalty)
         self.set_commission(commission)
@@ -42,6 +44,7 @@ class RouterSetts:
         self.set_init_time_period(init_time_period)
         self.set_mgt_period(mgt_period)
         self.set_stat_period(stat_period)
+        self.set_init_mult(init_mult)
         self.set_make_drawing(make_drawing)
         self.set_output_statistics(output_statistics)
         self.set_show_log(show_log)
@@ -61,6 +64,7 @@ class RouterSetts:
         self.set_init_time_period(inlet['init_time_period'])
         self.set_mgt_period(inlet['mgt_period'])
         self.set_stat_period(inlet['stat_period'])
+        self.set_init_mult(inlet['init_mult'])
         self.set_make_drawing(inlet['make_drawing'])
         self.set_output_statistics(inlet['output_statistics'])
         self.set_show_log(inlet['show_log'])
@@ -101,6 +105,9 @@ class RouterSetts:
     def set_stat_period(self, stat_period):
         self.stat_period = stat_period
 
+    def set_init_mult(self, init_mult):
+        self.init_mult = init_mult
+
     def set_make_drawing(self, make_drawing):
         self.make_drawing = make_drawing
 
@@ -125,6 +132,7 @@ class RouterSetts:
         out_str += 'init_time_period ' + str(self.init_time_period) + '\n'
         out_str += 'mgt_period ' + str(self.mgt_period) + '\n'
         out_str += 'stat_period ' + str(self.stat_period) + '\n'
+        out_str += 'init_mult ' + str(self.init_mult) + '\n'
         out_str += 'make_drawing ' + str(self.make_drawing) + '\n'
         out_str += 'output_statistics ' + str(self.output_statistics) + '\n'
         out_str += 'show_log ' + str(self.show_log)

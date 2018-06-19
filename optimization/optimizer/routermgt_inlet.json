@@ -11,6 +11,7 @@
 	"init_time_period": 10,
 	"mgt_period": 1,
 	"stat_period": 10,
+	"init_mult": 0.4,
 	"make_drawing": true,
 	"output_statistics": true,
 	"show_log": false
