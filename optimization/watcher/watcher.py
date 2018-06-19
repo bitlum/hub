@@ -26,7 +26,7 @@ class Watcher(PattMatchEvHand):
                                     router_setts)
         self.router_mgt = RouterMgt(self.smart_log.transseq, router_setts)
         self.hubrpc = HubRPC(self.router_mgt.balances, router_setts)
-        self.router_metrics = RouterMetrics(self.smart_log, router_setts)
+        self.router_metrics = RouterMetrics(self.smart_log, self.router_mgt)
 
         self.init_period = router_setts.init_period
         self.init_mult = router_setts.init_mult

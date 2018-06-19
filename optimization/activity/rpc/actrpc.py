@@ -88,6 +88,8 @@ def actrpc_gen(file_name_inlet):
     with open(inlet['transseq_file_name']) as f:
         transseq = json.load(f)['transseq']
 
+    time.sleep(1)
+
     stub = create_stub()
 
     set_duration(duration, stub)
@@ -95,6 +97,8 @@ def actrpc_gen(file_name_inlet):
     set_blockchain_fee(blockchain_fee, stub)
 
     channels_id = open_channels(users_id, user_balances, stub)
+
+    time.sleep(1)
 
     sent_transactions(stub, transseq)
 

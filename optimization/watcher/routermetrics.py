@@ -9,7 +9,7 @@ sys.path.append(os.path.join(current_path, '../'))
 
 
 class RouterMetrics:
-    def __init__(self, smart_log, router_setts):
+    def __init__(self, smart_log, router_mgt):
         self.smart_log = smart_log
         self.init_time = time.time()
 
@@ -18,17 +18,21 @@ class RouterMetrics:
         self.profit = list([int(0)])
         self.income = list([float(0)])
         self.balance_sum = list([int(0)])
+        self.balance_sum_predict = list([int(0)])
         self.ROI = list([float(0)])
 
         self.profit_av = list([float(0)])
         self.income_av = list([float(0)])
         self.balance_sum_av = list([float(0)])
+        self.balance_sum_predict_av = list([float(0)])
         self.ROI_av = list([float(0)])
 
-        self.stat_period = router_setts.stat_period
+        self.stat_period = router_mgt.setts.stat_period
 
-        self.make_drawing = router_setts.make_drawing
-        self.output_statistics = router_setts.output_statistics
+        self.make_drawing = router_mgt.setts.make_drawing
+        self.output_statistics = router_mgt.setts.output_statistics
+
+        self.router_mgt = router_mgt
 
         Gnuplot.GnuplotOpts.default_term = 'qt noraise'
         self.gnuplot = Gnuplot.Gnuplot()
@@ -60,6 +64,10 @@ class RouterMetrics:
         for _, balance in self.smart_log.router_balances.items():
             self.balance_sum[-1] += balance
 
+        self.balance_sum_predict.append(int(0))
+        for _, balance in self.router_mgt.balances_eff.items():
+            self.balance_sum_predict[-1] += balance
+
         if self.income[-1] > 0:
             self.ROI.append(self.income[-1] / self.balance_sum[-1])
         else:
@@ -69,6 +77,7 @@ class RouterMetrics:
         self.profit_av.append(float(0))
         self.income_av.append(float(0))
         self.balance_sum_av.append(float(0))
+        self.balance_sum_predict_av.append(float(0))
         self.ROI_av.append(float(0))
 
         count = int(0)
@@ -80,25 +89,37 @@ class RouterMetrics:
                 self.profit_av[-1] += self.profit[i]
                 self.income_av[-1] += self.income[i]
                 self.balance_sum_av[-1] += self.balance_sum[i]
+                self.balance_sum_predict_av[-1] += self.balance_sum_predict[i]
                 self.ROI_av[-1] += self.ROI[i]
 
         self.profit_av[-1] /= count
         self.income_av[-1] /= count
         self.balance_sum_av[-1] /= count
+        self.balance_sum_predict_av[-1] /= count
         self.ROI_av[-1] /= count
 
     def draw(self):
 
-        ROI_av_curve = Gnuplot.Data(self.time, self.ROI_av,
-                                    title="ROI",
-                                    with_="lines lw 2")
+        ROI_av_curve = Gnuplot.Data(
+            self.time, self.ROI_av,
+            title="ROI",
+            with_="lines lw 3 lt 1 lc 2")
 
-        balance_sum_av_curve = Gnuplot.Data(self.time, self.balance_sum_av,
-                                            axes='x1y2',
-                                            title="locked funds",
-                                            with_="lines lw 2")
+        balance_sum_av_curve = Gnuplot.Data(
+            self.time, self.balance_sum_av,
+            axes='x1y2',
+            title="locked funds",
+            with_="lines lw 3 lt 1 lc 1")
+        balance_sum_predict_av_curve = Gnuplot.Data(
+            self.time,
+            self.balance_sum_predict_av,
+            axes='x1y2',
+            title="predicted locked funds",
+            with_="lines lw 3 lt 0 lc 1")
 
-        self.gnuplot.plot(balance_sum_av_curve, ROI_av_curve)
+        self.gnuplot.plot(balance_sum_av_curve,
+                          balance_sum_predict_av_curve,
+                          ROI_av_curve)
 
     def statistics(self):
 

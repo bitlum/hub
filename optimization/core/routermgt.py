@@ -25,6 +25,7 @@ class RouterMgt(FlowStat):
         self.freqs = dict()
         self.wanes = dict()
         self.bounds = dict()
+        self.balances_eff = dict()
 
     def calc_parameters(self):
         self.calc_flow(self.setts.prob_cut)
@@ -183,6 +184,11 @@ class RouterMgt(FlowStat):
         for user_id, ind in self.indexes.items():
             self.balances[user_id] = round(self.balances[user_id])
 
+        self.balances_eff.clear()
+        for user_id, ind in self.indexes.items():
+            self.balances_eff[user_id] = 0.5 * (
+                        self.balances[user_id] + self.bounds[user_id])
+
 
 if __name__ == '__main__':
     file_inlet = '../optimizer/routermgt_inlet.json'
@@ -214,3 +220,4 @@ if __name__ == '__main__':
     print('freqs_out', router_mgt.freqs_out)
     print('freqs', router_mgt.freqs)
     print('wanes', router_mgt.wanes)
+    print('balances_eff', router_mgt.balances_eff)
