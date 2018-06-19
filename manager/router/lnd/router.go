@@ -377,16 +377,20 @@ func (r *Router) Network() ([]*router.Channel, error) {
 	m := crypto.NewMetric(r.cfg.Asset, "Network", r.cfg.MetricsBackend)
 	defer m.Finish()
 
-	channelsMap, err := r.cfg.SyncStorage.Channels()
+	channels, err := r.cfg.SyncStorage.Channels()
 	if err != nil {
 		m.AddError(metrics.HighSeverity)
 		log.Errorf("unable to fetch channels from sync storage: %v", err)
 		return nil, err
 	}
 
-	var channels []*router.Channel
-	for _, channel := range channelsMap {
-		channels = append(channels, channel)
+	// Initialise channels with router broadcaster so that channel
+	// notification will be sent to every router subscribers.
+	for _, channel := range channels {
+		channel.SetConfig(&router.ChannelConfig{
+			Broadcaster: r.broadcaster,
+			Storage:     r.cfg.SyncStorage,
+		})
 	}
 
 	return channels, nil

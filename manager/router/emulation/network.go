@@ -261,20 +261,23 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 	userBalance := router.BalanceUnit(req.LockedByUser) - openChannelFee - closeChannelFee
 	fundingAmount := router.BalanceUnit(req.LockedByUser)
 
-	channel := router.NewChannel(chanID, userID, fundingAmount, userBalance, 0,
-		closeChannelFee, router.UserInitiator)
+	cfg := &router.ChannelConfig{
+		Broadcaster: n.broadcaster,
+		Storage: &StubChannelStorage{},
+	}
+
+	channel, err := router.NewChannel(chanID, userID, fundingAmount,
+		userBalance, 0, closeChannelFee, router.UserInitiator, cfg)
+	if err != nil {
+		return nil, errors.Errorf("unable create channel: %v", err)
+	}
 
 	n.users[userID] = channel
 	n.channels[chanID] = channel
 
-	channel.SetOpeningState()
-	n.broadcaster.Write(&router.UpdateChannelOpening{
-		UserID:        channel.UserID,
-		ChannelID:     channel.ChannelID,
-		UserBalance:   channel.UserBalance,
-		RouterBalance: channel.RouterBalance,
-		Fee:           openChannelFee,
-	})
+	if err := channel.SetOpeningState(); err != nil {
+		return nil, errors.Errorf("unable set opening channel state: %v", err)
+	}
 
 	log.Tracef("User(%v) opened channel(%v) with router", userID, chanID)
 
@@ -284,7 +287,6 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 
 	// Channel is able to operate only after block is generated.
 	// Send update that channel is opened only after it is unlocked.
-	start := time.Now()
 	go func() {
 		defer l.Stop()
 		<-l.Read()
@@ -292,17 +294,13 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 		n.Lock()
 		defer n.Unlock()
 
-		channel.SetOpenedState()
-		n.broadcaster.Write(&router.UpdateChannelOpened{
-			UserID:        channel.UserID,
-			ChannelID:     channel.ChannelID,
-			UserBalance:   router.BalanceUnit(channel.UserBalance),
-			RouterBalance: router.BalanceUnit(channel.RouterBalance),
-			Fee:           openChannelFee,
-			Duration:      time.Now().Sub(start),
-		})
+		if err := channel.SetOpenedState(); err != nil {
+			log.Errorf("unable set opened channel "+
+				"state: %v", err)
+			return
+		}
 
-		log.Tracef("Channel(%v) with user(%v) unlocked", chanID, userID)
+		log.Tracef("Channel(%v) with user(%v) opened", chanID, userID)
 	}()
 
 	return &OpenChannelResponse{
@@ -331,12 +329,9 @@ func (n *emulationNetwork) CloseChannel(_ context.Context, req *CloseChannelRequ
 	// Increase the pending balance till block is generated.
 	n.router.pendingBalance += channel.RouterBalance
 
-	channel.SetClosingState()
-	n.broadcaster.Write(&router.UpdateChannelClosing{
-		UserID:    channel.UserID,
-		ChannelID: channel.ChannelID,
-		Fee:       channel.CloseFee,
-	})
+	if err := channel.SetClosingState(); err != nil {
+		return nil, errors.Errorf("unable set closing channel state: %v", err)
+	}
 
 	log.Tracef("User(%v) closed channel(%v)", channel.UserID, channel.ChannelID)
 
@@ -346,7 +341,6 @@ func (n *emulationNetwork) CloseChannel(_ context.Context, req *CloseChannelRequ
 
 	// Update router free balance only after block is mined and increase
 	// router balance on amount which we locked on our side in this channel.
-	start := time.Now()
 	go func() {
 		defer l.Stop()
 		<-l.Read()
@@ -354,13 +348,10 @@ func (n *emulationNetwork) CloseChannel(_ context.Context, req *CloseChannelRequ
 		n.Lock()
 		defer n.Unlock()
 
-		channel.SetClosedState()
-		n.broadcaster.Write(&router.UpdateChannelClosed{
-			UserID:    channel.UserID,
-			ChannelID: channel.ChannelID,
-			Fee:       channel.CloseFee,
-			Duration:  time.Now().Sub(start),
-		})
+		if err := channel.SetClosedState(); err != nil {
+			log.Errorf("unable set closing channel state: %v", err)
+			return
+		}
 
 		delete(n.channels, chanID)
 		delete(n.users, channel.UserID)

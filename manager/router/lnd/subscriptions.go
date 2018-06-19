@@ -65,25 +65,22 @@ func (r *Router) updateNodeInfo() {
 // listenLocalTopologyUpdates tracks the local channel topology state updates
 // and sends notifications accordingly to the occurred transition.
 func (r *Router) listenLocalTopologyUpdates() {
-	r.wg.Add(1)
-	go func() {
-		defer func() {
-			log.Info("Stopped local topology updates goroutine")
-			r.wg.Done()
-		}()
-
-		log.Info("Started local topology updates goroutine")
-
-		for {
-			select {
-			case <-time.After(time.Second * 5):
-			case <-r.quit:
-				return
-			}
-
-			r.syncTopologyUpdates()
-		}
+	defer func() {
+		log.Info("Stopped local topology updates goroutine")
+		r.wg.Done()
 	}()
+
+	log.Info("Started local topology updates goroutine")
+
+	for {
+		select {
+		case <-time.After(time.Second * 5):
+		case <-r.quit:
+			return
+		}
+
+		r.syncTopologyUpdates()
+	}
 }
 
 // syncTopologyUpdates is used as wrapper for fetching and syncing topology
@@ -119,12 +116,12 @@ func (r *Router) syncTopologyUpdates() {
 
 	// Fetch prev pending/closing/opened channels from db which
 	// corresponds to the old/previous channel state.
-	channels, err := r.cfg.SyncStorage.Channels()
 	log.Debugf("(topology updates) Fetching channel state from db...")
+	channels, err := r.Network()
 	if err != nil {
 		m.AddError(metrics.HighSeverity)
-		log.Errorf("(topology updates) unable to fetch old channel"+
-			" state: %v", err)
+		log.Errorf("(topology updates) unable to fetch old channel state: %v"+
+			"", err)
 		return
 	}
 
@@ -180,7 +177,12 @@ func (r *Router) syncTopologyUpdates() {
 				"%v => %v", router.ChannelClosed, router.ChannelOpening)
 			continue
 		case "not exist":
-			channel = router.NewChannel(
+			cfg := &router.ChannelConfig{
+				Broadcaster: r.broadcaster,
+				Storage:     r.cfg.SyncStorage,
+			}
+
+			channel, err = router.NewChannel(
 				router.ChannelID(newChannel.Channel.ChannelPoint),
 				router.UserID(newChannel.Channel.RemoteNodePub),
 				router.BalanceUnit(newChannel.Channel.Capacity),
@@ -189,23 +191,29 @@ func (r *Router) syncTopologyUpdates() {
 				router.BalanceUnit(newChannel.CommitFee),
 				getInitiator(newChannel.Channel.LocalBalance,
 					newChannel.Channel.RemoteBalance),
+				cfg,
 			)
-
-			channel.SetOpeningState()
-			if err := r.cfg.SyncStorage.SaveChannels(channel); err != nil {
-				m.AddError(metrics.HighSeverity)
-				log.Errorf("(topology updates) unable save channel: %v",
-					err)
+			if err != nil {
+				m.AddError(metrics.MiddleSeverity)
+				log.Errorf("(topology updates) unable to create new channel"+
+					": %v", err)
 				continue
 			}
 
-			r.broadcaster.Write(&router.UpdateChannelOpening{
-				UserID:        channel.UserID,
-				ChannelID:     channel.ChannelID,
-				UserBalance:   channel.UserBalance,
-				RouterBalance: channel.RouterBalance,
-				Fee:           channel.FundingFee(),
-			})
+
+			if err := channel.Save(); err != nil {
+				m.AddError(metrics.MiddleSeverity)
+				log.Errorf("(topology updates) unable to save new channel"+
+					": %v", err)
+				continue
+			}
+
+			if err := channel.SetOpeningState(); err != nil {
+				m.AddError(metrics.MiddleSeverity)
+				log.Errorf("(topology updates) unable to set channel openning"+
+					": %v", err)
+				continue
+			}
 		}
 	}
 
@@ -223,34 +231,21 @@ func (r *Router) syncTopologyUpdates() {
 		case router.ChannelOpening:
 			// Previously channel was opening, it seems that because of the
 			// delayed scrape we missed some of state changes.
-			channel.SetClosingState()
-			if err := r.cfg.SyncStorage.SaveChannels(channel); err != nil {
+
+			if err := channel.SetClosingState(); err != nil {
 				m.AddError(metrics.HighSeverity)
-				log.Errorf("(topology updates) unable save channel: %v",
-					err)
+				log.Errorf("(topology updates) unable to set closing state"+
+					": %v", err)
 				continue
 			}
-
-			r.broadcaster.Write(&router.UpdateChannelClosing{
-				UserID:    channel.UserID,
-				ChannelID: channel.ChannelID,
-				Fee:       channel.CloseFee,
-			})
 
 		case router.ChannelOpened:
-			channel.SetClosingState()
-			if err := r.cfg.SyncStorage.SaveChannels(channel); err != nil {
+			if err := channel.SetClosingState(); err != nil {
 				m.AddError(metrics.HighSeverity)
-				log.Errorf("(topology updates) unable save channel: %v",
-					err)
+				log.Errorf("(topology updates) unable to set closing state"+
+					": %v", err)
 				continue
 			}
-
-			r.broadcaster.Write(&router.UpdateChannelClosing{
-				UserID:    channel.UserID,
-				ChannelID: channel.ChannelID,
-				Fee:       channel.CloseFee,
-			})
 		case router.ChannelClosing:
 			// Nothing has changed
 		case router.ChannelClosed:
@@ -263,31 +258,42 @@ func (r *Router) syncTopologyUpdates() {
 		case "not exist":
 			// Previously channel not existed, it seems that because of the
 			// delayed scrape we missed some of state changes.
-			channel = router.NewChannel(
+			cfg := &router.ChannelConfig{
+				Broadcaster: r.broadcaster,
+				Storage:     r.cfg.SyncStorage,
+			}
+
+			channel, err = router.NewChannel(
 				router.ChannelID(newChannel.Channel.ChannelPoint),
 				router.UserID(newChannel.Channel.RemoteNodePub),
 				router.BalanceUnit(newChannel.Channel.Capacity),
 				router.BalanceUnit(newChannel.Channel.RemoteBalance),
 				router.BalanceUnit(newChannel.Channel.LocalBalance),
-				// TODO(andrew.shvv) Populate when lnd would have it
 				0,
 				getInitiator(newChannel.Channel.LocalBalance,
 					newChannel.Channel.RemoteBalance),
+				cfg,
 			)
-
-			channel.SetClosingState()
-			if err := r.cfg.SyncStorage.SaveChannels(channel); err != nil {
-				m.AddError(metrics.HighSeverity)
-				log.Errorf("(topology updates) unable save channel: %v",
-					err)
+			if err != nil {
+				m.AddError(metrics.MiddleSeverity)
+				log.Errorf("(topology updates) unable to create new channel"+
+					": %v", err)
 				continue
 			}
 
-			r.broadcaster.Write(&router.UpdateChannelClosing{
-				UserID:    channel.UserID,
-				ChannelID: channel.ChannelID,
-				Fee:       channel.CloseFee,
-			})
+			if err := channel.Save(); err != nil {
+				m.AddError(metrics.MiddleSeverity)
+				log.Errorf("(topology updates) unable to save new channel"+
+					": %v", err)
+				continue
+			}
+
+			if err := channel.SetClosingState(); err != nil {
+				m.AddError(metrics.MiddleSeverity)
+				log.Errorf("(topology updates) unable to set channel closing"+
+					": %v", err)
+				continue
+			}
 		}
 	}
 
@@ -305,34 +311,20 @@ func (r *Router) syncTopologyUpdates() {
 		case router.ChannelOpening:
 			// Previously channel was opening, it seems that because of the
 			// delayed scrape we missed some of state changes.
-			channel.SetClosingState()
-			if err := r.cfg.SyncStorage.SaveChannels(channel); err != nil {
+			if err := channel.SetClosingState(); err != nil {
 				m.AddError(metrics.HighSeverity)
-				log.Errorf("(topology updates) unable save channel: %v",
-					err)
+				log.Errorf("(topology updates) unable to set closing state"+
+					": %v", err)
 				continue
 			}
-
-			r.broadcaster.Write(&router.UpdateChannelClosing{
-				UserID:    channel.UserID,
-				ChannelID: channel.ChannelID,
-				Fee:       channel.CloseFee,
-			})
 
 		case router.ChannelOpened:
-			channel.SetClosingState()
-			if err := r.cfg.SyncStorage.SaveChannels(channel); err != nil {
+			if err := channel.SetClosingState(); err != nil {
 				m.AddError(metrics.HighSeverity)
-				log.Errorf("(topology updates) unable save channel: %v",
-					err)
+				log.Errorf("(topology updates) unable to set closing state"+
+					": %v", err)
 				continue
 			}
-
-			r.broadcaster.Write(&router.UpdateChannelClosing{
-				UserID:    channel.UserID,
-				ChannelID: channel.ChannelID,
-				Fee:       channel.CloseFee,
-			})
 		case router.ChannelClosing:
 			// Nothing has changed
 		case router.ChannelClosed:
@@ -345,31 +337,42 @@ func (r *Router) syncTopologyUpdates() {
 		case "not exist":
 			// Previously channel not existed, it seems that because of the
 			// delayed scrape we missed some of state changes.
-			channel = router.NewChannel(
+			cfg := &router.ChannelConfig{
+				Broadcaster: r.broadcaster,
+				Storage:     r.cfg.SyncStorage,
+			}
+
+			channel, err = router.NewChannel(
 				router.ChannelID(newChannel.Channel.ChannelPoint),
 				router.UserID(newChannel.Channel.RemoteNodePub),
 				router.BalanceUnit(newChannel.Channel.Capacity),
 				router.BalanceUnit(newChannel.Channel.RemoteBalance),
 				router.BalanceUnit(newChannel.Channel.LocalBalance),
-				// TODO(andrew.shvv) Populate when lnd would have it
 				0,
 				getInitiator(newChannel.Channel.LocalBalance,
 					newChannel.Channel.RemoteBalance),
+				cfg,
 			)
-
-			channel.SetClosingState()
-			if err := r.cfg.SyncStorage.SaveChannels(channel); err != nil {
-				m.AddError(metrics.HighSeverity)
-				log.Errorf("(topology updates) unable save channel: %v",
-					err)
+			if err != nil {
+				m.AddError(metrics.MiddleSeverity)
+				log.Errorf("(topology updates) unable to create new channel"+
+					": %v", err)
 				continue
 			}
 
-			r.broadcaster.Write(&router.UpdateChannelClosing{
-				UserID:    channel.UserID,
-				ChannelID: channel.ChannelID,
-				Fee:       channel.CloseFee,
-			})
+			if err := channel.Save(); err != nil {
+				m.AddError(metrics.MiddleSeverity)
+				log.Errorf("(topology updates) unable to save new channel"+
+					": %v", err)
+				continue
+			}
+
+			if err := channel.SetClosingState(); err != nil {
+				m.AddError(metrics.HighSeverity)
+				log.Errorf("(topology updates) unable to set closing state"+
+					": %v", err)
+				continue
+			}
 		}
 	}
 
@@ -385,19 +388,11 @@ func (r *Router) syncTopologyUpdates() {
 
 		switch state {
 		case router.ChannelOpening:
-			channel.SetOpenedState()
-			if err := r.cfg.SyncStorage.SaveChannels(channel); err != nil {
+			if err := channel.SetOpenedState(); err != nil {
 				m.AddError(metrics.HighSeverity)
-				log.Errorf("(topology updates) unable save channel: %v",
-					err)
+				log.Errorf("(topology updates) unable set channel state: %v", err)
 				continue
 			}
-
-			r.broadcaster.Write(&router.UpdateChannelOpened{
-				UserID:    channel.UserID,
-				ChannelID: channel.ChannelID,
-				Fee:       channel.CloseFee,
-			})
 
 		case router.ChannelOpened:
 			// Nothing has changed
@@ -416,7 +411,12 @@ func (r *Router) syncTopologyUpdates() {
 				"%v => %v", router.ChannelClosed, router.ChannelOpened)
 			continue
 		case "not exist":
-			channel = router.NewChannel(
+			cfg := &router.ChannelConfig{
+				Broadcaster: r.broadcaster,
+				Storage:     r.cfg.SyncStorage,
+			}
+
+			channel, err = router.NewChannel(
 				router.ChannelID(newChannel.ChannelPoint),
 				router.UserID(newChannel.RemotePubkey),
 				router.BalanceUnit(newChannel.Capacity),
@@ -425,25 +425,28 @@ func (r *Router) syncTopologyUpdates() {
 				router.BalanceUnit(newChannel.CommitFee),
 				getInitiator(newChannel.LocalBalance,
 					newChannel.RemoteBalance),
+				cfg,
 			)
-
-			lastStateTime := channel.CurrentState().Time
-			channel.SetOpenedState()
-			if err := r.cfg.SyncStorage.SaveChannels(channel); err != nil {
-				m.AddError(metrics.HighSeverity)
-				log.Errorf("(topology updates) unable save channel: %v",
-					err)
+			if err != nil {
+				m.AddError(metrics.MiddleSeverity)
+				log.Errorf("(topology updates) unable to create new channel"+
+					": %v", err)
 				continue
 			}
 
-			r.broadcaster.Write(&router.UpdateChannelOpened{
-				UserID:        channel.UserID,
-				ChannelID:     channel.ChannelID,
-				UserBalance:   channel.UserBalance,
-				RouterBalance: channel.RouterBalance,
-				Fee:           channel.FundingFee(),
-				Duration:      time.Now().Sub(lastStateTime),
-			})
+			if err := channel.Save(); err != nil {
+				m.AddError(metrics.MiddleSeverity)
+				log.Errorf("(topology updates) unable to save new channel"+
+					": %v", err)
+				continue
+			}
+
+			if err := channel.SetOpenedState(); err != nil {
+				m.AddError(metrics.HighSeverity)
+				log.Errorf("(topology updates) unable save opened channel"+
+					" state: %v", err)
+				continue
+			}
 		}
 	}
 
@@ -460,50 +463,35 @@ func (r *Router) syncTopologyUpdates() {
 			router.ChannelClosing,
 			router.ChannelClosed:
 
-			lastStateTime := channel.CurrentState().Time
-			channel.SetClosedState()
-
-			// NOTE: If remove this, be aware of double notification
-			if err := r.cfg.SyncStorage.RemoveChannels(channel); err != nil {
+			if err := channel.SetClosedState(); err != nil {
 				m.AddError(metrics.HighSeverity)
-				log.Errorf("(topology updates) unable remove channel: %v",
-					err)
+				log.Errorf("(topology updates) unable set closed channel"+
+					" state: %v", err)
 				continue
 			}
-
-			r.broadcaster.Write(&router.UpdateChannelClosed{
-				UserID:    channel.UserID,
-				ChannelID: channel.ChannelID,
-				Fee:       channel.CloseFee,
-				Duration:  time.Now().Sub(lastStateTime),
-			})
 		}
-
 	}
 }
 
 // listenForwardingUpdates listener of the forwarding lightning payments.
 // Fetches the lnd forwarding log, and send new update to the broadcaster.
 func (r *Router) listenForwardingUpdates() {
-	r.wg.Add(1)
-	go func() {
-		defer func() {
-			log.Info("Stopped forwarding payments goroutine")
-			r.wg.Done()
-		}()
-
-		log.Info("Started forwarding payments goroutine")
-
-		for {
-			select {
-			case <-time.After(time.Second * 5):
-			case <-r.quit:
-				return
-			}
-
-			r.syncForwardingUpdate()
-		}
+	defer func() {
+		log.Info("Stopped forwarding payments goroutine")
+		r.wg.Done()
 	}()
+
+	log.Info("Started forwarding payments goroutine")
+
+	for {
+		select {
+		case <-time.After(time.Second * 5):
+		case <-r.quit:
+			return
+		}
+
+		r.syncForwardingUpdate()
+	}
 }
 
 // syncForwardingUpdate is used as wrapper for fetching and syncing forwarding
@@ -680,85 +668,80 @@ func (r *Router) getNewForwardingEvents(index uint32) (
 // disconnected listener will be re-subscribe on updates when lnd goes live
 // and continue listening.
 func (r *Router) listenInvoiceUpdates() {
-	defer panicRecovering()
+	defer func() {
+		panicRecovering()
+		log.Info("Stopped incoming payments goroutine")
+		r.wg.Done()
+	}()
+
+	log.Info("Started incoming payments goroutine")
 
 	m := crypto.NewMetric(r.cfg.Asset, "ListenInvoiceUpdates",
 		r.cfg.MetricsBackend)
 
-	r.wg.Add(1)
-	go func() {
-		defer func() {
-			panicRecovering()
-			log.Info("Stopped incoming payments goroutine")
-			r.wg.Done()
-		}()
+	var invoiceSubsc lnrpc.Lightning_SubscribeInvoicesClient
+	var err error
 
-		log.Info("Started incoming payments goroutine")
+	for {
+		select {
+		case <-r.quit:
+			return
+		default:
+		}
 
-		var invoiceSubsc lnrpc.Lightning_SubscribeInvoicesClient
-		var err error
+		// Initialise invoice subscription client, and if it was null-ed
+		// than we should resubscribe on the lnd payment updates,
+		// this might be because of connection with lnd was lost.
+		if invoiceSubsc == nil {
+			log.Info("(payments updates) Trying to subscribe on payment" +
+				" updates...")
 
-		for {
-			select {
-			case <-r.quit:
-				return
-			default:
-			}
-
-			// Initialise invoice subscription client, and if it was null-ed
-			// than we should resubscribe on the lnd payment updates,
-			// this might be because of connection with lnd was lost.
-			if invoiceSubsc == nil {
-				log.Info("(payments updates) Trying to subscribe on payment" +
-					" updates...")
-
-				invoiceSubsc, err = r.client.SubscribeInvoices(context.Background(),
-					&lnrpc.InvoiceSubscription{})
-				if err != nil {
-					m.AddError(metrics.HighSeverity)
-					log.Errorf("(payments updates) unable to re-subscribe on"+
-						" invoice updates"+
-						": %v", err)
-
-					<-time.After(time.Second * 5)
-					continue
-				}
-			}
-
-			invoiceUpdate, err := invoiceSubsc.Recv()
+			invoiceSubsc, err = r.client.SubscribeInvoices(context.Background(),
+				&lnrpc.InvoiceSubscription{})
 			if err != nil {
 				m.AddError(metrics.HighSeverity)
-				// Re-subscribe on lnd invoice updates by making subscription
-				// equal to nil.
-				log.Errorf("(payments updates) unable to receive: %v", err)
-				invoiceSubsc = nil
+				log.Errorf("(payments updates) unable to re-subscribe on"+
+					" invoice updates"+
+					": %v", err)
+
+				<-time.After(time.Second * 5)
 				continue
 			}
-
-			if !invoiceUpdate.Settled {
-				log.Infof("(payments updates) Received add invoice update, "+
-					"invoice(%v)",
-					invoiceUpdate.PaymentRequest)
-				continue
-			}
-
-			amount := btcutil.Amount(invoiceUpdate.Value)
-			update := &router.UpdatePayment{
-				Type:   router.Incoming,
-				Status: router.Successful,
-
-				// TODO(andrew.shvv) Need to add sender chan id in lnd,
-				// in this case we could understand from which user we have
-				// received the payment.
-				Sender:   "unknown",
-				Receiver: router.UserID(r.nodeAddr),
-
-				Amount: router.BalanceUnit(amount),
-				Earned: 0,
-			}
-
-			// Send update notification to all listeners.
-			r.broadcaster.Write(update)
 		}
-	}()
+
+		invoiceUpdate, err := invoiceSubsc.Recv()
+		if err != nil {
+			m.AddError(metrics.HighSeverity)
+			// Re-subscribe on lnd invoice updates by making subscription
+			// equal to nil.
+			log.Errorf("(payments updates) unable to receive: %v", err)
+			invoiceSubsc = nil
+			continue
+		}
+
+		if !invoiceUpdate.Settled {
+			log.Infof("(payments updates) Received add invoice update, "+
+				"invoice(%v)",
+				invoiceUpdate.PaymentRequest)
+			continue
+		}
+
+		amount := btcutil.Amount(invoiceUpdate.Value)
+		update := &router.UpdatePayment{
+			Type:   router.Incoming,
+			Status: router.Successful,
+
+			// TODO(andrew.shvv) Need to add sender chan id in lnd,
+			// in this case we could understand from which user we have
+			// received the payment.
+			Sender:   "unknown",
+			Receiver: router.UserID(r.nodeAddr),
+
+			Amount: router.BalanceUnit(amount),
+			Earned: 0,
+		}
+
+		// Send update notification to all listeners.
+		r.broadcaster.Write(update)
+	}
 }
