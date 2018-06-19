@@ -7,7 +7,7 @@
 	"idle_mult": 0.1,
 	"period_mult": 1,
 	"prob_cut": 0.5,
-	"init_period": 10,
+	"init_period": 7,
 	"mgt_period": 1,
 	"stat_period": 10,
 	"init_mult": 0.4,
