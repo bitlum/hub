@@ -456,8 +456,8 @@ func TestUpdateChannelFee(t *testing.T) {
 			t.Fatalf("wrong user balance, fee should be taken")
 		}
 
-		if u.Fee != blockchainFee {
-			t.Fatalf("wrong fee")
+		if u.Fee != 0 {
+			t.Fatalf("wrong fee, should be zero because user is initiator")
 		}
 	case <-time.After(time.Second * 2):
 		t.Fatalf("haven't received update")
