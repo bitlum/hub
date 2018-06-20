@@ -16,6 +16,8 @@ class FlowStat(TransStat):
         self.flowvect_out = list()
         self.flowvect_in = list()
         self.flowvect_in_eff = list()
+        self.flowvect_gain = list()
+        self.period_eff_gain = list()
 
     def calc_flow(self, prob_cut=0.5):
         self.calc_stat(prob_cut)
@@ -36,12 +38,29 @@ class FlowStat(TransStat):
         self.flowvect_in.clear()
         self.flowvect_in = [float() for _ in range(self.users_number)]
 
+        self.flowvect_gain.clear()
+        self.flowvect_gain = [float() for _ in range(self.users_number)]
+
+        self.period_eff_gain.clear()
+        self.period_eff_gain = [float() for _ in range(self.users_number)]
+
         for i in range(self.users_number):
             for j in range(self.users_number):
                 value = self.flowmatr[i][j]
                 if value is not None:
                     self.flowvect_out[i] += value
                     self.flowvect_in[j] += value
+                    if self.users_id[i] != '0' and self.users_id[j] != '0':
+                        self.flowvect_gain[j] += value
+
+                        weight_period = value * self.smart_period[i][j].mean
+                        self.period_eff_gain[j] += weight_period
+
+        for i in range(self.users_number):
+            if self.flowvect_gain[i] != 0:
+                self.period_eff_gain[i] /= self.flowvect_gain[i]
+            else:
+                self.period_eff_gain[i] = None
 
         self.flowvect_in_eff.clear()
         self.flowvect_in_eff = [flow for flow in self.flowvect_in]
@@ -64,6 +83,14 @@ if __name__ == '__main__':
 
     print('flowvect_out:')
     print(flow_stat.flowvect_out)
+    print()
+
+    print('flowvect_gain:')
+    print(flow_stat.flowvect_gain)
+    print()
+
+    print('period_eff_gain:')
+    print(flow_stat.period_eff_gain)
     print()
 
     print('flowvect_in:')

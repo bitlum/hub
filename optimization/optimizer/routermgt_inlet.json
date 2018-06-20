@@ -13,5 +13,5 @@
 	"init_mult": 0.4,
 	"make_drawing": true,
 	"output_statistics": true,
-	"show_log": false
+	"show_log": true
 }

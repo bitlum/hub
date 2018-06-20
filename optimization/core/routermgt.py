@@ -15,6 +15,8 @@ class RouterMgt(FlowStat):
         super().__init__(transseq)
         self.indexes = dict()
         self.setts = setts
+        self.pmnt_fee_prop_eff = 1.E-6 * self.setts.pmnt_fee_prop
+        self.pmnt_fee_base_eff = 1.E-3 * self.setts.pmnt_fee_base
         self.balances = dict()
         self.lim_idle = dict()
         self.periods_in_eff = dict()
@@ -26,6 +28,7 @@ class RouterMgt(FlowStat):
         self.wanes = dict()
         self.bounds = dict()
         self.balances_eff = dict()
+        self.gain_eff = dict()
 
     def calc_parameters(self):
         self.calc_flow(self.setts.prob_cut)
@@ -49,8 +52,8 @@ class RouterMgt(FlowStat):
     def calc_extremum(self):
         self.balances.clear()
         for user_id, ind in self.indexes.items():
-            value = self.setts.blch_fee / self.setts.pmnt_fee_prop
-            self.balances[user_id] = 1.E+6 * value
+            value = self.setts.blch_fee / self.pmnt_fee_prop_eff
+            self.balances[user_id] = value
 
             if self.setts.income:
                 self.balances[user_id] *= 2
@@ -187,23 +190,24 @@ class RouterMgt(FlowStat):
         self.balances_eff.clear()
         for user_id, ind in self.indexes.items():
             self.balances_eff[user_id] = 0.5 * (
-                        self.balances[user_id] + self.bounds[user_id])
+                    self.balances[user_id] + self.bounds[user_id])
+
+        self.gain_eff.clear()
+        for user_id, ind in self.indexes.items():
+            if self.period_eff_gain[ind] is not None:
+                gain = self.flowvect_gain[ind] * self.pmnt_fee_prop_eff
+                gain += self.pmnt_fee_base_eff / self.period_eff_gain[ind]
+                self.gain_eff[user_id] = float(gain)
+            else:
+                self.gain_eff[user_id] = float(0)
 
 
 if __name__ == '__main__':
     file_inlet = '../optimizer/routermgt_inlet.json'
 
-    with open(file_inlet) as f:
-        inlet = json.load(f)
-
     router_setts = RouterSetts()
 
-    router_setts.set_income(inlet['income'])
-    router_setts.set_blch_fee(inlet['blch_fee'])
-    router_setts.set_pmnt_fee_prop(inlet['pmnt_fee_prop'])
-    router_setts.set_blockchain_period(inlet['blockchain_period'])
-    router_setts.set_idle_mult(inlet['idle_mult'])
-    router_setts.set_period_mult(inlet['period_mult'])
+    router_setts.set_setts_from_file(file_inlet)
 
     with open('../activity/outlet/transseq.json') as f:
         transseq = json.load(f)['transseq']
@@ -221,3 +225,4 @@ if __name__ == '__main__':
     print('freqs', router_mgt.freqs)
     print('wanes', router_mgt.wanes)
     print('balances_eff', router_mgt.balances_eff)
+    print('gain_eff', router_mgt.gain_eff)

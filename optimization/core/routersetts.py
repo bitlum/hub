@@ -11,7 +11,7 @@ class RouterSetts:
     def __init__(self):
         self.income = bool(True)
         self.blch_fee = float(1)
-        self.pmnt_fee_base = int(0)
+        self.pmnt_fee_base = int(1)
         self.pmnt_fee_prop = int(0)
         self.blockchain_period = float(0)
         self.idle_mult = float(1)
@@ -115,8 +115,7 @@ class RouterSetts:
         out_str = 'router settings:\n'
         out_str += 'income ' + str(self.income) + '\n'
         out_str += 'blch_fee ' + str(self.blch_fee) + '\n'
-        out_str += 'pmnt_fee_prop ' + str(
-            self.pmnt_fee_prop) + '\n'
+        out_str += 'pmnt_fee_prop ' + str(self.pmnt_fee_prop) + '\n'
         out_str += 'pmnt_fee_base ' + str(self.pmnt_fee_base) + '\n'
         out_str += 'blockchain_period ' + str(self.blockchain_period) + '\n'
         out_str += 'idle_mult ' + str(self.idle_mult) + '\n'

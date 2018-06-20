@@ -19,13 +19,17 @@ class RouterMetrics:
         self.income = list([float(0)])
         self.balance_sum = list([int(0)])
         self.balance_sum_predict = list([int(0)])
+        self.gain_sum_predict = list([float(0)])
         self.ROI = list([float(0)])
+        self.ROI_predict = list([float(0)])
 
         self.profit_av = list([float(0)])
         self.income_av = list([float(0)])
         self.balance_sum_av = list([float(0)])
         self.balance_sum_predict_av = list([float(0)])
+        self.gain_sum_predict_av = list([float(0)])
         self.ROI_av = list([float(0)])
+        self.ROI_predict_av = list([float(0)])
 
         self.stat_period = router_mgt.setts.stat_period
 
@@ -68,17 +72,29 @@ class RouterMetrics:
         for _, balance in self.router_mgt.balances_eff.items():
             self.balance_sum_predict[-1] += balance
 
-        if self.income[-1] > 0:
+        self.gain_sum_predict.append(int(0))
+        for _, gain in self.router_mgt.gain_eff.items():
+            self.gain_sum_predict[-1] += gain
+
+        if self.balance_sum[-1] > 0:
             self.ROI.append(self.income[-1] / self.balance_sum[-1])
         else:
             self.ROI.append(float(0))
+
+        if self.balance_sum_predict[-1] > 0:
+            ROI = self.gain_sum_predict[-1] / self.balance_sum_predict[-1]
+            self.ROI_predict.append(ROI)
+        else:
+            self.ROI_predict.append(float(0))
 
     def calc_data_av(self):
         self.profit_av.append(float(0))
         self.income_av.append(float(0))
         self.balance_sum_av.append(float(0))
         self.balance_sum_predict_av.append(float(0))
+        self.gain_sum_predict_av.append(float(0))
         self.ROI_av.append(float(0))
+        self.ROI_predict_av.append(float(0))
 
         count = int(0)
         for i in range(len(self.time) - 1, - 1, -1):
@@ -90,13 +106,17 @@ class RouterMetrics:
                 self.income_av[-1] += self.income[i]
                 self.balance_sum_av[-1] += self.balance_sum[i]
                 self.balance_sum_predict_av[-1] += self.balance_sum_predict[i]
+                self.gain_sum_predict_av[-1] += self.gain_sum_predict[i]
                 self.ROI_av[-1] += self.ROI[i]
+                self.ROI_predict_av[-1] += self.ROI_predict[i]
 
         self.profit_av[-1] /= count
         self.income_av[-1] /= count
         self.balance_sum_av[-1] /= count
         self.balance_sum_predict_av[-1] /= count
+        self.gain_sum_predict_av[-1] /= count
         self.ROI_av[-1] /= count
+        self.ROI_predict_av[-1] /= count
 
     def draw(self):
 
@@ -104,6 +124,11 @@ class RouterMetrics:
             self.time, self.ROI_av,
             title="ROI",
             with_="lines lw 3 lt 1 lc 2")
+
+        ROI_predict_av_curve = Gnuplot.Data(
+            self.time, self.ROI_predict_av,
+            title="predicted ROI",
+            with_="lines lw 3 lt 0 lc 2")
 
         balance_sum_av_curve = Gnuplot.Data(
             self.time, self.balance_sum_av,
@@ -119,7 +144,8 @@ class RouterMetrics:
 
         self.gnuplot.plot(balance_sum_av_curve,
                           balance_sum_predict_av_curve,
-                          ROI_av_curve)
+                          ROI_av_curve,
+                          ROI_predict_av_curve)
 
     def statistics(self):
 
