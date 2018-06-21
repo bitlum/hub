@@ -121,3 +121,11 @@ type UpdatePayment struct {
 type UpdateLinkAverageUpdateDuration struct {
 	AverageUpdateDuration time.Duration
 }
+
+// UpdateUserActive notify that user with given id is online or offline,
+// which means that all associated with him channels could or couldn't be used
+// for forwarding payments.
+type UpdateUserActive struct {
+	User     UserID
+	IsActive bool
+}
