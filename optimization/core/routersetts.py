@@ -23,6 +23,8 @@ class RouterSetts:
         self.init_mult = float(1)
         self.make_drawing = bool(True)
         self.output_statistics = bool(True)
+        self.output_log = bool(True)
+        self.output_period = float(1)
         self.show_log = bool(True)
 
     def set_settings(self, income, blch_fee,
@@ -30,7 +32,7 @@ class RouterSetts:
                      blockchain_period, idle_mult, period_mult, prob_cut,
                      init_period, mgt_period,
                      stat_period, init_mult, make_drawing,
-                     output_statistics, show_log):
+                     output_statistics, output_log, output_period, show_log):
         self.set_income(income)
         self.set_blch_fee(blch_fee)
         self.set_pmnt_fee_base(pmnt_fee_base)
@@ -45,6 +47,8 @@ class RouterSetts:
         self.set_init_mult(init_mult)
         self.set_make_drawing(make_drawing)
         self.set_output_statistics(output_statistics)
+        self.set_output_log(output_log)
+        self.set_output_period(output_period)
         self.set_show_log(show_log)
 
     def set_setts_from_file(self, file_name):
@@ -64,6 +68,8 @@ class RouterSetts:
         self.set_init_mult(inlet['init_mult'])
         self.set_make_drawing(inlet['make_drawing'])
         self.set_output_statistics(inlet['output_statistics'])
+        self.set_output_log(inlet['output_log'])
+        self.set_output_period(inlet['output_period'])
         self.set_show_log(inlet['show_log'])
 
     def set_income(self, income):
@@ -107,6 +113,12 @@ class RouterSetts:
 
     def set_output_statistics(self, output_statistics):
         self.output_statistics = output_statistics
+
+    def set_output_log(self, output_log):
+        self.output_log = output_log
+
+    def set_output_period(self, output_period):
+        self.output_period = output_period
 
     def set_show_log(self, show_log):
         self.show_log = show_log

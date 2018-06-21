@@ -2,6 +2,7 @@ from watchdog.events import PatternMatchingEventHandler as PattMatchEvHand
 import sys
 import os
 import time
+from threading import Thread
 
 current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_path, '../'))
@@ -21,6 +22,8 @@ class Watcher(PattMatchEvHand):
             patterns='*' + split_path_name(log_file_name)['name'],
             ignore_directories=True, case_sensitive=False)
 
+        self.init_time = time.time()
+
         self.smart_log = SmartLog()
         self.log_reader = LogReader(log_file_name, self.smart_log,
                                     router_setts)
@@ -33,6 +36,12 @@ class Watcher(PattMatchEvHand):
 
         self.mgt_period = router_setts.mgt_period
         self.time_mgt_start = time.time()
+
+        self.output_period = router_setts.output_period
+
+        self.sleep_thread = SleepThread(self.router_metrics, self.log_reader,
+                                        router_setts.output_period)
+        self.sleep_thread.start()
 
     def process(self, event):
         if (event.event_type == 'modified') and (
@@ -98,3 +107,17 @@ class Watcher(PattMatchEvHand):
             user_balance_ini = self.smart_log.users_balance_ini[user]
             self.router_mgt.balances[user] = user_balance_ini * self.init_mult
         self.smart_log.just_opened_set.clear()
+
+
+class SleepThread(Thread):
+    def __init__(self, router_metrics, log_reader, sleep):
+        Thread.__init__(self)
+        self.router_metrics = router_metrics
+        self.log_reader = log_reader
+        self.sleep = sleep
+
+    def run(self):
+        time.sleep(self.sleep)
+        self.router_metrics.out_stat()
+        self.log_reader.out_log()
+        print('\nMade json output\n')

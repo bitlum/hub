@@ -4,3 +4,4 @@ venv
 **/.idea
 **/*.log
 statistics.json
+log.json

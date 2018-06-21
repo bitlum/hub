@@ -14,6 +14,7 @@ class SmartLog(RouterState):
 
     def __init__(self):
         super().__init__()
+        self.messages = []
         self.channel_changes = list()
         self.transseq = list()
         self.states = list()
@@ -52,6 +53,8 @@ class SmartLog(RouterState):
                 self.closure_set.add(user)
             else:
                 self.blockage_set.add(user)
+
+        self.messages.append(message)
 
     def __str__(self):
         out_str = ''

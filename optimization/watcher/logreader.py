@@ -1,6 +1,7 @@
 import datetime
 import sys
 import os
+import json
 
 current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_path, '../'))
@@ -23,6 +24,7 @@ class LogReader:
         self.file = None
         self.message_names = ['payment', 'state', 'channel_change']
         self.show_log = router_setts.show_log
+        self.output_log = router_setts.output_log
 
     def process_log(self):
         with open(self.file_name, "rb") as self.file:
@@ -67,3 +69,9 @@ class LogReader:
 
         if self.show_log:
             print_massege(dict_massege)
+
+    def out_log(self):
+        if self.output_log:
+            with open('outlet/log.json', 'w') as f:
+                json.dump(self.smart_log.messages, f, sort_keys=True,
+                          indent=4 * ' ')

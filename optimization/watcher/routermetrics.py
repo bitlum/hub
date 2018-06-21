@@ -52,8 +52,6 @@ class RouterMetrics:
         self.calc_data_av()
         if self.make_drawing:
             self.draw()
-        if self.output_statistics:
-            self.statistics()
 
     def set_data(self):
         self.time.append(time.time() - self.init_time)
@@ -147,12 +145,12 @@ class RouterMetrics:
                           ROI_av_curve,
                           ROI_predict_av_curve)
 
-    def statistics(self):
-
-        with open('outlet/statistics.json', 'w') as f:
-            json.dump({'time': self.time,
-                       'profit_av': self.profit_av,
-                       'income_av': self.income_av,
-                       'balance_sum_av': self.balance_sum_av,
-                       'ROI_av': self.ROI_av},
-                      f, sort_keys=True, indent=4 * ' ')
+    def out_stat(self):
+        if self.output_statistics:
+            with open('outlet/statistics.json', 'w') as f:
+                json.dump({'time': self.time,
+                           'profit_av': self.profit_av,
+                           'income_av': self.income_av,
+                           'balance_sum_av': self.balance_sum_av,
+                           'ROI_av': self.ROI_av},
+                          f, sort_keys=True, indent=4 * ' ')
