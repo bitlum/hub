@@ -1,20 +1,50 @@
-version: "3.4"
+version: "3.5"
+
+# Explicitly defined connector network to be able to set static IPs
+networks:
+  connector.simnet:
+    name: connector.simnet
+    driver: bridge
+    ipam:
+      config:
+      - subnet: 172.100.0.0/24
+
+
+
+# Default settings for all containers.
+x-defaults:
+  &defaults
+
+  # Using automatically assigned ip address from connect.simnet network.
+  networks:
+    connector.simnet:
+
+  # Using syslog driver and set tag to container_name.
+  logging:
+    driver: syslog
+    options:
+      tag: "connector-docker/{{ .Name }}"
+
+  # Restart on exit.
+  restart: always
+
 services:
 
-  hub:
-    container_name: hub
+ hub.simnet:
+    << : *defaults
+    container_name: hub.simnet
+    image: hub.simnet
     build:
       context: ./hub/
-    image: bitlum/hub
+      args:
+        - HUB_REVISION
     volumes:
-      - "db:/db"
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "12m"
-        max-file: "500"
-    restart: always
-    network_mode: "host"
+      # This directory should exist on host, so connector should be deployed
+      # first, with lightning network daemon.
+      - /connector/bitcoin-lightning.simnet.primary:/root/.lnd/:ro
+    ports:
+      # GraphQL endpoint
+      - "3000:3000"
 
-volumes:
-  db:
+      # Prometheus monitoring
+      - "19999:19999"
