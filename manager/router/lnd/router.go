@@ -16,6 +16,9 @@ import (
 	"github.com/bitlum/hub/manager/router"
 	"github.com/bitlum/hub/manager/common/broadcast"
 	"github.com/bitlum/hub/manager/router/registry"
+	"io/ioutil"
+	"github.com/lightningnetwork/lnd/macaroons"
+	"gopkg.in/macaroon.v2"
 )
 
 // Config is a connector config.
@@ -32,6 +35,10 @@ type Config struct {
 	// TlsCertPath is a path to certificate, which is needed to have a secure
 	// gRPC connection with lnd daemon.
 	TlsCertPath string
+
+	// MacaroonPath is a path to macaroon token, which is needed to have
+	// the RPC authorisation.
+	MacaroonPath string
 
 	// SyncStorage is used to store all data which needs to be persistent,
 	// exact implementation of database backend is unknown for the hub,
@@ -161,6 +168,21 @@ func (r *Router) Start() error {
 
 	opts := []grpc.DialOption{
 		grpc.WithTransportCredentials(creds),
+	}
+
+	if r.cfg.MacaroonPath != "" {
+		macaroonBytes, err := ioutil.ReadFile(r.cfg.MacaroonPath)
+		if err != nil {
+			return errors.Errorf("unable to read macaroon file: %v", err)
+		}
+
+		mac := &macaroon.Macaroon{}
+		if err = mac.UnmarshalBinary(macaroonBytes); err != nil {
+			return errors.Errorf("unable to unmarshal macaroon: %v", err)
+		}
+
+		opts = append(opts,
+			grpc.WithPerRPCCredentials(macaroons.NewMacaroonCredential(mac)))
 	}
 
 	target := net.JoinHostPort(r.cfg.Host, r.cfg.Port)
