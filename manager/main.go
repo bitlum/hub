@@ -76,10 +76,11 @@ func backendMain() error {
 	case "lnd":
 		// Create or open database file to host the last state of
 		// synchronization.
-		mainLog.Infof("Opening database, path: '%v'",
-			config.LND.DataDir)
+		dbName := "lnd.sqlite"
+		mainLog.Infof("Opening sqlite database, path: '%v'",
+			filepath.Join(config.LND.DataDir, dbName))
 
-		database, err := sqlite.Open(config.LND.DataDir, "lnd.sqlite")
+		database, err := sqlite.Open(config.LND.DataDir, dbName)
 		if err != nil {
 			return errors.Errorf("unable to open database: %v", err)
 		}
