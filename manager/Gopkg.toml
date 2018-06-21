@@ -68,3 +68,6 @@
 [[constraint]]
   name = "github.com/coreos/bbolt"
   revision = "4f5275f4ebbf6fe7cb772de987fa96ee674460a7"
+
+[[constraint]]
+  name = "gopkg.in/macaroon.v2"

@@ -2,12 +2,6 @@
 
 
 [[projects]]
-  name = "github.com/AndrewSamokhvalov/go-spew"
-  packages = ["spew"]
-  revision = "346938d642f2ec3594ed81d874461961cd0faa76"
-  version = "v1.1.0"
-
-[[projects]]
   branch = "master"
   name = "github.com/beorn7/perks"
   packages = ["quantile"]
@@ -39,6 +33,18 @@
   name = "github.com/btcsuite/btclog"
   packages = ["."]
   revision = "84c8d2346e9fc8c7b947e243b9c24e6df9fd206a"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/btcsuite/golangcrypto"
+  packages = [
+    "nacl/secretbox",
+    "pbkdf2",
+    "poly1305",
+    "salsa20/salsa",
+    "scrypt"
+  ]
+  revision = "53f62d9b43e87a6c56975cf862af7edf33a8d0df"
 
 [[projects]]
   name = "github.com/coreos/bbolt"
@@ -109,8 +115,17 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/juju/loggo"
+  packages = ["."]
+  revision = "584905176618da46b895b176c721b02c476b6993"
+
+[[projects]]
+  branch = "master"
   name = "github.com/lightningnetwork/lnd"
-  packages = ["lnrpc"]
+  packages = [
+    "lnrpc",
+    "macaroons"
+  ]
   revision = "b73eef12b36af3b98c90137bcc111a3405f781bf"
 
 [[projects]]
@@ -156,9 +171,30 @@
   revision = "8b1c2da0d56deffdbb9e48d4414b4e674bd8083e"
 
 [[projects]]
+  name = "github.com/roasbeef/btcwallet"
+  packages = [
+    "internal/zero",
+    "snacl"
+  ]
+  revision = "ccd48bb4720f2baeaa795cac81264f6ced2da4c7"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/rogpeppe/fastuuid"
+  packages = ["."]
+  revision = "6724a57986aff9bff1a1770e9347036def7c89f6"
+
+[[projects]]
   branch = "master"
   name = "golang.org/x/crypto"
-  packages = ["ripemd160"]
+  packages = [
+    "curve25519",
+    "nacl/box",
+    "nacl/secretbox",
+    "poly1305",
+    "ripemd160",
+    "salsa20/salsa"
+  ]
   revision = "2d027ae1dddd4694d54f7a8b6cbe78dca8720226"
 
 [[projects]]
@@ -230,9 +266,29 @@
   ]
   revision = "b3ddf786825de56a4178401b7e174ee332173b66"
 
+[[projects]]
+  branch = "v1"
+  name = "gopkg.in/errgo.v1"
+  packages = ["."]
+  revision = "c17903c6b19d5dedb9cfba9fa314c7fae63e554f"
+
+[[projects]]
+  name = "gopkg.in/macaroon-bakery.v2"
+  packages = [
+    "bakery",
+    "bakery/checkers",
+    "bakery/internal/macaroonpb"
+  ]
+  revision = "94012773d2874a067572bd16d7d11ae02968b47b"
+
+[[projects]]
+  name = "gopkg.in/macaroon.v2"
+  packages = ["."]
+  revision = "bed2a428da6e56d950bed5b41fcbae3141e5b0d0"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "bb882ac16fcc5d8d20a9dfcf8c0c5438a9731cef914dc9b3ab8919122e413df3"
+  inputs-digest = "c8e10cc5029fc944319cf7667b36a8c9baa0b71ba1e992f388facddf2bf574ad"
   solver-name = "gps-cdcl"
   solver-version = 1
