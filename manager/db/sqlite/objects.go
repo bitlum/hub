@@ -37,7 +37,6 @@ type State struct {
 
 	Time   int64
 	Name   string
-	Status string
 }
 
 type Peer struct {

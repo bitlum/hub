@@ -49,7 +49,6 @@ func TestDB_AddChannelState(t *testing.T) {
 	state := &router.ChannelState{
 		Time:   time.Now(),
 		Name:   "n",
-		Status: "s",
 	}
 
 	if err := db.AddChannelState("1", state); err != nil {
@@ -63,10 +62,6 @@ func TestDB_AddChannelState(t *testing.T) {
 
 	// NOTE: Comparing fields one by one because of the time field inside the
 	// structure which couldn't be compared with deep equal properly.
-	if !reflect.DeepEqual(state.Status, channels[0].States[0].Status) {
-		t.Fatal("state are different")
-	}
-
 	if !reflect.DeepEqual(state.Name, channels[0].States[0].Name) {
 		t.Fatal("state are different")
 	}

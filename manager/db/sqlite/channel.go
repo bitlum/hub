@@ -64,7 +64,6 @@ func (d *DB) Channels() ([]*router.Channel, error) {
 			routerStates[i] = &router.ChannelState{
 				Time:   time.Unix(state.Time, 0),
 				Name:   router.ChannelStateName(state.Name),
-				Status: router.ChannelStatus(state.Status),
 			}
 		}
 
@@ -95,6 +94,5 @@ func (d *DB) AddChannelState(chanID router.ChannelID,
 		ChannelID: string(chanID),
 		Time:      state.Time.Unix(),
 		Name:      string(state.Name),
-		Status:    string(state.Status),
 	}).Error
 }
