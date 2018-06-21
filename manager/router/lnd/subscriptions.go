@@ -159,22 +159,25 @@ func (r *Router) syncTopologyUpdates() {
 			// Previous channel state was opened, and now it is again
 			// opening, something wrong has happened.
 			m.AddError(metrics.MiddleSeverity)
-			log.Errorf("(topology updates) impossible channel change state "+
-				"%v => %v", router.ChannelOpened, router.ChannelOpening)
+			log.Errorf("(topology updates) impossible channel("+
+				"%v) change state %v => %v", chanID, router.ChannelOpened,
+				router.ChannelOpening)
 			continue
 		case router.ChannelClosing:
 			// Previous channel state was closing, and now it is
 			// opening, we couldn't  re-open, closing channel.
 			m.AddError(metrics.MiddleSeverity)
-			log.Errorf("(topology updates) impossible channel change state "+
-				"%v => %v", router.ChannelClosing, router.ChannelOpening)
+			log.Errorf("(topology updates) impossible channel("+
+				"%v) change state %v => %v", chanID, router.ChannelClosing,
+				router.ChannelOpening)
 			continue
 		case router.ChannelClosed:
 			// Previous channel state was closing, and now it is
 			// opening, we couldn't  re-open, closing channel.
 			m.AddError(metrics.MiddleSeverity)
-			log.Errorf("(topology updates) impossible channel change state "+
-				"%v => %v", router.ChannelClosed, router.ChannelOpening)
+			log.Errorf("(topology updates) impossible channel("+
+				"%v) change state %v => %v", chanID, router.ChannelClosed,
+				router.ChannelOpening)
 			continue
 		case "not exist":
 			cfg := &router.ChannelConfig{
@@ -193,27 +196,32 @@ func (r *Router) syncTopologyUpdates() {
 					newChannel.Channel.RemoteBalance),
 				cfg,
 			)
+
 			if err != nil {
 				m.AddError(metrics.MiddleSeverity)
-				log.Errorf("(topology updates) unable to create new channel"+
-					": %v", err)
+				log.Errorf("(topology updates) unable to create new channel("+
+					"%v): %v", chanID, err)
 				continue
 			}
-
 
 			if err := channel.Save(); err != nil {
 				m.AddError(metrics.MiddleSeverity)
-				log.Errorf("(topology updates) unable to save new channel"+
-					": %v", err)
+				log.Errorf("(topology updates) unable to save new channel(%v)"+
+					": %v", chanID, err)
 				continue
 			}
 
+			log.Infof("Saved new channel(%v)", channel.ChannelID)
+
 			if err := channel.SetOpeningState(); err != nil {
 				m.AddError(metrics.MiddleSeverity)
-				log.Errorf("(topology updates) unable to set channel openning"+
-					": %v", err)
+				log.Errorf("(topology updates) unable to set opening"+
+					" state for channel(%v): %v", chanID, err)
 				continue
 			}
+
+			log.Infof("Set state(%v) for channel(%v)",
+				channel.CurrentState(), channel.ChannelID)
 		}
 	}
 
@@ -232,18 +240,31 @@ func (r *Router) syncTopologyUpdates() {
 			// Previously channel was opening, it seems that because of the
 			// delayed scrape we missed some of state changes.
 
+			if err := channel.SetOpenedState(); err != nil {
+				m.AddError(metrics.HighSeverity)
+				log.Errorf("(topology updates) unable to set opened state"+
+					"for channel(%v): %v", chanID, err)
+				continue
+			}
+
+			log.Infof("Set state(%v) for channel(%v)",
+				channel.CurrentState(), channel.ChannelID)
+
 			if err := channel.SetClosingState(); err != nil {
 				m.AddError(metrics.HighSeverity)
 				log.Errorf("(topology updates) unable to set closing state"+
-					": %v", err)
+					" for channel(%v): %v", chanID, err)
 				continue
 			}
+
+			log.Infof("Set state(%v) for channel(%v)",
+				channel.CurrentState(), channel.ChannelID)
 
 		case router.ChannelOpened:
 			if err := channel.SetClosingState(); err != nil {
 				m.AddError(metrics.HighSeverity)
 				log.Errorf("(topology updates) unable to set closing state"+
-					": %v", err)
+					"for channel(%v): %v", chanID, err)
 				continue
 			}
 		case router.ChannelClosing:
@@ -252,8 +273,9 @@ func (r *Router) syncTopologyUpdates() {
 			// Previous channel state was closed, and now it is
 			// closing, we couldn't  re-close, closed channel.
 			m.AddError(metrics.MiddleSeverity)
-			log.Errorf("(topology updates) impossible channel change state "+
-				"%v => %v", router.ChannelClosed, router.ChannelClosing)
+			log.Errorf("(topology updates) impossible channel("+
+				"%v) change state %v => %v", chanID, router.ChannelClosed,
+				router.ChannelClosing)
 			continue
 		case "not exist":
 			// Previously channel not existed, it seems that because of the
@@ -276,24 +298,48 @@ func (r *Router) syncTopologyUpdates() {
 			)
 			if err != nil {
 				m.AddError(metrics.MiddleSeverity)
-				log.Errorf("(topology updates) unable to create new channel"+
-					": %v", err)
+				log.Errorf("(topology updates) unable to create new channel("+
+					"%v): %v", chanID, err)
 				continue
 			}
 
 			if err := channel.Save(); err != nil {
 				m.AddError(metrics.MiddleSeverity)
-				log.Errorf("(topology updates) unable to save new channel"+
-					": %v", err)
+				log.Errorf("(topology updates) unable to save new channel(%v)"+
+					": %v", chanID, err)
 				continue
 			}
+			log.Infof("Saved new channel(%v)", channel.ChannelID)
+
+			if err := channel.SetOpeningState(); err != nil {
+				m.AddError(metrics.HighSeverity)
+				log.Errorf("(topology updates) unable to set opening state "+
+					"for channel(%v): %v", chanID, err)
+				continue
+			}
+
+			log.Infof("Set state(%v) for channel(%v)",
+				channel.CurrentState(), channel.ChannelID)
+
+			if err := channel.SetOpenedState(); err != nil {
+				m.AddError(metrics.HighSeverity)
+				log.Errorf("(topology updates) unable to set opened state"+
+					"for channel(%v): %v", chanID, err)
+				continue
+			}
+
+			log.Infof("Set state(%v) for channel(%v)",
+				channel.CurrentState(), channel.ChannelID)
 
 			if err := channel.SetClosingState(); err != nil {
 				m.AddError(metrics.MiddleSeverity)
 				log.Errorf("(topology updates) unable to set channel closing"+
-					": %v", err)
+					"for channel(%v): %v", chanID, err)
 				continue
 			}
+
+			log.Infof("Set state(%v) for channel(%v)",
+				channel.CurrentState(), channel.ChannelID)
 		}
 	}
 
@@ -311,28 +357,57 @@ func (r *Router) syncTopologyUpdates() {
 		case router.ChannelOpening:
 			// Previously channel was opening, it seems that because of the
 			// delayed scrape we missed some of state changes.
+
+			if err := channel.SetOpenedState(); err != nil {
+				m.AddError(metrics.HighSeverity)
+				log.Errorf("(topology updates) unable to set opened state"+
+					"for channel(%v): %v", chanID, err)
+				continue
+			}
+
+			log.Infof("Set state(%v) for channel(%v)",
+				channel.CurrentState(), channel.ChannelID)
+
+			if err := channel.SetClosingState(); err != nil {
+				m.AddError(metrics.MiddleSeverity)
+				log.Errorf("(topology updates) unable to set channel closing"+
+					"for channel(%v): %v", chanID, err)
+				continue
+			}
+
+			log.Infof("Set state(%v) for channel(%v)",
+				channel.CurrentState(), channel.ChannelID)
+
 			if err := channel.SetClosingState(); err != nil {
 				m.AddError(metrics.HighSeverity)
 				log.Errorf("(topology updates) unable to set closing state"+
-					": %v", err)
+					"for channel(%v): %v", chanID, err)
 				continue
 			}
+
+			log.Infof("Set state(%v) for channel(%v)",
+				channel.CurrentState(), channel.ChannelID)
 
 		case router.ChannelOpened:
 			if err := channel.SetClosingState(); err != nil {
 				m.AddError(metrics.HighSeverity)
 				log.Errorf("(topology updates) unable to set closing state"+
-					": %v", err)
+					"for channel(%v): %v", chanID, err)
 				continue
 			}
+
+			log.Infof("Set state(%v) for channel(%v)",
+				channel.CurrentState(), channel.ChannelID)
+
 		case router.ChannelClosing:
 			// Nothing has changed
 		case router.ChannelClosed:
 			// Previous channel state was closed, and now it is
 			// closing, we couldn't  re-close, closed channel.
 			m.AddError(metrics.MiddleSeverity)
-			log.Errorf("(topology updates) impossible channel change state "+
-				"%v => %v", router.ChannelClosed, router.ChannelClosing)
+			log.Errorf("(topology updates) impossible channel("+
+				"%v) change state %v => %v", chanID, router.ChannelClosed,
+				router.ChannelClosing)
 			continue
 		case "not exist":
 			// Previously channel not existed, it seems that because of the
@@ -356,23 +431,47 @@ func (r *Router) syncTopologyUpdates() {
 			if err != nil {
 				m.AddError(metrics.MiddleSeverity)
 				log.Errorf("(topology updates) unable to create new channel"+
-					": %v", err)
+					"for channel(%v): %v", chanID, err)
 				continue
 			}
 
 			if err := channel.Save(); err != nil {
 				m.AddError(metrics.MiddleSeverity)
 				log.Errorf("(topology updates) unable to save new channel"+
-					": %v", err)
+					"for channel(%v): %v", chanID, err)
+				continue
+			}
+			log.Infof("Saved new channel(%v)", channel.ChannelID)
+
+			if err := channel.SetOpeningState(); err != nil {
+				m.AddError(metrics.HighSeverity)
+				log.Errorf("(topology updates) unable to set opening state"+
+					"for channel(%v): %v", chanID, err)
 				continue
 			}
 
-			if err := channel.SetClosingState(); err != nil {
+			log.Infof("Set state(%v) for channel(%v)",
+				channel.CurrentState(), channel.ChannelID)
+
+			if err := channel.SetOpenedState(); err != nil {
 				m.AddError(metrics.HighSeverity)
-				log.Errorf("(topology updates) unable to set closing state"+
-					": %v", err)
+				log.Errorf("(topology updates) unable to set opened state"+
+					"for channel(%v): %v", chanID, err)
 				continue
 			}
+
+			log.Infof("Set state(%v) for channel(%v)",
+				channel.CurrentState(), channel.ChannelID)
+
+			if err := channel.SetClosingState(); err != nil {
+				m.AddError(metrics.MiddleSeverity)
+				log.Errorf("(topology updates) unable to set channel closing"+
+					"for channel(%v): %v", chanID, err)
+				continue
+			}
+
+			log.Infof("Set state(%v) for channel(%v)",
+				channel.CurrentState(), channel.ChannelID)
 		}
 	}
 
@@ -390,9 +489,13 @@ func (r *Router) syncTopologyUpdates() {
 		case router.ChannelOpening:
 			if err := channel.SetOpenedState(); err != nil {
 				m.AddError(metrics.HighSeverity)
-				log.Errorf("(topology updates) unable set channel state: %v", err)
+				log.Errorf("(topology updates) unable set channel state"+
+					" opened for channel(%v): %v", chanID, err)
 				continue
 			}
+
+			log.Infof("Set state(%v) for channel(%v)",
+				channel.CurrentState(), channel.ChannelID)
 
 		case router.ChannelOpened:
 			// Nothing has changed
@@ -400,15 +503,17 @@ func (r *Router) syncTopologyUpdates() {
 			// Previous channel state was closing, but now it is
 			// opened, close couldn't be canceled.
 			m.AddError(metrics.MiddleSeverity)
-			log.Errorf("(topology updates) impossible channel change state "+
-				"%v => %v", router.ChannelClosing, router.ChannelOpened)
+			log.Errorf("(topology updates) impossible channel("+
+				"%v) change state %v => %v", chanID, router.ChannelClosing,
+				router.ChannelOpened)
 			continue
 		case router.ChannelClosed:
 			// Previous channel state was closed, but now it is
 			// opened, close couldn't be canceled.
 			m.AddError(metrics.MiddleSeverity)
-			log.Errorf("(topology updates) impossible channel change state "+
-				"%v => %v", router.ChannelClosed, router.ChannelOpened)
+			log.Errorf("(topology updates) impossible channel("+
+				"%v) change state %v => %v", chanID, router.ChannelClosed,
+				router.ChannelOpened)
 			continue
 		case "not exist":
 			cfg := &router.ChannelConfig{
@@ -429,24 +534,38 @@ func (r *Router) syncTopologyUpdates() {
 			)
 			if err != nil {
 				m.AddError(metrics.MiddleSeverity)
-				log.Errorf("(topology updates) unable to create new channel"+
-					": %v", err)
+				log.Errorf("(topology updates) unable to create new channel("+
+					"%v): %v", chanID, err)
 				continue
 			}
 
 			if err := channel.Save(); err != nil {
 				m.AddError(metrics.MiddleSeverity)
-				log.Errorf("(topology updates) unable to save new channel"+
-					": %v", err)
+				log.Errorf("(topology updates) unable to save new channel(%v)"+
+					": %v", chanID, err)
+				continue
+			}
+			log.Infof("Saved new channel(%v)", channel.ChannelID)
+
+			if err := channel.SetOpeningState(); err != nil {
+				m.AddError(metrics.HighSeverity)
+				log.Errorf("(topology updates) unable set opening channel"+
+					" state for channel(%v): %v", chanID, err)
 				continue
 			}
 
+			log.Infof("Set state(%v) for channel(%v)",
+				channel.CurrentState(), channel.ChannelID)
+
 			if err := channel.SetOpenedState(); err != nil {
 				m.AddError(metrics.HighSeverity)
-				log.Errorf("(topology updates) unable save opened channel"+
-					" state: %v", err)
+				log.Errorf("(topology updates) unable set opened channel"+
+					" state for channel(%v): %v", chanID, err)
 				continue
 			}
+
+			log.Infof("Set state(%v) for channel(%v)",
+				channel.CurrentState(), channel.ChannelID)
 		}
 	}
 
@@ -458,17 +577,71 @@ func (r *Router) syncTopologyUpdates() {
 		}
 
 		switch channel.CurrentState().Name {
-		case router.ChannelOpening,
-			router.ChannelOpened,
-			router.ChannelClosing,
-			router.ChannelClosed:
+		case router.ChannelOpening:
+			if err := channel.SetOpenedState(); err != nil {
+				m.AddError(metrics.HighSeverity)
+				log.Errorf("(topology updates) unable to set opened state"+
+					"for channel(%v): %v", chanID, err)
+				continue
+			}
+
+			log.Infof("Set state(%v) for channel(%v)",
+				channel.CurrentState(), channel.ChannelID)
+
+			if err := channel.SetClosingState(); err != nil {
+				m.AddError(metrics.MiddleSeverity)
+				log.Errorf("(topology updates) unable to set channel closing"+
+					"for channel(%v): %v", chanID, err)
+				continue
+			}
+
+			log.Infof("Set state(%v) for channel(%v)",
+				channel.CurrentState(), channel.ChannelID)
 
 			if err := channel.SetClosedState(); err != nil {
 				m.AddError(metrics.HighSeverity)
 				log.Errorf("(topology updates) unable set closed channel"+
-					" state: %v", err)
+					" state for channel(%v): %v", chanID, err)
 				continue
 			}
+
+			log.Infof("Set state(%v) for channel(%v)",
+				channel.CurrentState(), channel.ChannelID)
+
+		case router.ChannelOpened:
+			if err := channel.SetClosingState(); err != nil {
+				m.AddError(metrics.MiddleSeverity)
+				log.Errorf("(topology updates) unable to set channel closing"+
+					"for channel(%v): %v", chanID, err)
+				continue
+			}
+
+			log.Infof("Set state(%v) for channel(%v)",
+				channel.CurrentState(), channel.ChannelID)
+
+			if err := channel.SetClosedState(); err != nil {
+				m.AddError(metrics.HighSeverity)
+				log.Errorf("(topology updates) unable set closed channel"+
+					" state for channel(%v): %v", chanID, err)
+				continue
+			}
+
+			log.Infof("Set state(%v) for channel(%v)",
+				channel.CurrentState(), channel.ChannelID)
+
+		case router.ChannelClosing:
+			if err := channel.SetClosedState(); err != nil {
+				m.AddError(metrics.HighSeverity)
+				log.Errorf("(topology updates) unable set closed channel"+
+					" state for channel(%v): %v", chanID, err)
+				continue
+			}
+
+			log.Infof("Set state(%v) for channel(%v)",
+				channel.CurrentState(), channel.ChannelID)
+
+		case router.ChannelClosed:
+			// Nothing to do
 		}
 	}
 }
