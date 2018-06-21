@@ -61,17 +61,15 @@
   name = "google.golang.org/grpc"
   revision = "b3ddf786825de56a4178401b7e174ee332173b66"
 
-[prune]
-  go-tests = true
-  unused-packages = true
-
-[[constraint]]
-  name = "github.com/coreos/bbolt"
-  revision = "4f5275f4ebbf6fe7cb772de987fa96ee674460a7"
-
 [[constraint]]
   name = "gopkg.in/macaroon.v2"
-  
+  revision = "bed2a428da6e56d950bed5b41fcbae3141e5b0d0"
+
 [[constraint]]
   name = "github.com/jinzhu/gorm"
   version = "1.9.1"
+
+
+[prune]
+  go-tests = true
+  unused-packages = true
