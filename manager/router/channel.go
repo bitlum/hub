@@ -19,10 +19,10 @@ type BalanceUnit int64
 type ChannelState struct {
 	Time time.Time
 	Name ChannelStateName
+}
 
-	// Status determines is this channel is active for being used for routing
-	// the payments.
-	Status ChannelStatus
+func (s ChannelState) String() string {
+	return string(s.Name)
 }
 
 type ChannelStateName string
@@ -51,16 +51,6 @@ const (
 	// either decreasing or increasing. During this update previous channel
 	// should stay in operational mode i.e. being able to route payments.
 	ChannelUpdating ChannelStateName = "updating"
-)
-
-// ChannelStatus identifies does the channel could be used for routing the
-// payments. Channel is active when we have a tcp connection with remote
-// node, and channel in the operational mode.
-type ChannelStatus string
-
-const (
-	ChannelActive    ChannelStatus = "active"
-	ChannelNonActive ChannelStatus = "nonactive"
 )
 
 type PaymentStatus string
@@ -102,6 +92,7 @@ const (
 	RouterInitiator ChannelInitiator = "router"
 )
 
+// ChannelConfig contains all external replaceable subsystems.
 type ChannelConfig struct {
 	// Broadcast is used to by the channel to send channel notifications updates
 	// to it, usually it is populated by the router broadcaster.
@@ -143,7 +134,12 @@ type Channel struct {
 	// and lock funds.
 	OpenFee BalanceUnit
 
-	// States...
+	// IsUserActive is used to determine is user connected with tcp/ip
+	// connection to the hub, which means that this channel could be used for
+	// payments.
+	IsUserActive bool
+
+	// States is the array of states which this channel went thorough.
 	States []*ChannelState
 
 	cfg *ChannelConfig
@@ -170,27 +166,21 @@ routerBalance, closeFee BalanceUnit, initiator ChannelInitiator,
 	return c, nil
 }
 
+// Save is used to save the channel in the database, without saving it states.
 func (c *Channel) Save() error {
 	return c.cfg.Storage.AddChannel(c)
 }
 
+// CurrentState return current state of payment channel.
 func (c *Channel) CurrentState() *ChannelState {
 	return c.States[len(c.States)-1]
 }
 
-func (c *Channel) PrevState() *ChannelState {
-	if len(c.States) >= 2 {
-		return c.States[len(c.States)-2]
-	} else {
-		return nil
-	}
-}
-
+// SetOpeningState...
 func (c *Channel) SetOpeningState() error {
 	c.States = append(c.States, &ChannelState{
-		Time:   time.Now(),
-		Name:   ChannelOpening,
-		Status: ChannelNonActive,
+		Time: time.Now(),
+		Name: ChannelOpening,
 	})
 
 	err := c.cfg.Storage.AddChannelState(c.ChannelID, c.CurrentState())
@@ -209,13 +199,13 @@ func (c *Channel) SetOpeningState() error {
 	return nil
 }
 
+// SetOpenedState...
 func (c *Channel) SetOpenedState() error {
 	lastStateTime := c.CurrentState().Time
 
 	c.States = append(c.States, &ChannelState{
-		Time:   time.Now(),
-		Name:   ChannelOpened,
-		Status: ChannelActive,
+		Time: time.Now(),
+		Name: ChannelOpened,
 	})
 
 	err := c.cfg.Storage.AddChannelState(c.ChannelID, c.CurrentState())
@@ -235,11 +225,14 @@ func (c *Channel) SetOpenedState() error {
 	return nil
 }
 
+// SetUpdatingState puts channel in the state of being updating,
+// depending on static or dynamic channel update it either could be used for
+// forwarding payment or couldn't be used. For more information go to
+// lightning mailing list.
 func (c *Channel) SetUpdatingState(fee BalanceUnit) error {
 	c.States = append(c.States, &ChannelState{
-		Time:   time.Now(),
-		Name:   ChannelUpdating,
-		Status: ChannelNonActive,
+		Time: time.Now(),
+		Name: ChannelUpdating,
 	})
 
 	err := c.cfg.Storage.AddChannelState(c.ChannelID, c.CurrentState())
@@ -258,13 +251,14 @@ func (c *Channel) SetUpdatingState(fee BalanceUnit) error {
 	return nil
 }
 
+// SetUpdatedState put channel in the state of being updated,
+// which means that it again open and eligible for forwarding payments.
 func (c *Channel) SetUpdatedState(fee BalanceUnit) error {
 	lastStateTime := c.CurrentState().Time
 
 	c.States = append(c.States, &ChannelState{
-		Time:   time.Now(),
-		Name:   ChannelOpened,
-		Status: ChannelActive,
+		Time: time.Now(),
+		Name: ChannelOpened,
 	})
 
 	err := c.cfg.Storage.AddChannelState(c.ChannelID, c.CurrentState())
@@ -284,11 +278,11 @@ func (c *Channel) SetUpdatedState(fee BalanceUnit) error {
 	return nil
 }
 
+// SetClosingState...
 func (c *Channel) SetClosingState() error {
 	c.States = append(c.States, &ChannelState{
-		Time:   time.Now(),
-		Name:   ChannelClosing,
-		Status: ChannelNonActive,
+		Time: time.Now(),
+		Name: ChannelClosing,
 	})
 
 	err := c.cfg.Storage.AddChannelState(c.ChannelID, c.CurrentState())
@@ -305,12 +299,12 @@ func (c *Channel) SetClosingState() error {
 	return nil
 }
 
+// SetClosedState...
 func (c *Channel) SetClosedState() error {
 	lastStateTime := c.CurrentState().Time
 	c.States = append(c.States, &ChannelState{
-		Time:   time.Now(),
-		Name:   ChannelClosed,
-		Status: ChannelNonActive,
+		Time: time.Now(),
+		Name: ChannelClosed,
 	})
 
 	// NOTE: If remove this, be aware of double notification
@@ -328,6 +322,8 @@ func (c *Channel) SetClosedState() error {
 	return nil
 }
 
+// IsPending returns is the channel going thorough the stage of being accepted
+// in blockchain. It either updating, opening or closing.
 func (c *Channel) IsPending() bool {
 	// TODO(andrew.shvv) Channel is not pending if it is in update mode,
 	// because of the dynamic mode, for more info watch lightning labs conner
@@ -338,23 +334,38 @@ func (c *Channel) IsPending() bool {
 		currentState.Name == ChannelUpdating
 }
 
+// IsActive returns does this channel could be used for receiving and sending
+// payment. For channel to be active it should be in proper state and user of
+// this channel should be connected to hub.
 func (c *Channel) IsActive() bool {
-	return c.CurrentState().Status == ChannelActive
+	return c.IsUserActive && !c.IsPending()
 }
 
+// FundingFee is the amount of money which was spent to open this channel.
 func (c *Channel) FundingFee() BalanceUnit {
 	if c.Initiator == RouterInitiator {
 		return c.OpenFee
 	}
 
+	// If user is initiator of this channel than we are
+	// not paying funding fee.
 	return 0
 }
 
+// SetConfig is used to set config which is used for using the external
+// subsystems by channel.
 func (c *Channel) SetConfig(cfg *ChannelConfig) error {
 	if err := cfg.validate(); err != nil {
 		return err
 	}
 
+	// Copy config file
 	c.cfg = &(*cfg)
 	return nil
+}
+
+// SetUserActive sets user of this channel as being active,
+// which mean that if channel is eligible for usage than channel is active.
+func (c *Channel) SetUserActive(isActive bool) {
+	c.IsUserActive = isActive
 }
