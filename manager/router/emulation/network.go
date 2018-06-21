@@ -226,6 +226,7 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 
 // OpenChannel is used to emulate that user has opened the channel with the
 // router.
+//
 // NOTE: Part of the EmulatorServer interface.
 func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelRequest) (
 	*OpenChannelResponse, error) {
@@ -263,7 +264,7 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 
 	cfg := &router.ChannelConfig{
 		Broadcaster: n.broadcaster,
-		Storage: &StubChannelStorage{},
+		Storage:     &StubChannelStorage{},
 	}
 
 	channel, err := router.NewChannel(chanID, userID, fundingAmount,
@@ -271,6 +272,7 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 	if err != nil {
 		return nil, errors.Errorf("unable create channel: %v", err)
 	}
+	channel.SetUserActive(true)
 
 	n.users[userID] = channel
 	n.channels[chanID] = channel
@@ -310,6 +312,7 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 
 // CloseChannel is used to emulate that user has closed the channel with the
 // router.
+//
 // NOTE: Part of the EmulatorServer interface.
 func (n *emulationNetwork) CloseChannel(_ context.Context, req *CloseChannelRequest) (
 	*CloseChannelResponse, error) {
@@ -369,6 +372,8 @@ func (n *emulationNetwork) CloseChannel(_ context.Context, req *CloseChannelRequ
 // SetBlockGenDuration is used to set the time which is needed for blokc
 // to be generated time. This would impact channel creation, channel
 // update and channel close.
+//
+// NOTE: Part of the EmulatorServer interface.
 func (n *emulationNetwork) SetBlockGenDuration(_ context.Context,
 	req *SetBlockGenDurationRequest) (*SetBlockGenDurationResponse, error) {
 	n.Lock()
@@ -383,9 +388,10 @@ func (n *emulationNetwork) SetBlockGenDuration(_ context.Context,
 	return &SetBlockGenDurationResponse{}, nil
 }
 
-//
 // SetBlockchainFee is used to set the fee which blockchain takes for
 // making an computation, transaction creation, i.e. channel updates.
+//
+// NOTE: Part of the EmulatorServer interface.
 func (n *emulationNetwork) SetBlockchainFee(_ context.Context,
 	req *SetBlockchainFeeRequest) (*SetBlockchainFeeResponse, error) {
 	n.Lock()
@@ -393,4 +399,33 @@ func (n *emulationNetwork) SetBlockchainFee(_ context.Context,
 
 	n.blockchainFee = req.Fee
 	return &SetBlockchainFeeResponse{}, nil
+}
+
+// SetUserActive set user being offline or online, which means that all his
+// opened channels either could or could't be used for receiving and
+// sending payments.
+//
+// NOTE: Part of the EmulatorServer interface.
+func (n *emulationNetwork) SetUserActive(_ context.Context,
+	req *SetUserActiveRequest) (*SetUserActiveResponse, error) {
+	n.Lock()
+	defer n.Unlock()
+
+	// TODO(andrew.shvv) add multi channel support
+	channel, ok := n.users[router.UserID(req.UserId)]
+	if !ok {
+		return nil, errors.Errorf("unable to find user %v",
+			req.UserId)
+	}
+
+	if channel.IsUserActive != req.IsOnline {
+		channel.SetUserActive(req.IsOnline)
+
+		n.broadcaster.Write(router.UpdateUserActive{
+			User:     router.UserID(req.UserId),
+			IsActive: req.IsOnline,
+		})
+	}
+
+	return &SetUserActiveResponse{}, nil
 }

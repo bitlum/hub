@@ -108,6 +108,7 @@ func (r *RouterEmulation) OpenChannel(userID router.UserID,
 	if err != nil {
 		return errors.Errorf("unable create channel: %v", err)
 	}
+	channel.SetUserActive(true)
 
 	r.network.users[userID] = channel
 	r.network.channels[chanID] = channel
