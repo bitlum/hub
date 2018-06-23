@@ -61,7 +61,7 @@ class RouterMgt(FlowStat):
     def account_idle(self):
         self.lim_idle.clear()
         for user_id, ind in self.indexes.items():
-            amount = self.flowvect_out[ind] * self.setts.blockchain_period
+            amount = self.flowvect_out[ind] * self.setts.blch_period
             self.lim_idle[user_id] = amount / self.setts.idle_mult
 
         for user_id, ind in self.indexes.items():
@@ -207,7 +207,7 @@ if __name__ == '__main__':
 
     router_setts = RouterSetts()
 
-    router_setts.set_setts_from_file(file_inlet)
+    router_setts.set_from_file(file_inlet)
 
     with open('../activity/outlet/transseq.json') as f:
         transseq = json.load(f)['transseq']

@@ -12,9 +12,9 @@ import protobuffer.rpc_pb2 as proto
 import protobuffer.rpc_pb2_grpc as proto_rpc
 
 
-def set_duration(duration, stub):
+def set_blch_period(blch_period, stub):
     request = proto.SetBlockGenDurationRequest()
-    request.duration = duration
+    request.duration = blch_period
     stub.SetBlockGenDuration(request)
 
 
@@ -29,7 +29,7 @@ def open_channels(users_id, balances, stub):
     return channels_id
 
 
-def set_blockchain_fee(fee, stub):
+def set_blch_fee(fee, stub):
     request = proto.SetBlockchainFeeRequest()
     request.fee = fee
     stub.SetBlockchainFee(request)
@@ -73,9 +73,9 @@ def actrpc_gen(file_name_inlet):
     with open(file_name_inlet) as f:
         inlet = json.load(f)
 
-    duration = inlet['duration']
+    blch_period = inlet['blch_period']
 
-    blockchain_fee = inlet['blockchain_fee']
+    blch_fee = inlet['blch_fee']
 
     with open(inlet['users_id_file_name']) as f:
         users_id = json.load(f)['users_id']
@@ -92,9 +92,9 @@ def actrpc_gen(file_name_inlet):
 
     stub = create_stub()
 
-    set_duration(duration, stub)
+    set_blch_period(blch_period, stub)
 
-    set_blockchain_fee(blockchain_fee, stub)
+    set_blch_fee(blch_fee, stub)
 
     channels_id = open_channels(users_id, user_balances, stub)
 

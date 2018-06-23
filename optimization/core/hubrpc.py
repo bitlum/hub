@@ -45,4 +45,4 @@ class HubRPC:
             try:
                 self.update_link(user, int(self.balances[user]))
             except Exception as er:
-                print(er, 'is skipped')
+                print(er, 'is skipped for user', user)

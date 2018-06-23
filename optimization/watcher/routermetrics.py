@@ -31,10 +31,10 @@ class RouterMetrics:
         self.ROI_av = list([float(0)])
         self.ROI_predict_av = list([float(0)])
 
-        self.stat_period = router_mgt.setts.stat_period
+        self.average_period = router_mgt.setts.average_period
 
         self.make_drawing = router_mgt.setts.make_drawing
-        self.output_statistics = router_mgt.setts.output_statistics
+        self.output_stat = router_mgt.setts.output_stat
 
         self.router_mgt = router_mgt
 
@@ -96,7 +96,7 @@ class RouterMetrics:
 
         count = int(0)
         for i in range(len(self.time) - 1, - 1, -1):
-            if (self.time[-1] - self.time[i]) > self.stat_period:
+            if (self.time[-1] - self.time[i]) > self.average_period:
                 break
             else:
                 count += 1
@@ -146,7 +146,7 @@ class RouterMetrics:
                           ROI_predict_av_curve)
 
     def out_stat(self):
-        if self.output_statistics:
+        if self.output_stat:
             with open('outlet/statistics.json', 'w') as f:
                 json.dump({'time': self.time,
                            'profit_av': self.profit_av,

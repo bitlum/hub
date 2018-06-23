@@ -13,7 +13,7 @@ from core.routersetts import RouterSetts
 
 def optimize(file_name_inlet, log_file_name):
     router_setts = RouterSetts()
-    router_setts.set_setts_from_file(file_name_inlet)
+    router_setts.set_from_file(file_name_inlet)
 
     obser = Observer()
     path = split_path_name(log_file_name)['path']
