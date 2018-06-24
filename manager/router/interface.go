@@ -39,9 +39,12 @@ type Router interface {
 	// through the router, about fee changes etc.
 	RegisterOnUpdates() *broadcast.Receiver
 
-	// Network returns the information about the current local network router
-	// topology.
-	Network() ([]*Channel, error)
+	// Channels returns all channels which are connected to router.
+	Channels() ([]*Channel, error)
+
+	// Users return all users which connected or were connected to router
+	// with payment channel.
+	Users() ([]*User, error)
 
 	// FreeBalance returns the amount of funds at router disposal.
 	FreeBalance() (BalanceUnit, error)
