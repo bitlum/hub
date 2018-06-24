@@ -1,7 +1,5 @@
 package router
 
-import "time"
-
 type UpdateChannelClosing struct {
 	UserID    UserID
 	ChannelID ChannelID
@@ -10,6 +8,10 @@ type UpdateChannelClosing struct {
 	// some other form of smart contract manager from initiator of the
 	// channel. By initiator we means the side which created the channel.
 	Fee BalanceUnit
+}
+
+func (u *UpdateChannelClosing) String() string {
+	return "channel_closing"
 }
 
 type UpdateChannelClosed struct {
@@ -23,7 +25,11 @@ type UpdateChannelClosed struct {
 
 	// Duration is a period of time which was needed to proceed the channel
 	// update by blockchain decentralised computer.
-	Duration time.Duration
+	Duration int64
+}
+
+func (u *UpdateChannelClosed) String() string {
+	return "channel_closed"
 }
 
 // UpdateChannelUpdating is used to notify that one of the participants
@@ -43,6 +49,10 @@ type UpdateChannelUpdating struct {
 	// some other form of smart contract manager from initiator of the
 	// channel. By initiator we means the side which created the channel.
 	Fee BalanceUnit
+}
+
+func (u *UpdateChannelUpdating) String() string {
+	return "channel_updating"
 }
 
 // UpdateChannelUpdated is used to notify that one of the participants
@@ -65,7 +75,11 @@ type UpdateChannelUpdated struct {
 
 	// Duration is a period of time which was needed to proceed the channel
 	// update by blockchain decentralised computer.
-	Duration time.Duration
+	Duration int64
+}
+
+func (u *UpdateChannelUpdated) String() string {
+	return "channel_updated"
 }
 
 // UpdateChannelOpening is used as notifications from router or network that
@@ -80,6 +94,10 @@ type UpdateChannelOpening struct {
 	// some other form of smart contract manager from initiator of the
 	// channel. By initiator we means the side which created the channel.
 	Fee BalanceUnit
+}
+
+func (u *UpdateChannelOpening) String() string {
+	return "channel_opening"
 }
 
 // UpdateChannelOpened is used as notifications from router or network that
@@ -98,7 +116,11 @@ type UpdateChannelOpened struct {
 
 	// Duration is a period of time which was needed to proceed the channel
 	// update by blockchain decentralised computer.
-	Duration time.Duration
+	Duration int64
+}
+
+func (u *UpdateChannelOpened) String() string {
+	return "channel_opened"
 }
 
 type UpdatePayment struct {
@@ -116,16 +138,18 @@ type UpdatePayment struct {
 	Earned BalanceUnit
 }
 
-// UpdateLinkAverageUpdateDuration is used when router wants to notify that
-// the average link update time has changed.
-type UpdateLinkAverageUpdateDuration struct {
-	AverageUpdateDuration time.Duration
+func (u *UpdatePayment) String() string {
+	return "payment"
 }
 
-// UpdateUserActive notify that user with given id is online or offline,
+// UpdateUserConnected notify that user with given id is online or offline,
 // which means that all associated with him channels could or couldn't be used
 // for forwarding payments.
-type UpdateUserActive struct {
-	User     UserID
-	IsActive bool
+type UpdateUserConnected struct {
+	User        UserID
+	IsConnected bool
+}
+
+func (u *UpdateUserConnected) String() string {
+	return "user_connected/disconnected"
 }
