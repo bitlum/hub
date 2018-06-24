@@ -157,7 +157,7 @@ func UpdateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 							UserBalance:   0,
 							RouterBalance: 0,
 							Fee:           uint64(u.Fee),
-							Duration:      int64(u.Duration.Seconds()),
+							Duration:      time.Unix(0, u.Duration).Unix(),
 						},
 					},
 				}
@@ -193,7 +193,7 @@ func UpdateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 							UserBalance:   uint64(u.UserBalance),
 							RouterBalance: uint64(u.RouterBalance),
 							Fee:           uint64(u.Fee),
-							Duration:      int64(u.Duration.Seconds()),
+							Duration:      time.Unix(0, u.Duration).Unix(),
 						},
 					},
 				}
@@ -229,7 +229,7 @@ func UpdateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 							UserBalance:   uint64(u.UserBalance),
 							RouterBalance: uint64(u.RouterBalance),
 							Fee:           uint64(u.Fee),
-							Duration:      int64(u.Duration.Seconds()),
+							Duration:      time.Unix(0, u.Duration).Unix(),
 						},
 					},
 				}
