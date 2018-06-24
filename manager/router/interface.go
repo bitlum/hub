@@ -1,7 +1,6 @@
 package router
 
 import (
-	"time"
 	"github.com/bitlum/hub/manager/common/broadcast"
 )
 
@@ -50,10 +49,6 @@ type Router interface {
 	// PendingBalance returns the amount of funds which in the process of
 	// being accepted by blockchain.
 	PendingBalance() (BalanceUnit, error)
-
-	// AverageChangeUpdateDuration average time which is needed the change of
-	// state to ba updated over blockchain.
-	AverageChangeUpdateDuration() (time.Duration, error)
 
 	// Done returns error if router stopped working for some reason,
 	// and nil if it was stopped.
