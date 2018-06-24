@@ -40,6 +40,7 @@ services:
         - HUB_REVISION
     restart: always
     volumes:
+      - "db:/db"
       # This directory should exist on host, so connector should be deployed
       # first, with lightning network daemon.
       - /connector/bitcoin-lightning.simnet.primary:/root/.lnd/:ro
@@ -49,3 +50,6 @@ services:
 
       # Prometheus monitoring
       - "19999:19999"
+
+volumes:
+  db:
