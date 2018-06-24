@@ -114,10 +114,9 @@ func backendMain() error {
 			Port:           config.LND.GRPCPort,
 			TlsCertPath:    config.LND.TlsCertPath,
 			MacaroonPath:   config.LND.MacaroonPath,
-			SyncStorage:    database,
+			Storage:        database,
 			MetricsBackend: metricsBackend,
 			Net:            config.LND.Network,
-			InfoStorage:    database,
 			NeutrinoHost:   config.LND.NeutrinoHost,
 			NeutrinoPort:   config.LND.NeutrinoPort,
 			PeerHost:       config.LND.PeerHost,
@@ -142,7 +141,7 @@ func backendMain() error {
 		}
 
 		gathererConf := &processing.Config{
-			InfoStorage:    database,
+			Storage:        database,
 			Router:         lndRouter,
 			MetricsBackend: statsBackend,
 		}
