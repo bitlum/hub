@@ -33,7 +33,7 @@ var _ ManagerServer = (*Hub)(nil)
 func (h *Hub) UpdateLink(_ context.Context,
 	req *UpdateLinkRequest) (*UpdateLinkResponse, error) {
 
-	currentNetwork, err := h.router.Network()
+	currentNetwork, err := h.router.Channels()
 	if err != nil {
 		return nil, errors.Errorf("unable to get router topology: %v", err)
 	}
