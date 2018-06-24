@@ -25,8 +25,16 @@ type Channel struct {
 	// commitment transaction size and fee rate in the network.
 	CloseFee int64
 
+	// CloseFee is the number of funds which were needed to open the channel
+	// and lock funds.
 	OpenFee int64
 
+	// IsUserConnected is used to determine is user connected with tcp/ip
+	// connection to the hub, which means that this channel could be used for
+	// payments.
+	IsUserConnected bool
+
+	// States is the array of states which this channel went thorough.
 	States []State `gorm:"foreignkey:ChannelID"`
 }
 
@@ -35,14 +43,15 @@ type State struct {
 
 	ChannelID string
 
-	Time   int64
-	Name   string
+	Time int64
+	Name string
 }
 
-type Peer struct {
+type User struct {
 	ID           string `gorm:"primary_key"`
+	IsConnected  bool
 	Alias        string
-	LockedByPeer int64
+	LockedByUser int64
 	LockedByHub  int64
 }
 
@@ -51,8 +60,12 @@ type Payment struct {
 
 	FromPeer string
 	ToPeer   string
-	Amount   int64
-	Status   string
-	Type     string
-	Time     int64
+
+	FromAlias string
+	ToAlias   string
+
+	Amount int64
+	Status string
+	Type   string
+	Time   int64
 }

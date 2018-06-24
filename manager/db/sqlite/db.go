@@ -13,7 +13,7 @@ type DB struct {
 	dbPath string
 
 	// nodeInfo is a information about hub, which is stored in-memory.
-	nodeInfo *router.DbInfo
+	nodeInfo *router.Info
 }
 
 // Open opens an existing db. Any necessary schemas migrations due to
@@ -30,7 +30,7 @@ func Open(dbPath string, dbName string) (*DB, error) {
 		&Counters{},
 		&Channel{},
 		&Payment{},
-		&Peer{},
+		&User{},
 		&State{}).Error
 	if err != nil {
 		return nil, err

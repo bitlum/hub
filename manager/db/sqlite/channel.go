@@ -2,37 +2,56 @@ package sqlite
 
 import (
 	"github.com/bitlum/hub/manager/router"
-	"time"
 )
 
 // Runtime check to ensure that DB implements router.ChannelStorage interface.
 var _ router.ChannelStorage = (*DB)(nil)
 
-// AddChannel saves channel without saving its states.
+// UpdateChannel saves channel without saving its states.
 //
 // NOTE: Part the the router.ChannelStorage interface
-func (d *DB) AddChannel(channel *router.Channel) error {
+func (d *DB) UpdateChannel(channel *router.Channel) error {
 	return d.Save(&Channel{
-		ID:            string(channel.ChannelID),
-		UserID:        string(channel.UserID),
-		OpenFee:       int64(channel.OpenFee),
-		UserBalance:   int64(channel.UserBalance),
-		RouterBalance: int64(channel.RouterBalance),
-		Initiator:     string(channel.Initiator),
-		CloseFee:      int64(channel.CloseFee),
+		ID:              string(channel.ChannelID),
+		UserID:          string(channel.UserID),
+		OpenFee:         int64(channel.OpenFee),
+		UserBalance:     int64(channel.UserBalance),
+		RouterBalance:   int64(channel.RouterBalance),
+		Initiator:       string(channel.Initiator),
+		IsUserConnected: channel.IsUserConnected,
+		CloseFee:        int64(channel.CloseFee),
 	}).Error
 }
 
 // RemoveChannel removes the channel and associated with it states.
 //
 // NOTE: Part the the router.ChannelStorage interface
-func (d *DB) RemoveChannel(channel *router.Channel) error {
-	err := d.Model(&Channel{}).Association("State").Clear().Error
+func (d *DB) RemoveChannel(channel *router.Channel) (err error) {
+	tx := d.Begin()
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		} else {
+			tx.Commit()
+		}
+	}()
+
+	var states []State
+	err = d.Model(&State{}).
+		Find(&states, "channel_id = ?", channel.ChannelID).
+		Error
 	if err != nil {
 		return err
 	}
 
-	return d.Delete(&Channel{}, channel.ChannelID).Error
+	err = tx.Model(&State{}).Delete(states).Error
+	if err != nil {
+		return err
+	}
+
+	chanID := string(channel.ChannelID)
+	err = tx.Delete(&Channel{ID: chanID}).Error
+	return
 }
 
 // Channels is used to return previously saved local topology of the
@@ -49,12 +68,9 @@ func (d *DB) Channels() ([]*router.Channel, error) {
 
 	for i, channel := range channels {
 		var states []State
-		association := d.Model(channel).Association("States")
-		if err := association.Error; err != nil {
-			return nil, err
-		}
-
-		err := association.Find(&states).Error
+		err := d.Model(&State{}).
+			Find(&states, "channel_id = ?", channel.ID).
+			Error
 		if err != nil {
 			return nil, err
 		}
@@ -62,8 +78,8 @@ func (d *DB) Channels() ([]*router.Channel, error) {
 		routerStates := make([]*router.ChannelState, len(states))
 		for i, state := range states {
 			routerStates[i] = &router.ChannelState{
-				Time:   time.Unix(state.Time, 0),
-				Name:   router.ChannelStateName(state.Name),
+				Time: state.Time,
+				Name: router.ChannelStateName(state.Name),
 			}
 		}
 
@@ -92,7 +108,7 @@ func (d *DB) AddChannelState(chanID router.ChannelID,
 	channel := &Channel{ID: string(chanID)}
 	return d.Model(channel).Association("States").Append(&State{
 		ChannelID: string(chanID),
-		Time:      state.Time.Unix(),
+		Time:      state.Time,
 		Name:      string(state.Name),
 	}).Error
 }

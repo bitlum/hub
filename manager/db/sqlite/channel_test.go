@@ -2,7 +2,6 @@ package sqlite
 
 import (
 	"github.com/bitlum/hub/manager/router"
-	"time"
 	"reflect"
 	"testing"
 )
@@ -15,7 +14,7 @@ func TestDB_AddChannel(t *testing.T) {
 	defer clear()
 
 	channel1 := &router.Channel{
-		ChannelID:     "1",
+		ChannelID:     "1asdasd1",
 		UserID:        "1",
 		OpenFee:       1,
 		UserBalance:   1,
@@ -25,7 +24,7 @@ func TestDB_AddChannel(t *testing.T) {
 		States:        []*router.ChannelState{},
 	}
 
-	if err := db.AddChannel(channel1); err != nil {
+	if err := db.UpdateChannel(channel1); err != nil {
 		t.Fatalf("unable to put state: %v", err)
 	}
 
@@ -37,6 +36,28 @@ func TestDB_AddChannel(t *testing.T) {
 	if !reflect.DeepEqual(channel1, channels[0]) {
 		t.Fatal("state are different")
 	}
+
+	state := &router.ChannelState{
+		Time: 123,
+		Name: "opening",
+	}
+
+	if err := db.AddChannelState(channel1.ChannelID, state); err != nil {
+		t.Fatalf("unable to put state: %v", err)
+	}
+
+	if err := db.RemoveChannel(channel1); err != nil {
+		t.Fatalf("unable to remove state: %v", err)
+	}
+
+	channels, err = db.Channels()
+	if err != nil {
+		t.Fatalf("unable to get state: %v", err)
+	}
+
+	if len(channels) != 0 {
+		t.Fatalf("channel hasn't been removed")
+	}
 }
 
 func TestDB_AddChannelState(t *testing.T) {
@@ -46,12 +67,36 @@ func TestDB_AddChannelState(t *testing.T) {
 	}
 	defer clear()
 
-	state := &router.ChannelState{
-		Time:   time.Now(),
-		Name:   "n",
+	// Ensure that states will be returned in reversed order,
+	// last states should be first.
+	states := []*router.ChannelState{
+		{
+			Time: 123,
+			Name: "opening",
+		},
+		{
+			Time: 125,
+			Name: "opened",
+		},
 	}
 
-	if err := db.AddChannelState("1", state); err != nil {
+	anotherState := &router.ChannelState{
+		Time: 123,
+		Name: "opening",
+	}
+
+	// Firstly add opening state.
+	if err := db.AddChannelState("1", states[0]); err != nil {
+		t.Fatalf("unable to put state: %v", err)
+	}
+
+	// Firstly add opened state.
+	if err := db.AddChannelState("1", states[1]); err != nil {
+		t.Fatalf("unable to put state: %v", err)
+	}
+
+	// Ensure that states are filtered by channel id.
+	if err := db.AddChannelState("2", anotherState); err != nil {
 		t.Fatalf("unable to put state: %v", err)
 	}
 
@@ -60,9 +105,7 @@ func TestDB_AddChannelState(t *testing.T) {
 		t.Fatalf("unable to get state: %v", err)
 	}
 
-	// NOTE: Comparing fields one by one because of the time field inside the
-	// structure which couldn't be compared with deep equal properly.
-	if !reflect.DeepEqual(state.Name, channels[0].States[0].Name) {
+	if !reflect.DeepEqual(states, channels[0].States) {
 		t.Fatal("state are different")
 	}
 }
