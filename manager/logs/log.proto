@@ -11,6 +11,7 @@ message Log {
         RouterState state = 2;
         Payment payment = 3;
         ChannelChange channel_change = 4;
+        UserChange user_change = 5;
     }
 }
 
@@ -28,10 +29,6 @@ message RouterState {
     // PendingBalance is the amount of funds which in the process of
     // being accepted by blockchain.
     uint64 pending_balance = 3;
-
-    // AverageChangeUpdateDuration is number of milliseconds which
-    // is needed to change of state of chanel over blockchain.
-    uint64 average_change_update_duration = 4;
 }
 
 // Channel is used as the building block in describing of the lightning
@@ -118,4 +115,9 @@ enum ChannelChangeType {
     // Updated is used when one of the participants decides to update its
     // channel balance.
     updated = 6;
+}
+
+message UserChange {
+    string user_id = 1;
+    bool is_connected = 2;
 }

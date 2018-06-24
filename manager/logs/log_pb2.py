@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='log.proto',
   package='logs',
   syntax='proto3',
-  serialized_pb=_b('\n\tlog.proto\x12\x04logs\"\x90\x01\n\x03Log\x12\x0c\n\x04time\x18\x01 \x01(\x03\x12\"\n\x05state\x18\x02 \x01(\x0b\x32\x11.logs.RouterStateH\x00\x12 \n\x07payment\x18\x03 \x01(\x0b\x32\r.logs.PaymentH\x00\x12-\n\x0e\x63hannel_change\x18\x04 \x01(\x0b\x32\x13.logs.ChannelChangeH\x00\x42\x06\n\x04\x64\x61ta\"\x85\x01\n\x0bRouterState\x12\x1f\n\x08\x63hannels\x18\x01 \x03(\x0b\x32\r.logs.Channel\x12\x14\n\x0c\x66ree_balance\x18\x02 \x01(\x04\x12\x17\n\x0fpending_balance\x18\x03 \x01(\x04\x12&\n\x1e\x61verage_change_update_duration\x18\x04 \x01(\x04\"p\n\x07\x43hannel\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x12\n\nchannel_id\x18\x02 \x01(\t\x12\x14\n\x0cuser_balance\x18\x03 \x01(\x04\x12\x16\n\x0erouter_balance\x18\x04 \x01(\x04\x12\x12\n\nis_pending\x18\x05 \x01(\x08\"p\n\x07Payment\x12#\n\x06status\x18\x01 \x01(\x0e\x32\x13.logs.PaymentStatus\x12\x0e\n\x06sender\x18\x02 \x01(\t\x12\x10\n\x08receiver\x18\x03 \x01(\t\x12\x0e\n\x06\x61mount\x18\x05 \x01(\x04\x12\x0e\n\x06\x65\x61rned\x18\x06 \x01(\x03\"\xa8\x01\n\rChannelChange\x12%\n\x04type\x18\x01 \x01(\x0e\x32\x17.logs.ChannelChangeType\x12\x0f\n\x07user_id\x18\x02 \x01(\t\x12\x12\n\nchannel_id\x18\x03 \x01(\t\x12\x14\n\x0cuser_balance\x18\x04 \x01(\x04\x12\x16\n\x0erouter_balance\x18\x05 \x01(\x04\x12\x0b\n\x03\x66\x65\x65\x18\x06 \x01(\x04\x12\x10\n\x08\x64uration\x18\x07 \x01(\x03*X\n\rPaymentStatus\x12\x0f\n\x0bstatus_null\x10\x00\x12\x0b\n\x07success\x10\x01\x12\x16\n\x12unsufficient_funds\x10\x02\x12\x11\n\rexternal_fail\x10\x03*r\n\x11\x43hannelChangeType\x12\x0f\n\x0b\x63hange_null\x10\x00\x12\x0c\n\x08openning\x10\x01\x12\n\n\x06opened\x10\x02\x12\x0b\n\x07\x63losing\x10\x03\x12\n\n\x06\x63losed\x10\x04\x12\x0c\n\x08updating\x10\x05\x12\x0b\n\x07updated\x10\x06\x62\x06proto3')
+  serialized_pb=_b('\n\tlog.proto\x12\x04logs\"\xb9\x01\n\x03Log\x12\x0c\n\x04time\x18\x01 \x01(\x03\x12\"\n\x05state\x18\x02 \x01(\x0b\x32\x11.logs.RouterStateH\x00\x12 \n\x07payment\x18\x03 \x01(\x0b\x32\r.logs.PaymentH\x00\x12-\n\x0e\x63hannel_change\x18\x04 \x01(\x0b\x32\x13.logs.ChannelChangeH\x00\x12\'\n\x0buser_change\x18\x05 \x01(\x0b\x32\x10.logs.UserChangeH\x00\x42\x06\n\x04\x64\x61ta\"]\n\x0bRouterState\x12\x1f\n\x08\x63hannels\x18\x01 \x03(\x0b\x32\r.logs.Channel\x12\x14\n\x0c\x66ree_balance\x18\x02 \x01(\x04\x12\x17\n\x0fpending_balance\x18\x03 \x01(\x04\"p\n\x07\x43hannel\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x12\n\nchannel_id\x18\x02 \x01(\t\x12\x14\n\x0cuser_balance\x18\x03 \x01(\x04\x12\x16\n\x0erouter_balance\x18\x04 \x01(\x04\x12\x12\n\nis_pending\x18\x05 \x01(\x08\"p\n\x07Payment\x12#\n\x06status\x18\x01 \x01(\x0e\x32\x13.logs.PaymentStatus\x12\x0e\n\x06sender\x18\x02 \x01(\t\x12\x10\n\x08receiver\x18\x03 \x01(\t\x12\x0e\n\x06\x61mount\x18\x05 \x01(\x04\x12\x0e\n\x06\x65\x61rned\x18\x06 \x01(\x03\"\xa8\x01\n\rChannelChange\x12%\n\x04type\x18\x01 \x01(\x0e\x32\x17.logs.ChannelChangeType\x12\x0f\n\x07user_id\x18\x02 \x01(\t\x12\x12\n\nchannel_id\x18\x03 \x01(\t\x12\x14\n\x0cuser_balance\x18\x04 \x01(\x04\x12\x16\n\x0erouter_balance\x18\x05 \x01(\x04\x12\x0b\n\x03\x66\x65\x65\x18\x06 \x01(\x04\x12\x10\n\x08\x64uration\x18\x07 \x01(\x03\"0\n\nUserChange\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x11\n\tis_active\x18\x02 \x01(\x08*X\n\rPaymentStatus\x12\x0f\n\x0bstatus_null\x10\x00\x12\x0b\n\x07success\x10\x01\x12\x16\n\x12unsufficient_funds\x10\x02\x12\x11\n\rexternal_fail\x10\x03*r\n\x11\x43hannelChangeType\x12\x0f\n\x0b\x63hange_null\x10\x00\x12\x0c\n\x08openning\x10\x01\x12\n\n\x06opened\x10\x02\x12\x0b\n\x07\x63losing\x10\x03\x12\n\n\x06\x63losed\x10\x04\x12\x0c\n\x08updating\x10\x05\x12\x0b\n\x07updated\x10\x06\x62\x06proto3')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -49,8 +49,8 @@ _PAYMENTSTATUS = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=701,
-  serialized_end=789,
+  serialized_start=751,
+  serialized_end=839,
 )
 _sym_db.RegisterEnumDescriptor(_PAYMENTSTATUS)
 
@@ -92,8 +92,8 @@ _CHANNELCHANGETYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=791,
-  serialized_end=905,
+  serialized_start=841,
+  serialized_end=955,
 )
 _sym_db.RegisterEnumDescriptor(_CHANNELCHANGETYPE)
 
@@ -147,6 +147,13 @@ _LOG = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
+    _descriptor.FieldDescriptor(
+      name='user_change', full_name='logs.Log.user_change', index=4,
+      number=5, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
   ],
   extensions=[
   ],
@@ -163,7 +170,7 @@ _LOG = _descriptor.Descriptor(
       index=0, containing_type=None, fields=[]),
   ],
   serialized_start=20,
-  serialized_end=164,
+  serialized_end=205,
 )
 
 
@@ -195,13 +202,6 @@ _ROUTERSTATE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
-    _descriptor.FieldDescriptor(
-      name='average_change_update_duration', full_name='logs.RouterState.average_change_update_duration', index=3,
-      number=4, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
   ],
   extensions=[
   ],
@@ -214,7 +214,7 @@ _ROUTERSTATE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=167,
+  serialized_start=207,
   serialized_end=300,
 )
 
@@ -409,9 +409,48 @@ _CHANNELCHANGE = _descriptor.Descriptor(
   serialized_end=699,
 )
 
+
+_USERCHANGE = _descriptor.Descriptor(
+  name='UserChange',
+  full_name='logs.UserChange',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='user_id', full_name='logs.UserChange.user_id', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='is_active', full_name='logs.UserChange.is_active', index=1,
+      number=2, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=701,
+  serialized_end=749,
+)
+
 _LOG.fields_by_name['state'].message_type = _ROUTERSTATE
 _LOG.fields_by_name['payment'].message_type = _PAYMENT
 _LOG.fields_by_name['channel_change'].message_type = _CHANNELCHANGE
+_LOG.fields_by_name['user_change'].message_type = _USERCHANGE
 _LOG.oneofs_by_name['data'].fields.append(
   _LOG.fields_by_name['state'])
 _LOG.fields_by_name['state'].containing_oneof = _LOG.oneofs_by_name['data']
@@ -421,6 +460,9 @@ _LOG.fields_by_name['payment'].containing_oneof = _LOG.oneofs_by_name['data']
 _LOG.oneofs_by_name['data'].fields.append(
   _LOG.fields_by_name['channel_change'])
 _LOG.fields_by_name['channel_change'].containing_oneof = _LOG.oneofs_by_name['data']
+_LOG.oneofs_by_name['data'].fields.append(
+  _LOG.fields_by_name['user_change'])
+_LOG.fields_by_name['user_change'].containing_oneof = _LOG.oneofs_by_name['data']
 _ROUTERSTATE.fields_by_name['channels'].message_type = _CHANNEL
 _PAYMENT.fields_by_name['status'].enum_type = _PAYMENTSTATUS
 _CHANNELCHANGE.fields_by_name['type'].enum_type = _CHANNELCHANGETYPE
@@ -429,6 +471,7 @@ DESCRIPTOR.message_types_by_name['RouterState'] = _ROUTERSTATE
 DESCRIPTOR.message_types_by_name['Channel'] = _CHANNEL
 DESCRIPTOR.message_types_by_name['Payment'] = _PAYMENT
 DESCRIPTOR.message_types_by_name['ChannelChange'] = _CHANNELCHANGE
+DESCRIPTOR.message_types_by_name['UserChange'] = _USERCHANGE
 DESCRIPTOR.enum_types_by_name['PaymentStatus'] = _PAYMENTSTATUS
 DESCRIPTOR.enum_types_by_name['ChannelChangeType'] = _CHANNELCHANGETYPE
 
@@ -466,6 +509,13 @@ ChannelChange = _reflection.GeneratedProtocolMessageType('ChannelChange', (_mess
   # @@protoc_insertion_point(class_scope:logs.ChannelChange)
   ))
 _sym_db.RegisterMessage(ChannelChange)
+
+UserChange = _reflection.GeneratedProtocolMessageType('UserChange', (_message.Message,), dict(
+  DESCRIPTOR = _USERCHANGE,
+  __module__ = 'log_pb2'
+  # @@protoc_insertion_point(class_scope:logs.UserChange)
+  ))
+_sym_db.RegisterMessage(UserChange)
 
 
 # @@protoc_insertion_point(module_scope)
