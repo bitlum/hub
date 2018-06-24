@@ -38,6 +38,7 @@ services:
       context: ./hub/
       args:
         - HUB_REVISION
+    restart: always
     volumes:
       # This directory should exist on host, so connector should be deployed
       # first, with lightning network daemon.
