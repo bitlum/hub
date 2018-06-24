@@ -304,9 +304,9 @@ func (c *Channel) SetClosedState() error {
 		Name: ChannelClosed,
 	})
 
-	// NOTE: If remove this, be aware of double notification
-	if err := c.cfg.Storage.RemoveChannel(c); err != nil {
-		return errors.Errorf("unable remove channel: %v", err)
+	err := c.cfg.Storage.AddChannelState(c.ChannelID, c.CurrentState())
+	if err != nil {
+		return errors.Errorf("unable save channel: %v", err)
 	}
 
 	c.cfg.Broadcaster.Write(&UpdateChannelClosed{
