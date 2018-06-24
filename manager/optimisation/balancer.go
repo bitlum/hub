@@ -22,7 +22,7 @@ func EnableChannelBalancing(r router.Router) {
 		notSupportMultipleChannels := make(map[router.UserID]struct{})
 
 		for {
-			channels, err := r.Network()
+			channels, err := r.Channels()
 			if err != nil {
 				log.Errorf("unable to fetch network: %v", err)
 				<-time.After(time.Second * 10)
