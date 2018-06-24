@@ -347,15 +347,6 @@ func (r *Router) UpdateChannel(id router.ChannelID,
 	return nil
 }
 
-// SetFee updates the fee which router takes for routing the users
-// payments.
-//
-// NOTE: Part of the router.Router interface.
-func (r *Router) SetFee(fee uint64) error {
-	// TODO(andrew.shvv) Implement
-	return nil
-}
-
 // RegisterOnUpdates returns updates about router local network topology
 // changes, about attempts of propagating the payment through the
 // router, about fee changes etc.
@@ -369,11 +360,11 @@ func (r *Router) RegisterOnUpdates() *broadcast.Receiver {
 // topology.
 //
 // NOTE: Part of the router.Router interface.
-func (r *Router) Network() ([]*router.Channel, error) {
+func (r *Router) Channels() ([]*router.Channel, error) {
 	m := crypto.NewMetric(r.cfg.Asset, "Network", r.cfg.MetricsBackend)
 	defer m.Finish()
 
-	channels, err := r.cfg.SyncStorage.Channels()
+	channels, err := r.cfg.Storage.Channels()
 	if err != nil {
 		m.AddError(metrics.HighSeverity)
 		log.Errorf("unable to fetch channels from sync storage: %v", err)
@@ -385,11 +376,31 @@ func (r *Router) Network() ([]*router.Channel, error) {
 	for _, channel := range channels {
 		channel.SetConfig(&router.ChannelConfig{
 			Broadcaster: r.broadcaster,
-			Storage:     r.cfg.SyncStorage,
+			Storage:     r.cfg.Storage,
 		})
 	}
 
 	return channels, nil
+}
+
+func (r *Router) Users() ([]*router.User, error) {
+	m := crypto.NewMetric(r.cfg.Asset, "Network", r.cfg.MetricsBackend)
+	defer m.Finish()
+
+	users, err := r.cfg.Storage.Users()
+	if err != nil {
+		m.AddError(metrics.HighSeverity)
+		log.Errorf("unable to fetch users from sync storage: %v", err)
+		return nil, err
+	}
+
+	for _, user := range users {
+		user.SetConfig(&router.UserConfig{
+			Storage: r.cfg.Storage,
+		})
+	}
+
+	return users, nil
 }
 
 // FreeBalance returns the amount of funds at router disposal.
