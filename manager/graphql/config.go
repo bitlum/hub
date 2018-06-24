@@ -4,14 +4,13 @@ import (
 	"errors"
 	"net"
 	"strconv"
-	"github.com/bitlum/hub/manager/router"
 )
 
 type Config struct {
 	ListenIP         string
 	ListenPort       string
 	SecureListenPort string
-	Storage          router.InfoStorage
+	Storage          GraphQLStorage
 }
 
 func (c Config) validate() error {

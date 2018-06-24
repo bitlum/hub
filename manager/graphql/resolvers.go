@@ -12,16 +12,16 @@ func getInfoResolver(storage router.InfoStorage) graphql.FieldResolveFn {
 	}
 }
 
-func getPaymentsResolver(storage router.InfoStorage) graphql.FieldResolveFn {
+func getPaymentsResolver(storage router.PaymentStorage) graphql.FieldResolveFn {
 	return func(rp graphql.ResolveParams) (
 		interface{}, error) {
 		return storage.Payments()
 	}
 }
 
-func getPeersResolver(storage router.InfoStorage) graphql.FieldResolveFn {
+func getPeersResolver(storage router.UserStorage) graphql.FieldResolveFn {
 	return func(rp graphql.ResolveParams) (
 		interface{}, error) {
-		return storage.Peers()
+		return storage.Users()
 	}
 }

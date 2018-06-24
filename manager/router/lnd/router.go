@@ -40,18 +40,14 @@ type Config struct {
 	// the RPC authorisation.
 	MacaroonPath string
 
-	// SyncStorage is used to store all data which needs to be persistent,
+	// Storage is used to store all data which needs to be persistent,
 	// exact implementation of database backend is unknown for the hub,
 	// in the simplest case it might be in-memory storage.
-	SyncStorage SyncStorage
+	Storage RouterStorage
 
 	// MetricsBackend is used to send metrics about internal state of the
 	// router, and act on errors accordingly.
 	MetricsBackend crypto.MetricsBackend
-
-	// InfoStorage is used to save information about lighting network node
-	// fetched on the init stage.
-	InfoStorage router.InfoStorage
 
 	// Net is the blockchain network which hub should operate on,
 	// if hub trying to connect to the lnd with different network,
@@ -99,7 +95,7 @@ func (c *Config) validate() error {
 		return errors.Errorf("tlc cert path should be specified")
 	}
 
-	if c.SyncStorage == nil {
+	if c.Storage == nil {
 		return errors.Errorf("db should be specified")
 	}
 
