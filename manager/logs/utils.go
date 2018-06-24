@@ -234,6 +234,19 @@ func UpdateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 					},
 				}
 
+			case *router.UpdateUserConnected:
+				log.Infof("Update(%v) received, logging", u)
+
+				logEntry = &Log{
+					Time: time.Now().UnixNano(),
+					Data: &Log_UserChange{
+						UserChange: &UserChange{
+							UserId:   string(u.User),
+							IsActive: u.IsConnected,
+						},
+					},
+				}
+
 			case *router.UpdatePayment:
 				log.Infof("Update(%v) received, logging", u)
 
