@@ -14,7 +14,7 @@ type BalanceUnit int64
 
 // ChannelState
 type ChannelState struct {
-	Time time.Time
+	Time int64
 	Name ChannelStateName
 }
 
@@ -176,7 +176,7 @@ func (c *Channel) CurrentState() *ChannelState {
 // SetOpeningState...
 func (c *Channel) SetOpeningState() error {
 	c.States = append(c.States, &ChannelState{
-		Time: time.Now(),
+		Time: time.Now().UnixNano(),
 		Name: ChannelOpening,
 	})
 
@@ -201,7 +201,7 @@ func (c *Channel) SetOpenedState() error {
 	lastStateTime := c.CurrentState().Time
 
 	c.States = append(c.States, &ChannelState{
-		Time: time.Now(),
+		Time: time.Now().UnixNano(),
 		Name: ChannelOpened,
 	})
 
@@ -216,7 +216,7 @@ func (c *Channel) SetOpenedState() error {
 		UserBalance:   c.UserBalance,
 		RouterBalance: c.RouterBalance,
 		Fee:           c.FundingFee(),
-		Duration:      time.Now().Sub(lastStateTime),
+		Duration:      time.Now().UnixNano() - lastStateTime,
 	})
 
 	return nil
@@ -228,7 +228,7 @@ func (c *Channel) SetOpenedState() error {
 // lightning mailing list.
 func (c *Channel) SetUpdatingState(fee BalanceUnit) error {
 	c.States = append(c.States, &ChannelState{
-		Time: time.Now(),
+		Time: time.Now().UnixNano(),
 		Name: ChannelUpdating,
 	})
 
@@ -254,7 +254,7 @@ func (c *Channel) SetUpdatedState(fee BalanceUnit) error {
 	lastStateTime := c.CurrentState().Time
 
 	c.States = append(c.States, &ChannelState{
-		Time: time.Now(),
+		Time: time.Now().UnixNano(),
 		Name: ChannelOpened,
 	})
 
@@ -269,7 +269,7 @@ func (c *Channel) SetUpdatedState(fee BalanceUnit) error {
 		UserBalance:   c.UserBalance,
 		RouterBalance: c.RouterBalance,
 		Fee:           fee,
-		Duration:      time.Now().Sub(lastStateTime),
+		Duration:      time.Now().UnixNano() - lastStateTime,
 	})
 
 	return nil
@@ -278,7 +278,7 @@ func (c *Channel) SetUpdatedState(fee BalanceUnit) error {
 // SetClosingState...
 func (c *Channel) SetClosingState() error {
 	c.States = append(c.States, &ChannelState{
-		Time: time.Now(),
+		Time: time.Now().UnixNano(),
 		Name: ChannelClosing,
 	})
 
@@ -300,7 +300,7 @@ func (c *Channel) SetClosingState() error {
 func (c *Channel) SetClosedState() error {
 	lastStateTime := c.CurrentState().Time
 	c.States = append(c.States, &ChannelState{
-		Time: time.Now(),
+		Time: time.Now().UnixNano(),
 		Name: ChannelClosed,
 	})
 
@@ -313,7 +313,7 @@ func (c *Channel) SetClosedState() error {
 		UserID:    c.UserID,
 		ChannelID: c.ChannelID,
 		Fee:       c.CloseFee,
-		Duration:  time.Now().Sub(lastStateTime),
+		Duration:  time.Now().UnixNano() - lastStateTime,
 	})
 
 	return nil
