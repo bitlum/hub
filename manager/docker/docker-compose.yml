@@ -50,5 +50,16 @@ services:
       # Prometheus monitoring
       - "19999:19999"
 
+  hubcli:
+    build: hubcli
+    image: bitlum/hubcli
+    container_name: hubcli
+    restart: always
+    volumes:
+      - "db:/db"
+      # This directory should exist on host, so connector should be deployed
+      # first, with lightning network daemon.
+      - /connector/bitcoin-lightning.simnet.primary:/root/.lnd/:ro
+
 volumes:
   db:
