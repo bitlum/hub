@@ -29,8 +29,7 @@ x-defaults:
   restart: always
 
 services:
-
- hub.simnet:
+  hub.simnet:
     << : *defaults
     container_name: hub.simnet
     image: hub.simnet
