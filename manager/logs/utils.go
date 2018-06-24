@@ -13,7 +13,7 @@ import (
 func getState(r router.Router) (*Log, error) {
 	// Get the router local network in order to write it on log file,
 	// so that external optimisation program could sync it state.
-	routerChannels, err := r.Network()
+	routerChannels, err := r.Channels()
 	if err != nil {
 		return nil, err
 	}
@@ -34,12 +34,6 @@ func getState(r router.Router) (*Log, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	duration, err := r.AverageChangeUpdateDuration()
-	if err != nil {
-		return nil, err
-	}
-	milliseconds := duration.Nanoseconds() / int64(time.Millisecond)
 
 	channels := make([]*Channel, len(routerChannels))
 	for i, c := range routerChannels {
