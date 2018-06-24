@@ -9,9 +9,6 @@ import (
 // ChannelID uniquely identifies the channel in the lightning network.
 type ChannelID string
 
-// UserID uniquely identifies the user in the local lightning network.
-type UserID string
-
 // BalanceUnit represent the number of funds.
 type BalanceUnit int64
 
