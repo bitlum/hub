@@ -14,6 +14,7 @@ import (
 	"github.com/bitlum/hub/manager/router/lnd"
 	"github.com/bitlum/hub/manager/processing"
 	"github.com/bitlum/hub/manager/optimisation"
+	"github.com/bitlum/hub/manager/logs"
 )
 
 // logWriter implements an io.Writer that outputs to both standard output and
@@ -54,6 +55,7 @@ var (
 	lndLog          = backendLog.Logger("LND")
 	procLog         = backendLog.Logger("PROC")
 	optimisationLog = backendLog.Logger("OPTI")
+	loggerLog       = backendLog.Logger("LOGS")
 )
 
 // Initialize package-global logger variables.
@@ -62,6 +64,7 @@ func init() {
 	lnd.UseLogger(lndLog)
 	processing.UseLogger(procLog)
 	optimisation.UseLogger(optimisationLog)
+	logs.UseLogger(loggerLog)
 }
 
 // subsystemLoggers maps each subsystem identifier to its associated logger.
@@ -71,6 +74,7 @@ var subsystemLoggers = map[string]btclog.Logger{
 	"LND":     lndLog,
 	"PROC":    procLog,
 	"OPTI":    optimisationLog,
+	"LOGS":    loggerLog,
 }
 
 // initLogRotator initializes the logging rotator to write logs to logFile and
