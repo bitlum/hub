@@ -5,7 +5,6 @@ import (
 	"sync"
 	"github.com/bitlum/hub/manager/metrics/network"
 	"github.com/bitlum/hub/manager/router"
-	"github.com/bitlum/hub/manager/router/registry"
 	"github.com/bitlum/hub/manager/common/broadcast"
 )
 
@@ -18,9 +17,9 @@ type Config struct {
 	// monitoring subsystem.
 	MetricsBackend network.MetricsBackend
 
-	// InfoStorage is a place where stats gatherer could offload calculated info
+	// Storage is a place where stats gatherer could offload calculated info
 	// for farther retrieval.
-	InfoStorage router.InfoStorage
+	Storage router.UserStorage
 }
 
 // Stats is an entity which is used for gathering the statistic
@@ -72,55 +71,29 @@ func (s *Stats) scrapeRouterInfo() {
 	for {
 		select {
 		case <-s.metricsTicker.C:
-			channels, err := s.cfg.Router.Network()
+			asset := s.cfg.Router.Asset()
+
+			channels, err := s.cfg.Router.Channels()
 			if err != nil {
 				log.Errorf("unable to fetch network: %v", err)
 				continue
 			}
 
-			freeBalance, err := s.cfg.Router.FreeBalance()
-			if err != nil {
-				log.Errorf("unable to fetch free balance: %v", err)
-				continue
-			}
+			numPendingChannels := 0
+			numActiveChannels := 0
+			numNonActiveChannels := 0
 
-			var (
-				numPendingChannels   = 0
-				numActiveChannels    = 0
-				numNonActiveChannels = 0
-				totalLockedByUsers   = router.BalanceUnit(0)
-				totalLockedByRouter  = router.BalanceUnit(0)
-			)
-
-			users := make(map[router.UserID]*router.DbPeer)
 			for _, channel := range channels {
 				if channel.IsPending() {
 					numPendingChannels++
-					continue
 				}
 
-				totalLockedByUsers += channel.UserBalance
-				totalLockedByRouter += channel.RouterBalance
-
-				if !channel.IsActive() {
-					numNonActiveChannels++
-					continue
-				} else {
+				if channel.IsActive() {
 					numActiveChannels++
+				} else {
+					numNonActiveChannels++
 				}
-
-				if _, ok := users[channel.UserID]; !ok {
-					users[channel.UserID] = &router.DbPeer{
-						PubKey: string(channel.UserID),
-						Alias:  registry.GetAlias(channel.UserID),
-					}
-				}
-
-				users[channel.UserID].LockedByHub += int64(channel.RouterBalance)
-				users[channel.UserID].LockedByPeer += int64(channel.UserBalance)
 			}
-
-			asset := s.cfg.Router.Asset()
 
 			log.Debugf("Total pending channels: %v", numPendingChannels)
 			s.cfg.MetricsBackend.TotalChannels(asset, "pending",
@@ -132,6 +105,21 @@ func (s *Stats) scrapeRouterInfo() {
 			log.Debugf("Total open inactive channels: %v", numNonActiveChannels)
 			s.cfg.MetricsBackend.TotalChannels(asset, "opened", "inactive", numNonActiveChannels)
 
+			// TODO(andrew.shvv) Remove when router would return users
+			users, err := s.cfg.Storage.Users()
+			if err != nil {
+				log.Errorf("unable to fetch users: %v", err)
+				continue
+			}
+
+			totalLockedByUsers := router.BalanceUnit(0)
+			totalLockedByRouter := router.BalanceUnit(0)
+
+			for _, user := range users {
+				totalLockedByUsers += user.LockedByUser
+				totalLockedByRouter += user.LockedByHub
+			}
+
 			log.Debugf("Total connected users: %v", len(users))
 			s.cfg.MetricsBackend.TotalUsers(asset, len(users))
 
@@ -141,18 +129,14 @@ func (s *Stats) scrapeRouterInfo() {
 			log.Debugf("Funds locked by router: %v", totalLockedByRouter)
 			s.cfg.MetricsBackend.TotalFundsLockedByRouter(asset, uint64(totalLockedByRouter))
 
-			log.Debugf("Free funds: %v", freeBalance)
-			s.cfg.MetricsBackend.TotalFreeFunds(asset, uint64(freeBalance))
-
-			var peers []*router.DbPeer
-			for _, u := range users {
-				peers = append(peers, u)
-			}
-
-			if err := s.cfg.InfoStorage.UpdatePeers(peers); err != nil {
-				log.Errorf("unable to save peers: %v", err)
+			freeBalance, err := s.cfg.Router.FreeBalance()
+			if err != nil {
+				log.Errorf("unable to fetch free balance: %v", err)
 				continue
 			}
+
+			log.Debugf("Free funds: %v", freeBalance)
+			s.cfg.MetricsBackend.TotalFreeFunds(asset, uint64(freeBalance))
 
 		case update := <-receiver.Read():
 			switch u := update.(type) {
@@ -162,19 +146,6 @@ func (s *Stats) scrapeRouterInfo() {
 					s.cfg.MetricsBackend.AddSuccessfulForwardingPayment(asset)
 					s.cfg.MetricsBackend.AddEarnedFunds(asset, uint64(u.Earned))
 				}
-
-				if err := s.cfg.InfoStorage.StorePayment(&router.DbPayment{
-					FromPeer: registry.GetAlias(u.Sender),
-					ToPeer:   registry.GetAlias(u.Receiver),
-					Amount:   int64(u.Amount),
-					Type:     string(u.Type),
-					Status:   string(u.Status),
-					Time:     time.Now().Unix(),
-				}); err != nil {
-					log.Errorf("unable to save the payment: %v", err)
-					continue
-				}
-
 			default:
 				continue
 			}
