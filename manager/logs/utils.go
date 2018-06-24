@@ -50,10 +50,9 @@ func getState(r router.Router) (*Log, error) {
 		Time: time.Now().UnixNano(),
 		Data: &Log_State{
 			State: &RouterState{
-				FreeBalance:                 uint64(freeBalance),
-				PendingBalance:              uint64(pendingBalance),
-				AverageChangeUpdateDuration: uint64(milliseconds),
-				Channels:                    channels,
+				FreeBalance:    uint64(freeBalance),
+				PendingBalance: uint64(pendingBalance),
+				Channels:       channels,
 			},
 		},
 	}, nil
@@ -217,8 +216,6 @@ func UpdateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 					},
 				}
 
-			case *router.UpdateLinkAverageUpdateDuration:
-				// With this update we just trigger state update
 			case *router.UpdatePayment:
 				var status PaymentStatus
 				switch u.Status {
