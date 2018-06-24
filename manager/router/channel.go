@@ -131,10 +131,10 @@ type Channel struct {
 	// and lock funds.
 	OpenFee BalanceUnit
 
-	// IsUserActive is used to determine is user connected with tcp/ip
+	// IsUserConnected is used to determine is user connected with tcp/ip
 	// connection to the hub, which means that this channel could be used for
 	// payments.
-	IsUserActive bool
+	IsUserConnected bool
 
 	// States is the array of states which this channel went thorough.
 	States []*ChannelState
@@ -331,11 +331,11 @@ func (c *Channel) IsPending() bool {
 		currentState.Name == ChannelUpdating
 }
 
-// IsActive returns does this channel could be used for receiving and sending
+// IsConnected returns does this channel could be used for receiving and sending
 // payment. For channel to be active it should be in proper state and user of
 // this channel should be connected to hub.
 func (c *Channel) IsActive() bool {
-	return c.IsUserActive && !c.IsPending()
+	return c.IsUserConnected && !c.IsPending()
 }
 
 // FundingFee is the amount of money which was spent to open this channel.
@@ -361,8 +361,10 @@ func (c *Channel) SetConfig(cfg *ChannelConfig) error {
 	return nil
 }
 
-// SetUserActive sets user of this channel as being active,
-// which mean that if channel is eligible for usage than channel is active.
-func (c *Channel) SetUserActive(isActive bool) {
-	c.IsUserActive = isActive
+// SetUserConnected sets user of this channel as being connected,
+// which means that hub and user could exchange protocol message and use
+// channel for payments.
+func (c *Channel) SetUserConnected(isConnected bool) error {
+	c.IsUserConnected = isConnected
+	return c.cfg.Storage.UpdateChannel(c)
 }
