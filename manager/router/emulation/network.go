@@ -272,7 +272,7 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 	if err != nil {
 		return nil, errors.Errorf("unable create channel: %v", err)
 	}
-	channel.SetUserActive(true)
+	channel.SetUserConnected(true)
 
 	n.users[userID] = channel
 	n.channels[chanID] = channel
@@ -401,13 +401,13 @@ func (n *emulationNetwork) SetBlockchainFee(_ context.Context,
 	return &SetBlockchainFeeResponse{}, nil
 }
 
-// SetUserActive set user being offline or online, which means that all his
+// SetUserConnected set user being offline or online, which means that all his
 // opened channels either could or could't be used for receiving and
 // sending payments.
 //
 // NOTE: Part of the EmulatorServer interface.
-func (n *emulationNetwork) SetUserActive(_ context.Context,
-	req *SetUserActiveRequest) (*SetUserActiveResponse, error) {
+func (n *emulationNetwork) SetUserConnected(_ context.Context,
+	req *SetUserConnectedRequest) (*SetUserConnectedResponse, error) {
 	n.Lock()
 	defer n.Unlock()
 
@@ -418,14 +418,14 @@ func (n *emulationNetwork) SetUserActive(_ context.Context,
 			req.UserId)
 	}
 
-	if channel.IsUserActive != req.IsOnline {
-		channel.SetUserActive(req.IsOnline)
+	if channel.IsUserConnected != req.IsOnline {
+		channel.SetUserConnected(req.IsOnline)
 
-		n.broadcaster.Write(router.UpdateUserActive{
-			User:     router.UserID(req.UserId),
-			IsActive: req.IsOnline,
+		n.broadcaster.Write(&router.UpdateUserConnected{
+			User:        router.UserID(req.UserId),
+			IsConnected: req.IsOnline,
 		})
 	}
 
-	return &SetUserActiveResponse{}, nil
+	return &SetUserConnectedResponse{}, nil
 }

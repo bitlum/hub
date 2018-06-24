@@ -108,7 +108,10 @@ func (r *RouterEmulation) OpenChannel(userID router.UserID,
 	if err != nil {
 		return errors.Errorf("unable create channel: %v", err)
 	}
-	channel.SetUserActive(true)
+
+	if err := channel.SetUserConnected(true); err != nil {
+		return errors.Errorf("unable set user active: %v", err)
+	}
 
 	r.network.users[userID] = channel
 	r.network.channels[chanID] = channel
@@ -310,9 +313,8 @@ func (r *RouterEmulation) RegisterOnUpdates() *broadcast.Receiver {
 	return r.network.broadcaster.Subscribe()
 }
 
-// Network returns the information about the current local network router
-// topology.
-func (r *RouterEmulation) Network() ([]*router.Channel, error) {
+// Channels returns all channels which are connected to router.
+func (r *RouterEmulation) Channels() ([]*router.Channel, error) {
 	r.network.Lock()
 	defer r.network.Unlock()
 
@@ -322,6 +324,17 @@ func (r *RouterEmulation) Network() ([]*router.Channel, error) {
 	}
 
 	return channels, nil
+}
+
+// Users return all users which connected or were connected to router
+// with payment channel.
+func (r *RouterEmulation) Users() ([]*router.User, error) {
+	r.network.Lock()
+	defer r.network.Unlock()
+
+	// TODO(andrew.shvv) Implement
+	var users []*router.User
+	return users, nil
 }
 
 // FreeBalance returns the amount of funds at router disposal.
@@ -339,15 +352,6 @@ func (r *RouterEmulation) PendingBalance() (router.BalanceUnit, error) {
 	defer r.network.Unlock()
 
 	return r.pendingBalance, nil
-}
-
-// AverageChangeUpdateDuration average time which is needed the change of
-// state to ba updated over blockchain.
-func (r *RouterEmulation) AverageChangeUpdateDuration() (time.Duration, error) {
-	r.network.Lock()
-	defer r.network.Unlock()
-
-	return r.network.blockGeneration, nil
 }
 
 // SetFeeBase sets base number of milli units (i.e milli satoshis in

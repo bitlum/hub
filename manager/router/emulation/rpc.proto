@@ -22,10 +22,10 @@ service Emulator {
     rpc CloseChannel (CloseChannelRequest) returns (CloseChannelResponse);
 
     //
-    // SetUserActive set user being offline or online, which means that all his
+    // SetUserConnected set user being offline or online, which means that all his
     // openned channels either could or could't be used for receiving and
     // sending payments.
-    rpc SetUserActive (SetUserActiveRequest) returns (SetUserActiveResponse);
+    rpc SetUserConnected (SetUserConnectedRequest) returns (SetUserConnectedResponse);
 
     //
     // SetBlockGenDuration is used to set the time which is needed for blokc
@@ -90,10 +90,10 @@ message SetBlockchainFeeRequest {
 message SetBlockchainFeeResponse {
 }
 
-message SetUserActiveRequest {
+message SetUserConnectedRequest {
     bool is_online = 1;
     string user_id = 2;
 }
 
-message SetUserActiveResponse {
+message SetUserConnectedResponse {
 }

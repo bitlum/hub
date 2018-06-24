@@ -12,7 +12,7 @@ func (s *StubChannelStorage) AddChannelState(chanID router.ChannelID,
 	return nil
 }
 
-func (s *StubChannelStorage) AddChannel(channels *router.Channel) error {
+func (s *StubChannelStorage) UpdateChannel(channels *router.Channel) error {
 	return nil
 }
 
