@@ -219,10 +219,20 @@ func (r *Router) Start() error {
 	// Register ZigZag us known and public lighting network node.
 	registry.AddKnownPeer(router.UserID(respInfo.IdentityPubkey), "ZigZag")
 
-	r.updateNodeInfo()
-	r.listenLocalTopologyUpdates()
-	r.listenForwardingUpdates()
-	r.listenInvoiceUpdates()
+	r.wg.Add(1)
+	go r.updateNodeInfo()
+
+	r.wg.Add(1)
+	go r.updateChannelStates()
+
+	r.wg.Add(1)
+	go r.listenForwardingPayments()
+
+	r.wg.Add(1)
+	go r.listenIncomingPayments()
+
+	r.wg.Add(1)
+	go r.updatePeers()
 
 	log.Info("Lnd router started")
 	return nil

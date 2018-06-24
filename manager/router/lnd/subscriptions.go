@@ -4,67 +4,73 @@ import (
 	"time"
 	"github.com/lightningnetwork/lnd/lnrpc"
 	"context"
-	"github.com/bitlum/btcutil"
 	"github.com/bitlum/hub/manager/router"
-	"github.com/go-errors/errors"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/bitlum/hub/manager/metrics/crypto"
 	"github.com/bitlum/hub/manager/metrics"
+	"github.com/davecgh/go-spew/spew"
+	"github.com/go-errors/errors"
+	"github.com/bitlum/btcutil"
+	"github.com/bitlum/hub/manager/common/broadcast"
+	"github.com/bitlum/hub/manager/router/registry"
 )
 
 // updateNodeInfo updates information about last synced version of the
-// lightning node.
+// lightning node, if version has changed or best block has updated,
+// we need to know that.
+//
+// NOTE: Should run as goroutine.
 func (r *Router) updateNodeInfo() {
-	r.wg.Add(1)
-	go func() {
-		defer func() {
-			log.Info("Stopped lightning node info updates goroutine")
-			r.wg.Done()
-		}()
-
-		log.Info("Started lightning node info updates goroutine")
-
-		for {
-			select {
-			case <-time.After(time.Second * 5):
-			case <-r.quit:
-				return
-			}
-
-			reqInfo := &lnrpc.GetInfoRequest{}
-			ctx, _ := context.WithTimeout(getContext(), time.Second*5)
-			respInfo, err := r.client.GetInfo(ctx, reqInfo)
-			if err != nil {
-				log.Errorf("unable get lnd node info: %v", err)
-				continue
-			}
-
-			if err := r.cfg.InfoStorage.UpdateInfo(&router.DbInfo{
-				Version:     respInfo.Version,
-				Network:     r.cfg.Net,
-				BlockHeight: respInfo.BlockHeight,
-				BlockHash:   respInfo.BlockHash,
-				NodeInfo: &router.DbNodeInfo{
-					Alias:          respInfo.Alias,
-					Host:           r.cfg.PeerHost,
-					Port:           r.cfg.PeerPort,
-					IdentityPubKey: respInfo.IdentityPubkey,
-				},
-				NeutrinoInfo: &router.DbNeutrinoInfo{
-					Host: r.cfg.NeutrinoHost,
-					Port: r.cfg.NeutrinoPort,
-				},
-			}); err != nil {
-				log.Errorf("unable to save lightning node info: %v", err)
-			}
-
-		}
+	defer func() {
+		log.Info("Stopped lightning node info updates goroutine")
+		r.wg.Done()
 	}()
+
+	log.Info("Started lightning node info updates goroutine")
+
+	for {
+		select {
+		case <-time.After(time.Second * 25):
+		case <-r.quit:
+			return
+		}
+
+		m := crypto.NewMetric(r.cfg.Asset, "UpdateNodeInfo", r.cfg.MetricsBackend)
+		nodeInfo, err := fetchNodeInfo(r.client)
+		if err != nil {
+			m.AddError(metrics.MiddleSeverity)
+			m.Finish()
+
+			log.Errorf("unable to fetch node info: %v", err)
+			continue
+		}
+		m.Finish()
+
+		if err := r.cfg.Storage.UpdateInfo(&router.Info{
+			Version:     nodeInfo.Version,
+			Network:     r.cfg.Net,
+			BlockHeight: nodeInfo.BlockHeight,
+			BlockHash:   nodeInfo.BlockHash,
+			NodeInfo: &router.NodeInfo{
+				Alias:          nodeInfo.Alias,
+				Host:           r.cfg.PeerHost,
+				Port:           r.cfg.PeerPort,
+				IdentityPubKey: nodeInfo.IdentityPubkey,
+			},
+			NeutrinoInfo: &router.NeutrinoInfo{
+				Host: r.cfg.NeutrinoHost,
+				Port: r.cfg.NeutrinoPort,
+			},
+		}); err != nil {
+			log.Errorf("unable to save lightning node info: %v", err)
+		}
+	}
 }
 
-// listenLocalTopologyUpdates tracks the local channel topology state updates
-// and sends notifications accordingly to the occurred transition.
-func (r *Router) listenLocalTopologyUpdates() {
+// updateChannelStates tracks the local channel topology state updates
+// and sends notifications accordingly when transition has happened.
+//
+// NOTE: Should run as goroutine.
+func (r *Router) updateChannelStates() {
 	defer func() {
 		log.Info("Stopped local topology updates goroutine")
 		r.wg.Done()
@@ -79,70 +85,68 @@ func (r *Router) listenLocalTopologyUpdates() {
 			return
 		}
 
-		r.syncTopologyUpdates()
+		m := crypto.NewMetric(r.cfg.Asset, "UpdateChannelStates", r.cfg.MetricsBackend)
+
+		// TODO(andrew.shvv) track waiting closing channels
+		openChannels, pendingOpenChannels, pendingClosingChannels,
+		pendingForceClosingChannels, _, err := fetchChannels(r.client)
+		if err != nil {
+			m.AddError(metrics.MiddleSeverity)
+			m.Finish()
+
+			log.Errorf("(topology updates) unable to fetch lightning"+
+				" channels: %v", err)
+			continue
+		}
+
+		// Fetch prev pending/closing/opened channels from db which
+		// corresponds to the old/previous channel state.
+		log.Debugf("(topology updates) Fetching channel state from db...")
+
+		routerChannels, err := r.Channels()
+		if err != nil {
+			m.AddError(metrics.MiddleSeverity)
+			m.Finish()
+
+			log.Errorf("(topology updates) unable to fetch old channel state: %v"+
+				"", err)
+			continue
+		}
+
+		if err := syncChannelStates(openChannels, pendingOpenChannels,
+			pendingClosingChannels, pendingForceClosingChannels, r.broadcaster,
+			r.cfg.Storage, routerChannels); err != nil {
+			m.AddError(metrics.MiddleSeverity)
+			m.Finish()
+
+			log.Errorf("(topology updates) unable sync channel states: %v"+
+				"", err)
+			continue
+		}
 	}
 }
 
-// syncTopologyUpdates is used as wrapper for fetching and syncing topology
+// syncChannelStates is used as wrapper for fetching and syncing topology
 // updates. Main purpose of creating distinct method was usage of defer, which
 // is needed mainly for metric gathering usage.
-func (r *Router) syncTopologyUpdates() {
-	defer panicRecovering()
-
-	m := crypto.NewMetric(r.cfg.Asset, "SyncTopologyUpdates",
-		r.cfg.MetricsBackend)
-	defer m.Finish()
-
-	// Take all pending/closing/opened channels and form the current
-	// state out of it. As far as those two operation are not atomic,
-	// it might happen that some channel sleeps away.
-	reqPending := &lnrpc.PendingChannelsRequest{}
-	respPending, err := r.client.PendingChannels(getContext(), reqPending)
-	if err != nil {
-		m.AddError(metrics.HighSeverity)
-		log.Errorf("(topology updates) unable to fetch pending"+
-			" channels: %v", err)
-		return
-	}
-
-	reqOpen := &lnrpc.ListChannelsRequest{}
-	respOpen, err := r.client.ListChannels(getContext(), reqOpen)
-	if err != nil {
-		m.AddError(metrics.HighSeverity)
-		log.Errorf("(topology updates) unable to fetch list channels"+
-			": %v", err)
-		return
-	}
-
-	// Fetch prev pending/closing/opened channels from db which
-	// corresponds to the old/previous channel state.
-	log.Debugf("(topology updates) Fetching channel state from db...")
-	channels, err := r.Network()
-	if err != nil {
-		m.AddError(metrics.HighSeverity)
-		log.Errorf("(topology updates) unable to fetch old channel state: %v"+
-			"", err)
-		return
-	}
+func syncChannelStates(
+	openChannels []*lnrpc.Channel,
+	pendingOpenChannels []*lnrpc.PendingChannelsResponse_PendingOpenChannel,
+	pendingClosingChannels []*lnrpc.PendingChannelsResponse_ClosedChannel,
+	pendingForceClosingChannels []*lnrpc.PendingChannelsResponse_ForceClosedChannel,
+	broadcaster *broadcast.Broadcaster,
+	channelStorage router.ChannelStorage,
+	routerState []*router.Channel) error {
 
 	routerChannelMap := make(map[router.ChannelID]*router.Channel)
-	for _, c := range channels {
+	for _, c := range routerState {
 		routerChannelMap[c.ChannelID] = c
-	}
-
-	// TODO(andrew.shvv) it will not work after dual funding, remove it
-	getInitiator := func(routerBalance, userBalance int64) router.ChannelInitiator {
-		if routerBalance == 0 {
-			return router.UserInitiator
-		} else {
-			return router.RouterInitiator
-		}
 	}
 
 	// Keep new channel ids to detect channel closes at later point.
 	newChannelIDs := make(map[router.ChannelID]struct{}, 0)
 
-	for _, newChannel := range respPending.PendingOpenChannels {
+	for _, newChannel := range pendingOpenChannels {
 		chanID := router.ChannelID(newChannel.Channel.ChannelPoint)
 		newChannelIDs[chanID] = struct{}{}
 
@@ -158,74 +162,66 @@ func (r *Router) syncTopologyUpdates() {
 		case router.ChannelOpened:
 			// Previous channel state was opened, and now it is again
 			// opening, something wrong has happened.
-			m.AddError(metrics.MiddleSeverity)
-			log.Errorf("(topology updates) impossible channel("+
+			return errors.Errorf("impossible channel("+
 				"%v) change state %v => %v", chanID, router.ChannelOpened,
 				router.ChannelOpening)
-			continue
+
 		case router.ChannelClosing:
 			// Previous channel state was closing, and now it is
 			// opening, we couldn't  re-open, closing channel.
-			m.AddError(metrics.MiddleSeverity)
-			log.Errorf("(topology updates) impossible channel("+
+			return errors.Errorf("impossible channel("+
 				"%v) change state %v => %v", chanID, router.ChannelClosing,
 				router.ChannelOpening)
-			continue
+
 		case router.ChannelClosed:
 			// Previous channel state was closing, and now it is
 			// opening, we couldn't  re-open, closing channel.
-			m.AddError(metrics.MiddleSeverity)
-			log.Errorf("(topology updates) impossible channel("+
+			return errors.Errorf("impossible channel("+
 				"%v) change state %v => %v", chanID, router.ChannelClosed,
 				router.ChannelOpening)
-			continue
+
 		case "not exist":
 			cfg := &router.ChannelConfig{
-				Broadcaster: r.broadcaster,
-				Storage:     r.cfg.SyncStorage,
+				Broadcaster: broadcaster,
+				Storage:     channelStorage,
 			}
 
-			channel, err = router.NewChannel(
+			channel, err := router.NewChannel(
 				router.ChannelID(newChannel.Channel.ChannelPoint),
 				router.UserID(newChannel.Channel.RemoteNodePub),
 				router.BalanceUnit(newChannel.Channel.Capacity),
 				router.BalanceUnit(newChannel.Channel.RemoteBalance),
 				router.BalanceUnit(newChannel.Channel.LocalBalance),
 				router.BalanceUnit(newChannel.CommitFee),
-				getInitiator(newChannel.Channel.LocalBalance,
-					newChannel.Channel.RemoteBalance),
+				getInitiator(newChannel.Channel.LocalBalance),
 				cfg,
 			)
 
 			if err != nil {
-				m.AddError(metrics.MiddleSeverity)
-				log.Errorf("(topology updates) unable to create new channel("+
+				return errors.Errorf("unable to create new channel("+
 					"%v): %v", chanID, err)
-				continue
 			}
 
 			if err := channel.Save(); err != nil {
-				m.AddError(metrics.MiddleSeverity)
-				log.Errorf("(topology updates) unable to save new channel(%v)"+
-					": %v", chanID, err)
-				continue
+				return errors.Errorf("unable to save new channel(%v): ¬%v",
+					chanID, err)
 			}
 
 			log.Infof("Saved new channel(%v)", channel.ChannelID)
 
 			if err := channel.SetOpeningState(); err != nil {
-				m.AddError(metrics.MiddleSeverity)
-				log.Errorf("(topology updates) unable to set opening"+
+				return errors.Errorf("unable to set opening"+
 					" state for channel(%v): %v", chanID, err)
-				continue
 			}
 
 			log.Infof("Set state(%v) for channel(%v)",
 				channel.CurrentState(), channel.ChannelID)
+		default:
+			return errors.Errorf("unhandled state: %v", state)
 		}
 	}
 
-	for _, newChannel := range respPending.PendingClosingChannels {
+	for _, newChannel := range pendingClosingChannels {
 		chanID := router.ChannelID(newChannel.Channel.ChannelPoint)
 		newChannelIDs[chanID] = struct{}{}
 
@@ -241,20 +237,16 @@ func (r *Router) syncTopologyUpdates() {
 			// delayed scrape we missed some of state changes.
 
 			if err := channel.SetOpenedState(); err != nil {
-				m.AddError(metrics.HighSeverity)
-				log.Errorf("(topology updates) unable to set opened state"+
+				return errors.Errorf("unable to set opened state"+
 					"for channel(%v): %v", chanID, err)
-				continue
 			}
 
 			log.Infof("Set state(%v) for channel(%v)",
 				channel.CurrentState(), channel.ChannelID)
 
 			if err := channel.SetClosingState(); err != nil {
-				m.AddError(metrics.HighSeverity)
-				log.Errorf("(topology updates) unable to set closing state"+
+				return errors.Errorf("unable to set closing state"+
 					" for channel(%v): %v", chanID, err)
-				continue
 			}
 
 			log.Infof("Set state(%v) for channel(%v)",
@@ -262,88 +254,77 @@ func (r *Router) syncTopologyUpdates() {
 
 		case router.ChannelOpened:
 			if err := channel.SetClosingState(); err != nil {
-				m.AddError(metrics.HighSeverity)
-				log.Errorf("(topology updates) unable to set closing state"+
+				return errors.Errorf("unable to set closing state"+
 					"for channel(%v): %v", chanID, err)
-				continue
 			}
 		case router.ChannelClosing:
 			// Nothing has changed
 		case router.ChannelClosed:
 			// Previous channel state was closed, and now it is
 			// closing, we couldn't  re-close, closed channel.
-			m.AddError(metrics.MiddleSeverity)
-			log.Errorf("(topology updates) impossible channel("+
+			return errors.Errorf("impossible channel("+
 				"%v) change state %v => %v", chanID, router.ChannelClosed,
 				router.ChannelClosing)
-			continue
+
 		case "not exist":
 			// Previously channel not existed, it seems that because of the
 			// delayed scrape we missed some of state changes.
 			cfg := &router.ChannelConfig{
-				Broadcaster: r.broadcaster,
-				Storage:     r.cfg.SyncStorage,
+				Broadcaster: broadcaster,
+				Storage:     channelStorage,
 			}
 
-			channel, err = router.NewChannel(
+			channel, err := router.NewChannel(
 				router.ChannelID(newChannel.Channel.ChannelPoint),
 				router.UserID(newChannel.Channel.RemoteNodePub),
 				router.BalanceUnit(newChannel.Channel.Capacity),
 				router.BalanceUnit(newChannel.Channel.RemoteBalance),
 				router.BalanceUnit(newChannel.Channel.LocalBalance),
 				0,
-				getInitiator(newChannel.Channel.LocalBalance,
-					newChannel.Channel.RemoteBalance),
+				getInitiator(newChannel.Channel.LocalBalance),
 				cfg,
 			)
 			if err != nil {
-				m.AddError(metrics.MiddleSeverity)
-				log.Errorf("(topology updates) unable to create new channel("+
+				return errors.Errorf("unable to create new channel("+
 					"%v): %v", chanID, err)
-				continue
 			}
 
 			if err := channel.Save(); err != nil {
-				m.AddError(metrics.MiddleSeverity)
-				log.Errorf("(topology updates) unable to save new channel(%v)"+
+				return errors.Errorf("unable to save new channel(%v)"+
 					": %v", chanID, err)
-				continue
 			}
+
 			log.Infof("Saved new channel(%v)", channel.ChannelID)
 
 			if err := channel.SetOpeningState(); err != nil {
-				m.AddError(metrics.HighSeverity)
-				log.Errorf("(topology updates) unable to set opening state "+
+				return errors.Errorf("unable to set opening state "+
 					"for channel(%v): %v", chanID, err)
-				continue
 			}
 
 			log.Infof("Set state(%v) for channel(%v)",
 				channel.CurrentState(), channel.ChannelID)
 
 			if err := channel.SetOpenedState(); err != nil {
-				m.AddError(metrics.HighSeverity)
-				log.Errorf("(topology updates) unable to set opened state"+
+				return errors.Errorf("unable to set opened state"+
 					"for channel(%v): %v", chanID, err)
-				continue
 			}
 
 			log.Infof("Set state(%v) for channel(%v)",
 				channel.CurrentState(), channel.ChannelID)
 
 			if err := channel.SetClosingState(); err != nil {
-				m.AddError(metrics.MiddleSeverity)
-				log.Errorf("(topology updates) unable to set channel closing"+
+				return errors.Errorf("unable to set channel closing"+
 					"for channel(%v): %v", chanID, err)
-				continue
 			}
 
 			log.Infof("Set state(%v) for channel(%v)",
 				channel.CurrentState(), channel.ChannelID)
+		default:
+			return errors.Errorf("unhandled state: %v", state)
 		}
 	}
 
-	for _, newChannel := range respPending.PendingForceClosingChannels {
+	for _, newChannel := range pendingForceClosingChannels {
 		chanID := router.ChannelID(newChannel.Channel.ChannelPoint)
 		newChannelIDs[chanID] = struct{}{}
 
@@ -359,30 +340,24 @@ func (r *Router) syncTopologyUpdates() {
 			// delayed scrape we missed some of state changes.
 
 			if err := channel.SetOpenedState(); err != nil {
-				m.AddError(metrics.HighSeverity)
-				log.Errorf("(topology updates) unable to set opened state"+
+				return errors.Errorf("unable to set opened state"+
 					"for channel(%v): %v", chanID, err)
-				continue
 			}
 
 			log.Infof("Set state(%v) for channel(%v)",
 				channel.CurrentState(), channel.ChannelID)
 
 			if err := channel.SetClosingState(); err != nil {
-				m.AddError(metrics.MiddleSeverity)
-				log.Errorf("(topology updates) unable to set channel closing"+
+				return errors.Errorf("unable to set channel closing"+
 					"for channel(%v): %v", chanID, err)
-				continue
 			}
 
 			log.Infof("Set state(%v) for channel(%v)",
 				channel.CurrentState(), channel.ChannelID)
 
 			if err := channel.SetClosingState(); err != nil {
-				m.AddError(metrics.HighSeverity)
-				log.Errorf("(topology updates) unable to set closing state"+
+				return errors.Errorf("unable to set closing state"+
 					"for channel(%v): %v", chanID, err)
-				continue
 			}
 
 			log.Infof("Set state(%v) for channel(%v)",
@@ -390,10 +365,8 @@ func (r *Router) syncTopologyUpdates() {
 
 		case router.ChannelOpened:
 			if err := channel.SetClosingState(); err != nil {
-				m.AddError(metrics.HighSeverity)
-				log.Errorf("(topology updates) unable to set closing state"+
+				return errors.Errorf("unable to set closing state"+
 					"for channel(%v): %v", chanID, err)
-				continue
 			}
 
 			log.Infof("Set state(%v) for channel(%v)",
@@ -404,78 +377,68 @@ func (r *Router) syncTopologyUpdates() {
 		case router.ChannelClosed:
 			// Previous channel state was closed, and now it is
 			// closing, we couldn't  re-close, closed channel.
-			m.AddError(metrics.MiddleSeverity)
-			log.Errorf("(topology updates) impossible channel("+
+			return errors.Errorf("impossible channel("+
 				"%v) change state %v => %v", chanID, router.ChannelClosed,
 				router.ChannelClosing)
-			continue
+
 		case "not exist":
 			// Previously channel not existed, it seems that because of the
 			// delayed scrape we missed some of state changes.
 			cfg := &router.ChannelConfig{
-				Broadcaster: r.broadcaster,
-				Storage:     r.cfg.SyncStorage,
+				Broadcaster: broadcaster,
+				Storage:     channelStorage,
 			}
 
-			channel, err = router.NewChannel(
+			channel, err := router.NewChannel(
 				router.ChannelID(newChannel.Channel.ChannelPoint),
 				router.UserID(newChannel.Channel.RemoteNodePub),
 				router.BalanceUnit(newChannel.Channel.Capacity),
 				router.BalanceUnit(newChannel.Channel.RemoteBalance),
 				router.BalanceUnit(newChannel.Channel.LocalBalance),
 				0,
-				getInitiator(newChannel.Channel.LocalBalance,
-					newChannel.Channel.RemoteBalance),
+				getInitiator(newChannel.Channel.LocalBalance, ),
 				cfg,
 			)
 			if err != nil {
-				m.AddError(metrics.MiddleSeverity)
-				log.Errorf("(topology updates) unable to create new channel"+
+				return errors.Errorf("unable to create new channel"+
 					"for channel(%v): %v", chanID, err)
-				continue
 			}
 
 			if err := channel.Save(); err != nil {
-				m.AddError(metrics.MiddleSeverity)
-				log.Errorf("(topology updates) unable to save new channel"+
+				return errors.Errorf("unable to save new channel"+
 					"for channel(%v): %v", chanID, err)
-				continue
 			}
 			log.Infof("Saved new channel(%v)", channel.ChannelID)
 
 			if err := channel.SetOpeningState(); err != nil {
-				m.AddError(metrics.HighSeverity)
-				log.Errorf("(topology updates) unable to set opening state"+
+				return errors.Errorf("unable to set opening state"+
 					"for channel(%v): %v", chanID, err)
-				continue
 			}
 
 			log.Infof("Set state(%v) for channel(%v)",
 				channel.CurrentState(), channel.ChannelID)
 
 			if err := channel.SetOpenedState(); err != nil {
-				m.AddError(metrics.HighSeverity)
-				log.Errorf("(topology updates) unable to set opened state"+
+				return errors.Errorf("unable to set opened state"+
 					"for channel(%v): %v", chanID, err)
-				continue
 			}
 
 			log.Infof("Set state(%v) for channel(%v)",
 				channel.CurrentState(), channel.ChannelID)
 
 			if err := channel.SetClosingState(); err != nil {
-				m.AddError(metrics.MiddleSeverity)
-				log.Errorf("(topology updates) unable to set channel closing"+
+				return errors.Errorf("unable to set channel closing"+
 					"for channel(%v): %v", chanID, err)
-				continue
 			}
 
 			log.Infof("Set state(%v) for channel(%v)",
 				channel.CurrentState(), channel.ChannelID)
+		default:
+			return errors.Errorf("unhandled state: %v", state)
 		}
 	}
 
-	for _, newChannel := range respOpen.Channels {
+	for _, newChannel := range openChannels {
 		chanID := router.ChannelID(newChannel.ChannelPoint)
 		newChannelIDs[chanID] = struct{}{}
 
@@ -488,10 +451,8 @@ func (r *Router) syncTopologyUpdates() {
 		switch state {
 		case router.ChannelOpening:
 			if err := channel.SetOpenedState(); err != nil {
-				m.AddError(metrics.HighSeverity)
-				log.Errorf("(topology updates) unable set channel state"+
+				return errors.Errorf("unable set channel state"+
 					" opened for channel(%v): %v", chanID, err)
-				continue
 			}
 
 			log.Infof("Set state(%v) for channel(%v)",
@@ -502,70 +463,61 @@ func (r *Router) syncTopologyUpdates() {
 		case router.ChannelClosing:
 			// Previous channel state was closing, but now it is
 			// opened, close couldn't be canceled.
-			m.AddError(metrics.MiddleSeverity)
-			log.Errorf("(topology updates) impossible channel("+
+			return errors.Errorf("impossible channel("+
 				"%v) change state %v => %v", chanID, router.ChannelClosing,
 				router.ChannelOpened)
-			continue
+
 		case router.ChannelClosed:
 			// Previous channel state was closed, but now it is
 			// opened, close couldn't be canceled.
-			m.AddError(metrics.MiddleSeverity)
-			log.Errorf("(topology updates) impossible channel("+
+			return errors.Errorf("impossible channel("+
 				"%v) change state %v => %v", chanID, router.ChannelClosed,
 				router.ChannelOpened)
-			continue
+
 		case "not exist":
 			cfg := &router.ChannelConfig{
-				Broadcaster: r.broadcaster,
-				Storage:     r.cfg.SyncStorage,
+				Broadcaster: broadcaster,
+				Storage:     channelStorage,
 			}
 
-			channel, err = router.NewChannel(
+			channel, err := router.NewChannel(
 				router.ChannelID(newChannel.ChannelPoint),
 				router.UserID(newChannel.RemotePubkey),
 				router.BalanceUnit(newChannel.Capacity),
 				router.BalanceUnit(newChannel.RemoteBalance),
 				router.BalanceUnit(newChannel.LocalBalance),
 				router.BalanceUnit(newChannel.CommitFee),
-				getInitiator(newChannel.LocalBalance,
-					newChannel.RemoteBalance),
+				getInitiator(newChannel.LocalBalance),
 				cfg,
 			)
 			if err != nil {
-				m.AddError(metrics.MiddleSeverity)
-				log.Errorf("(topology updates) unable to create new channel("+
+				return errors.Errorf("unable to create new channel("+
 					"%v): %v", chanID, err)
-				continue
 			}
 
 			if err := channel.Save(); err != nil {
-				m.AddError(metrics.MiddleSeverity)
-				log.Errorf("(topology updates) unable to save new channel(%v)"+
+				return errors.Errorf("unable to save new channel(%v)"+
 					": %v", chanID, err)
-				continue
 			}
 			log.Infof("Saved new channel(%v)", channel.ChannelID)
 
 			if err := channel.SetOpeningState(); err != nil {
-				m.AddError(metrics.HighSeverity)
-				log.Errorf("(topology updates) unable set opening channel"+
+				return errors.Errorf("unable set opening channel"+
 					" state for channel(%v): %v", chanID, err)
-				continue
 			}
 
 			log.Infof("Set state(%v) for channel(%v)",
 				channel.CurrentState(), channel.ChannelID)
 
 			if err := channel.SetOpenedState(); err != nil {
-				m.AddError(metrics.HighSeverity)
-				log.Errorf("(topology updates) unable set opened channel"+
+				return errors.Errorf("unable set opened channel"+
 					" state for channel(%v): %v", chanID, err)
-				continue
 			}
 
 			log.Infof("Set state(%v) for channel(%v)",
 				channel.CurrentState(), channel.ChannelID)
+		default:
+			return errors.Errorf("unhandled state: %v", state)
 		}
 	}
 
@@ -576,33 +528,28 @@ func (r *Router) syncTopologyUpdates() {
 			continue
 		}
 
-		switch channel.CurrentState().Name {
+		state := channel.CurrentState().Name
+		switch state {
 		case router.ChannelOpening:
 			if err := channel.SetOpenedState(); err != nil {
-				m.AddError(metrics.HighSeverity)
-				log.Errorf("(topology updates) unable to set opened state"+
+				return errors.Errorf("unable to set opened state"+
 					"for channel(%v): %v", chanID, err)
-				continue
 			}
 
 			log.Infof("Set state(%v) for channel(%v)",
 				channel.CurrentState(), channel.ChannelID)
 
 			if err := channel.SetClosingState(); err != nil {
-				m.AddError(metrics.MiddleSeverity)
-				log.Errorf("(topology updates) unable to set channel closing"+
+				return errors.Errorf("unable to set channel closing"+
 					"for channel(%v): %v", chanID, err)
-				continue
 			}
 
 			log.Infof("Set state(%v) for channel(%v)",
 				channel.CurrentState(), channel.ChannelID)
 
 			if err := channel.SetClosedState(); err != nil {
-				m.AddError(metrics.HighSeverity)
-				log.Errorf("(topology updates) unable set closed channel"+
+				return errors.Errorf("unable set closed channel"+
 					" state for channel(%v): %v", chanID, err)
-				continue
 			}
 
 			log.Infof("Set state(%v) for channel(%v)",
@@ -610,20 +557,16 @@ func (r *Router) syncTopologyUpdates() {
 
 		case router.ChannelOpened:
 			if err := channel.SetClosingState(); err != nil {
-				m.AddError(metrics.MiddleSeverity)
-				log.Errorf("(topology updates) unable to set channel closing"+
+				return errors.Errorf("(topology updates) unable to set channel closing"+
 					"for channel(%v): %v", chanID, err)
-				continue
 			}
 
 			log.Infof("Set state(%v) for channel(%v)",
 				channel.CurrentState(), channel.ChannelID)
 
 			if err := channel.SetClosedState(); err != nil {
-				m.AddError(metrics.HighSeverity)
-				log.Errorf("(topology updates) unable set closed channel"+
+				return errors.Errorf("(topology updates) unable set closed channel"+
 					" state for channel(%v): %v", chanID, err)
-				continue
 			}
 
 			log.Infof("Set state(%v) for channel(%v)",
@@ -631,10 +574,8 @@ func (r *Router) syncTopologyUpdates() {
 
 		case router.ChannelClosing:
 			if err := channel.SetClosedState(); err != nil {
-				m.AddError(metrics.HighSeverity)
-				log.Errorf("(topology updates) unable set closed channel"+
+				return errors.Errorf("unable set closed channel"+
 					" state for channel(%v): %v", chanID, err)
-				continue
 			}
 
 			log.Infof("Set state(%v) for channel(%v)",
@@ -642,13 +583,20 @@ func (r *Router) syncTopologyUpdates() {
 
 		case router.ChannelClosed:
 			// Nothing to do
+		default:
+			return errors.Errorf("unhandled state: %v", state)
 		}
 	}
+
+	return nil
 }
 
-// listenForwardingUpdates listener of the forwarding lightning payments.
-// Fetches the lnd forwarding log, and send new update to the broadcaster.
-func (r *Router) listenForwardingUpdates() {
+// listenForwardingPayments listens for forwarding lightning payments.
+// Fetches the lnd forwarding log, and send new update to the broadcaster if
+// new payment has been found.
+//
+// NOTE: Should run as goroutine.
+func (r *Router) listenForwardingPayments() {
 	defer func() {
 		log.Info("Stopped forwarding payments goroutine")
 		r.wg.Done()
@@ -676,14 +624,14 @@ func (r *Router) syncForwardingUpdate() {
 	var lastIndex uint32
 	var err error
 
-	m := crypto.NewMetric(r.cfg.Asset, "SyncForwardingUpdates",
+	m := crypto.NewMetric(r.cfg.Asset, "ListenForwardingPayments",
 		r.cfg.MetricsBackend)
 	defer m.Finish()
 
 	// Try to fetch last index, and if fails than try after yet again after
 	// some time.
 	for {
-		lastIndex, err = r.cfg.SyncStorage.LastForwardingIndex()
+		lastIndex, err = r.cfg.Storage.LastForwardingIndex()
 		if err != nil {
 			m.AddError(metrics.HighSeverity)
 			log.Errorf("(forwarding updates) unable to get last"+
@@ -701,7 +649,7 @@ func (r *Router) syncForwardingUpdate() {
 		break
 	}
 
-	events, err := r.getNewForwardingEvents(lastIndex)
+	events, err := fetchForwardingPayments(r.client, lastIndex)
 	if err != nil {
 		m.AddError(metrics.HighSeverity)
 		log.Errorf("(forwarding updates) unable to get forwarding"+
@@ -718,7 +666,7 @@ func (r *Router) syncForwardingUpdate() {
 	log.Infof("(forwarding updates) Broadcast %v forwarding"+
 		" events", len(events))
 	for _, event := range events {
-		sender, err := r.getPubKeyByChainID(event.ChanIdIn)
+		sender, err := getPubKeyByChainID(r.client, event.ChanIdIn)
 		if err != nil {
 			m.AddError(metrics.MiddleSeverity)
 			log.Errorf("(forwarding updates) error during event"+
@@ -726,11 +674,25 @@ func (r *Router) syncForwardingUpdate() {
 			continue
 		}
 
-		receiver, err := r.getPubKeyByChainID(event.ChanIdOut)
+		receiver, err := getPubKeyByChainID(r.client, event.ChanIdOut)
 		if err != nil {
 			m.AddError(metrics.MiddleSeverity)
 			log.Errorf("(forwarding updates) error during event"+
 				" broadcasting: %v", err)
+			continue
+		}
+
+		if err := r.cfg.Storage.StorePayment(&router.Payment{
+			FromUser:  router.UserID(sender),
+			ToUser:    router.UserID(receiver),
+			FromAlias: registry.GetAlias(router.UserID(sender)),
+			ToAlias:   registry.GetAlias(router.UserID(receiver)),
+			Amount:    router.BalanceUnit(event.AmtOut),
+			Type:      router.Forward,
+			Status:    router.Successful,
+			Time:      time.Now().Unix(),
+		}); err != nil {
+			log.Errorf("unable to save the payment: %v", err)
 			continue
 		}
 
@@ -756,10 +718,11 @@ func (r *Router) syncForwardingUpdate() {
 	for {
 		log.Debugf("(forwarding updates) Save last forwarding index"+
 			" %v...", lastIndex)
-		if err := r.cfg.SyncStorage.PutLastForwardingIndex(lastIndex); err != nil {
+		if err := r.cfg.Storage.PutLastForwardingIndex(lastIndex); err != nil {
 			m.AddError(metrics.HighSeverity)
 			log.Errorf("(forwarding updates) unable to get last"+
 				" forwarding index: %v", err)
+
 			select {
 			case <-r.quit:
 				return
@@ -772,75 +735,10 @@ func (r *Router) syncForwardingUpdate() {
 	}
 }
 
-// getPubKeyByChainID returns the pubkey which identifies the user by the
-// given channel id.
-func (r *Router) getPubKeyByChainID(chanID uint64) (string, error) {
-	req := &lnrpc.ListChannelsRequest{}
-	resp, err := r.client.ListChannels(getContext(), req)
-	if err != nil {
-		return "", err
-	}
-
-	var pubKey string
-	for _, channel := range resp.Channels {
-		if channel.ChanId == chanID {
-			pubKey = channel.RemotePubkey
-			break
-		}
-	}
-
-	if pubKey == "" {
-		return "", errors.Errorf("unable to find node by chan id(%v)",
-			chanID)
-	}
-
-	return pubKey, nil
-}
-
-// getNewForwardingEvents gradually fetches the forwarding events from lightning
-// daemon.
-func (r *Router) getNewForwardingEvents(index uint32) (
-	[]*lnrpc.ForwardingEvent, error) {
-
-	var events []*lnrpc.ForwardingEvent
-	var limit uint32 = 1000
-
-	// Fetch updates by chunks, in order to avoid message
-	// overflow errors, lnd error response is restricted to ~50k updates.
-	for {
-		req := &lnrpc.ForwardingHistoryRequest{
-			StartTime:    1,
-			EndTime:      uint64(time.Now().Unix()),
-			IndexOffset:  index,
-			NumMaxEvents: limit,
-		}
-
-		resp, err := r.client.ForwardingHistory(getContext(), req)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, event := range resp.ForwardingEvents {
-			events = append(events, event)
-		}
-
-		length := uint32(len(resp.ForwardingEvents))
-		index += length
-
-		// If daemon returned less than a limit it means that we reached the
-		// end of the forwarding list.
-		if length < limit {
-			break
-		}
-	}
-
-	return events, nil
-}
-
-// listenInvoiceUpdates listener of the incoming lightning payments. If lnd was
-// disconnected listener will be re-subscribe on updates when lnd goes live
-// and continue listening.
-func (r *Router) listenInvoiceUpdates() {
+// listenIncomingPayments listener of the incoming lightning payments.
+//
+// NOTE: Should run as goroutine.
+func (r *Router) listenIncomingPayments() {
 	defer func() {
 		panicRecovering()
 		log.Info("Stopped incoming payments goroutine")
@@ -849,7 +747,7 @@ func (r *Router) listenInvoiceUpdates() {
 
 	log.Info("Started incoming payments goroutine")
 
-	m := crypto.NewMetric(r.cfg.Asset, "ListenInvoiceUpdates",
+	m := crypto.NewMetric(r.cfg.Asset, "ListenIncomingPayments",
 		r.cfg.MetricsBackend)
 
 	var invoiceSubsc lnrpc.Lightning_SubscribeInvoicesClient
@@ -914,7 +812,289 @@ func (r *Router) listenInvoiceUpdates() {
 			Earned: 0,
 		}
 
-		// Send update notification to all listeners.
+		// Send update notification to all router updates listeners.
 		r.broadcaster.Write(update)
+	}
+}
+
+func (r *Router) updatePeers() {
+	defer func() {
+		log.Info("Stopped peer updates goroutine")
+		r.wg.Done()
+	}()
+
+	log.Info("Started peer updates goroutine")
+
+	for {
+		select {
+		case <-time.After(time.Second * 5):
+		case <-r.quit:
+			return
+		}
+
+		m := crypto.NewMetric(r.cfg.Asset, "UpdatePeers", r.cfg.MetricsBackend)
+
+		// Fetch users who are connected to us with tcp/ip connection
+		connectedPeers, err := fetchUsers(r.client)
+		if err != nil {
+			m.AddError(metrics.MiddleSeverity)
+			m.Finish()
+
+			log.Errorf("(peer updates) unable to fetch lnd users: %v", err)
+			continue
+		}
+
+		// Fetch channels and filters only those peers who are connected to us
+		// with payment channels, also specify is the peer active or not.
+		openChannels, pendingOpenChannels, pendingClosingChannels,
+		pendingForceClosingChannels, pendingWaitingCloseChannels, err := fetchChannels(r.client)
+		if err != nil {
+			m.AddError(metrics.MiddleSeverity)
+			m.Finish()
+
+			log.Errorf("(peer updates) unable to fetch channels: %v", err)
+			continue
+		}
+
+		hubUsers, err := r.Users()
+		if err != nil {
+			m.AddError(metrics.MiddleSeverity)
+			m.Finish()
+
+			log.Errorf("(peer updates) unable to fetch router users: %v", err)
+			continue
+		}
+
+		if err := syncPeers(r.cfg.Storage, hubUsers, connectedPeers,
+			openChannels, pendingOpenChannels, pendingClosingChannels,
+			pendingForceClosingChannels, pendingWaitingCloseChannels,
+			r.broadcaster);
+			err != nil {
+
+			m.AddError(metrics.HighSeverity)
+			m.Finish()
+
+			log.Errorf("(peer updates) unable to sync users: %v", err)
+			continue
+		}
+
+		m.Finish()
+	}
+}
+
+// syncPeers sync information about is the user who is connected to us with
+// payment channel now active i.e has tcp/ip connection with us.
+// With this we could track what percentage of overall time users are
+// connected to our hub.
+func syncPeers(userStorage router.UserStorage,
+	hubUsers []*router.User,
+	connectedPeers []*lnrpc.Peer,
+	openChannels []*lnrpc.Channel,
+	pendingOpenChannels []*lnrpc.PendingChannelsResponse_PendingOpenChannel,
+	pendingClosingChannels []*lnrpc.PendingChannelsResponse_ClosedChannel,
+	pendingForceClosingChannels []*lnrpc.PendingChannelsResponse_ForceClosedChannel,
+	pendingWaitingCloseChannels []*lnrpc.PendingChannelsResponse_WaitingCloseChannel,
+	broadcaster *broadcast.Broadcaster) error {
+
+	// Create map of peers so that easily check presence of user with given id.
+	connectedPeersMap := make(map[router.UserID]*lnrpc.Peer)
+	for _, peer := range connectedPeers {
+		connectedPeersMap[router.UserID(peer.PubKey)] = peer
+	}
+
+	// This is map of hubUsers, who are connected to us with channels.
+	lndPeersView := make(map[router.UserID]*router.User)
+
+	for _, c := range openChannels {
+		userID := router.UserID(c.RemotePubkey)
+		_, isConnected := connectedPeersMap[userID]
+
+		lockedByUser := router.BalanceUnit(c.RemoteBalance)
+		lockedByHub := router.BalanceUnit(c.LocalBalance)
+
+		if user, ok := lndPeersView[userID]; ok {
+			user.LockedByUser += lockedByUser
+			user.LockedByHub += lockedByHub
+		} else {
+			user, err := router.NewUser(userID, isConnected,
+				registry.GetAlias(userID), lockedByHub, lockedByUser,
+				&router.UserConfig{
+					Storage: userStorage,
+				})
+			if err != nil {
+				return errors.Errorf("unable to create user: %v", err)
+			}
+			lndPeersView[userID] = user
+		}
+	}
+
+	for _, c := range pendingOpenChannels {
+		userID := router.UserID(c.Channel.RemoteNodePub)
+		_, isConnected := connectedPeersMap[userID]
+
+		lockedByUser := router.BalanceUnit(c.Channel.RemoteBalance)
+		lockedByHub := router.BalanceUnit(c.Channel.LocalBalance)
+
+		if user, ok := lndPeersView[userID]; ok {
+			user.LockedByUser += lockedByUser
+			user.LockedByHub += lockedByHub
+		} else {
+			user, err := router.NewUser(userID, isConnected,
+				registry.GetAlias(userID), lockedByHub, lockedByUser,
+				&router.UserConfig{
+					Storage: userStorage,
+				})
+			if err != nil {
+				return errors.Errorf("unable to create user: %v", err)
+			}
+			lndPeersView[userID] = user
+		}
+	}
+
+	for _, c := range pendingClosingChannels {
+		userID := router.UserID(c.Channel.RemoteNodePub)
+		_, isConnected := connectedPeersMap[userID]
+
+		lockedByUser := router.BalanceUnit(c.Channel.RemoteBalance)
+		lockedByHub := router.BalanceUnit(c.Channel.LocalBalance)
+
+		if user, ok := lndPeersView[userID]; ok {
+			user.LockedByUser += lockedByUser
+			user.LockedByHub += lockedByHub
+		} else {
+			user, err := router.NewUser(userID, isConnected,
+				registry.GetAlias(userID), lockedByHub, lockedByUser,
+				&router.UserConfig{
+					Storage: userStorage,
+				})
+			if err != nil {
+				return errors.Errorf("unable to create user: %v", err)
+			}
+			lndPeersView[userID] = user
+		}
+	}
+
+	for _, c := range pendingForceClosingChannels {
+		userID := router.UserID(c.Channel.RemoteNodePub)
+		_, isConnected := connectedPeersMap[userID]
+
+		lockedByUser := router.BalanceUnit(c.Channel.RemoteBalance)
+		lockedByHub := router.BalanceUnit(c.Channel.LocalBalance)
+
+		if user, ok := lndPeersView[userID]; ok {
+			user.LockedByUser += lockedByUser
+			user.LockedByHub += lockedByHub
+		} else {
+			user, err := router.NewUser(userID, isConnected,
+				registry.GetAlias(userID), lockedByHub, lockedByUser,
+				&router.UserConfig{
+					Storage: userStorage,
+				})
+			if err != nil {
+				return errors.Errorf("unable to create user: %v", err)
+			}
+			lndPeersView[userID] = user
+		}
+	}
+
+	for _, c := range pendingWaitingCloseChannels {
+		userID := router.UserID(c.Channel.RemoteNodePub)
+		_, isConnected := connectedPeersMap[userID]
+
+		lockedByUser := router.BalanceUnit(c.Channel.RemoteBalance)
+		lockedByHub := router.BalanceUnit(c.Channel.LocalBalance)
+
+		if user, ok := lndPeersView[userID]; ok {
+			user.LockedByUser += lockedByUser
+			user.LockedByHub += lockedByHub
+		} else {
+			user, err := router.NewUser(userID, isConnected,
+				registry.GetAlias(userID), lockedByHub, lockedByUser,
+				&router.UserConfig{
+					Storage: userStorage,
+				})
+			if err != nil {
+				return errors.Errorf("unable to create user: %v", err)
+			}
+			lndPeersView[userID] = user
+		}
+	}
+
+	hubPeersView := make(map[router.UserID]*router.User)
+	for _, user := range hubUsers {
+		hubPeersView[user.UserID] = user
+	}
+
+	for userID, lndUser := range lndPeersView {
+		// If we have this is in database and it exist in list peer,
+		// than we should set this used as connected.
+		hubUser, ok := hubPeersView[userID]
+		if ok {
+			// In this case we had this user before,
+			// and we need update information about him,
+			// and also if his connection status has changed,
+			// than we need to sen update.
+			hubUser.LockedByUser = lndUser.LockedByUser
+			hubUser.LockedByHub = lndUser.LockedByHub
+
+			if hubUser.IsConnected != lndUser.IsConnected {
+				hubUser.IsConnected = lndUser.IsConnected
+				broadcaster.Write(&router.UpdateUserConnected{
+					User:        userID,
+					IsConnected: hubUser.IsConnected,
+				})
+			}
+
+			if err := hubUser.Save(); err != nil {
+				return errors.Errorf("unable update user status: %v", err)
+			}
+		} else {
+			// In this case we have new user, which wasn't seen before,
+			// and we need to save it.
+			log.Infof("Save new user(%v)", lndUser.UserID)
+			if err := lndUser.Save(); err != nil {
+				return errors.Errorf("unable update user status: %v", err)
+			}
+
+			broadcaster.Write(&router.UpdateUserConnected{
+				User:        userID,
+				IsConnected: lndUser.IsConnected,
+			})
+		}
+	}
+
+	for userID, hubUser := range hubPeersView {
+		if _, ok := lndPeersView[userID]; ok {
+			// 	Already covered in previously cycle.
+			continue
+		}
+
+		// If we can't see this user in lnd view,
+		// so he is not connected to us with payment channel.
+		// As far as we send update only about hubUsers who has channels
+		// with us, we need to mark this user as disconnected.
+		if hubUser.IsConnected {
+			log.Infof("User(%v) removed all channels with us", hubUser.UserID)
+			hubUser.IsConnected = false
+			broadcaster.Write(&router.UpdateUserConnected{
+				User:        userID,
+				IsConnected: hubUser.IsConnected,
+			})
+
+			if err := hubUser.Save(); err != nil {
+				return errors.Errorf("unable update user status: %v", err)
+			}
+		}
+	}
+
+	return nil
+}
+
+// TODO(andrew.shvv) it will not work after dual funding, remove it
+func getInitiator(routerBalance int64) router.ChannelInitiator {
+	if routerBalance == 0 {
+		return router.UserInitiator
+	} else {
+		return router.RouterInitiator
 	}
 }
