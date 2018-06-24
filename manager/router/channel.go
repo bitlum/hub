@@ -165,7 +165,7 @@ routerBalance, closeFee BalanceUnit, initiator ChannelInitiator,
 
 // Save is used to save the channel in the database, without saving it states.
 func (c *Channel) Save() error {
-	return c.cfg.Storage.AddChannel(c)
+	return c.cfg.Storage.UpdateChannel(c)
 }
 
 // CurrentState return current state of payment channel.
