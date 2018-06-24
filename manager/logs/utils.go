@@ -63,6 +63,12 @@ func getState(r router.Router) (*Log, error) {
 //
 // NOTE: Should be run as goroutine.
 func UpdateLogFileGoroutine(r router.Router, path string, errChan chan error) {
+	defer func() {
+		log.Infof("Stopped update log file goroutine, log path(%v)", path)
+	}()
+
+	log.Infof("Start update log file goroutine, log path(%v)", path)
+
 	var logEntry *Log
 
 	// Ensure that gRPC structures are printed properly
@@ -121,6 +127,8 @@ func UpdateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 
 			switch u := update.(type) {
 			case *router.UpdateChannelClosing:
+				log.Infof("Update(%v) received, logging", u)
+
 				logEntry = &Log{
 					Time: time.Now().UnixNano(),
 					Data: &Log_ChannelChange{
@@ -137,6 +145,8 @@ func UpdateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 				}
 
 			case *router.UpdateChannelClosed:
+				log.Infof("Update(%v) received, logging", u)
+
 				logEntry = &Log{
 					Time: time.Now().UnixNano(),
 					Data: &Log_ChannelChange{
@@ -153,6 +163,8 @@ func UpdateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 				}
 
 			case *router.UpdateChannelOpening:
+				log.Infof("Update(%v) received, logging", u)
+
 				logEntry = &Log{
 					Time: time.Now().UnixNano(),
 					Data: &Log_ChannelChange{
@@ -169,6 +181,8 @@ func UpdateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 				}
 
 			case *router.UpdateChannelOpened:
+				log.Infof("Update(%v) received, logging", u)
+
 				logEntry = &Log{
 					Time: time.Now().UnixNano(),
 					Data: &Log_ChannelChange{
@@ -185,6 +199,8 @@ func UpdateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 				}
 
 			case *router.UpdateChannelUpdating:
+				log.Infof("Update(%v) received, logging", u)
+
 				logEntry = &Log{
 					Time: time.Now().UnixNano(),
 					Data: &Log_ChannelChange{
@@ -201,6 +217,8 @@ func UpdateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 				}
 
 			case *router.UpdateChannelUpdated:
+				log.Infof("Update(%v) received, logging", u)
+
 				logEntry = &Log{
 					Time: time.Now().UnixNano(),
 					Data: &Log_ChannelChange{
@@ -217,6 +235,8 @@ func UpdateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 				}
 
 			case *router.UpdatePayment:
+				log.Infof("Update(%v) received, logging", u)
+
 				var status PaymentStatus
 				switch u.Status {
 				case router.InsufficientFunds:
