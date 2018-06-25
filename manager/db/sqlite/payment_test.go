@@ -15,18 +15,24 @@ func TestPaymentsStorage(t *testing.T) {
 
 	paymentsBefore := []*router.Payment{
 		{
-			FromUser: "a",
-			ToUser:   "b",
-			Amount:   1,
-			Status:   "s",
-			Type:     "k",
+			FromUser:  "a",
+			ToUser:    "b",
+			FromAlias: "a",
+			ToAlias:   "b",
+			Amount:    1,
+			Status:    "s",
+			Type:      "k",
+			Time:      125,
 		},
 		{
-			FromUser: "a",
-			ToUser:   "b",
-			Amount:   2,
-			Status:   "s",
-			Type:     "k",
+			FromUser:  "a",
+			ToUser:    "b",
+			FromAlias: "a",
+			ToAlias:   "b",
+			Amount:    2,
+			Status:    "s",
+			Type:      "k",
+			Time:      123,
 		},
 	}
 

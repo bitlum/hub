@@ -145,14 +145,14 @@ var typePeer = graphql.NewObject(graphql.ObjectConfig{
 			Description: "",
 			Type:        graphql.NewNonNull(graphql.Int),
 			Resolve: func(rp graphql.ResolveParams) (interface{}, error) {
-				return rp.Source.(*router.User).LockedByUser, nil
+				return int64(rp.Source.(*router.User).LockedByUser), nil
 			},
 		},
 		"lockedByHub": &graphql.Field{
 			Description: "",
 			Type:        graphql.NewNonNull(graphql.Int),
 			Resolve: func(rp graphql.ResolveParams) (interface{}, error) {
-				return rp.Source.(*router.User).LockedByHub, nil
+				return int64(rp.Source.(*router.User).LockedByHub), nil
 			},
 		},
 	},
@@ -166,28 +166,28 @@ var typePayment = graphql.NewObject(graphql.ObjectConfig{
 			Description: "",
 			Type:        graphql.NewNonNull(graphql.String),
 			Resolve: func(rp graphql.ResolveParams) (interface{}, error) {
-				return rp.Source.(*router.Payment).FromUser, nil
+				return rp.Source.(*router.Payment).FromAlias, nil
 			},
 		},
 		"toPeer": &graphql.Field{
 			Description: "",
 			Type:        graphql.NewNonNull(graphql.String),
 			Resolve: func(rp graphql.ResolveParams) (interface{}, error) {
-				return rp.Source.(*router.Payment).ToUser, nil
+				return rp.Source.(*router.Payment).ToAlias, nil
 			},
 		},
 		"amount": &graphql.Field{
 			Description: "",
 			Type:        graphql.NewNonNull(graphql.Int),
 			Resolve: func(rp graphql.ResolveParams) (interface{}, error) {
-				return rp.Source.(*router.Payment).Amount, nil
+				return int64(rp.Source.(*router.Payment).Amount), nil
 			},
 		},
 		"status": &graphql.Field{
 			Description: "",
 			Type:        graphql.NewNonNull(graphql.String),
 			Resolve: func(rp graphql.ResolveParams) (interface{}, error) {
-				return rp.Source.(*router.Payment).Status, nil
+				return string(rp.Source.(*router.Payment).Status), nil
 			},
 		},
 		"time": &graphql.Field{
@@ -201,7 +201,7 @@ var typePayment = graphql.NewObject(graphql.ObjectConfig{
 			Description: "",
 			Type:        graphql.NewNonNull(graphql.String),
 			Resolve: func(rp graphql.ResolveParams) (interface{}, error) {
-				return rp.Source.(*router.Payment).Type, nil
+				return string(rp.Source.(*router.Payment).Type), nil
 			},
 		},
 	},

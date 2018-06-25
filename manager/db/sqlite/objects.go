@@ -58,8 +58,8 @@ type User struct {
 type Payment struct {
 	gorm.Model
 
-	FromPeer string
-	ToPeer   string
+	FromUser string
+	ToUser   string
 
 	FromAlias string
 	ToAlias   string
