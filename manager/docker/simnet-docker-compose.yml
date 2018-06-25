@@ -1,5 +1,6 @@
 version: "3.5"
 
+
 # Explicitly defined connector network to be able to set static IPs
 networks:
   connector.simnet:
@@ -8,8 +9,6 @@ networks:
     ipam:
       config:
       - subnet: 172.100.0.0/24
-
-
 
 # Default settings for all containers.
 x-defaults:

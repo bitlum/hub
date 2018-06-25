@@ -51,41 +51,37 @@ simnet-build-compose:
 		@$(call print, "Activating simnet.connector.bitlum.io machine && building...")
 
 		cp ./docker/hub/simnet/hub.conf ./docker/hub/hub.conf
-		cp ./docker/hub/simnet/lnd-tls.cert  ./docker/hub/lnd-tls.cert
 
 		eval `docker-machine env simnet.connector.bitlum.io` && \
-		docker-compose -f ./docker/docker-compose.yml up --build -d
+		docker-compose -f ./docker/simnet-docker-compose.yml up --build -d
 
 		rm ./docker/hub/hub.conf
-		rm ./docker/hub/lnd-tls.cert
 
 # NOTE: Eval function if working only with "&&" because every operation in
 # the makefile is working in standalone shell.
 testnet-build-compose:
-		@$(call print, "Activating testnet.connector.bitlum.io machine && building...")
+		@$(call print, "Activating testnet.connector.bitlum.io-for-exchange machine && building...")
 
 		cp ./docker/hub/testnet/hub.conf ./docker/hub/hub.conf
-		cp ./docker/hub/testnet/lnd-tls.cert  ./docker/hub/lnd-tls.cert
 
-		eval `docker-machine env testnet.connector.bitlum.io` && \
-		docker-compose -f ./docker/docker-compose.yml up --build -d
+		eval `docker-machine env testnet.connector.bitlum.io-for-exchange` && \
+		docker-compose -f ./docker/testnet-docker-compose.yml up --build -d
 
 		rm ./docker/hub/hub.conf
-		rm ./docker/hub/lnd-tls.cert
 
 # NOTE: Eval function if working only with "&&" because every operation in
 # the makefile is working in standalone shell.
 simnet-logs:
 		@$(call print, "Activating simnet.connector.bitlum.io machine && fetching logs")
 		eval `docker-machine env simnet.connector.bitlum.io` && \
-		docker-compose -f ./docker/docker-compose.yml logs --tail=1000 -f
+		docker-compose -f ./docker/simnet-docker-compose.yml logs --tail=1000 -f
 
 # NOTE: Eval function if working only with "&&" because every operation in
 # the makefile is working in standalone shell.
 testnet-logs:
-		@$(call print, "Activating testnet.connector.bitlum.io machine && fetching logs")
-		eval `docker-machine env testnet.connector.bitlum.io` && \
-		docker-compose -f ./docker/docker-compose.yml logs --tail=1000 -f
+		@$(call print, "Activating testnet.connector.bitlum.io-for-exchange machine && fetching logs")
+		eval `docker-machine env testnet.connector.bitlum.io-for-exchange` && \
+		docker-compose -f ./docker/testnet-docker-compose.yml logs --tail=1000 -f
 
 # # # # # # # # #
 # Golang build  #

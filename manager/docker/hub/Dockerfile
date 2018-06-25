@@ -12,9 +12,6 @@ WORKDIR /
 # docker directory, fore running docker build.
 COPY hub .
 
-# That is needed to have communication with lightning network daemon.
-COPY lnd-tls.cert ./lnd-tls.cert
-
 # This implies that service config is defines and located in the
 # directory with docker file.
 COPY hub.conf .
