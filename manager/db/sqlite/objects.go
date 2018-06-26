@@ -7,7 +7,8 @@ import (
 type Counters struct {
 	gorm.Model
 
-	ForwardIndex uint32
+	LastForwardIndex        uint32
+	LastOutgoingPaymentTime int64
 }
 
 type Channel struct {

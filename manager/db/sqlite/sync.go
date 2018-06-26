@@ -20,7 +20,7 @@ func (d *DB) PutLastForwardingIndex(index uint32) error {
 	}
 
 	// Update entry with new index
-	state.ForwardIndex = index
+	state.LastForwardIndex = index
 	return d.Save(state).Error
 }
 
@@ -30,5 +30,32 @@ func (d *DB) PutLastForwardingIndex(index uint32) error {
 // NOTE: Part of the lnd interface.
 func (d *DB) LastForwardingIndex() (uint32, error) {
 	state := &Counters{}
-	return state.ForwardIndex, d.FirstOrCreate(state).Error
+	return state.LastForwardIndex, d.FirstOrCreate(state).Error
+}
+
+// PutLastOutgoingPaymentTime saves last outgoing payment time, which is
+// used to properly synchronise payment table of our lightning network
+// node.
+//
+// NOTE: Part of the lnd interface.
+func (d *DB) PutLastOutgoingPaymentTime(lastTime int64) error {
+	// Create the state sync db entry if there is no one.
+	state := &Counters{}
+	if err := d.FirstOrCreate(state).Error; err != nil {
+		return err
+	}
+
+	// Update entry with new time
+	state.LastOutgoingPaymentTime = lastTime
+	return d.Save(state).Error
+}
+
+// LastOutgoingPaymentTime returns last outgoing payment time, which is
+// used to properly synchronise payment table of our lightning network
+// node.
+//
+// NOTE: Part of the lnd interface.
+func (d *DB) LastOutgoingPaymentTime() (int64, error) {
+	state := &Counters{}
+	return state.LastOutgoingPaymentTime, d.FirstOrCreate(state).Error
 }
