@@ -42,6 +42,7 @@ class RouterSetts:
         self.init_period = inlet['init_period']
         self.mgt_period = inlet['mgt_period']
         self.average_period = inlet['average_period']
+        self.plot_period = inlet['plot_period']
         self.init_mult = inlet['init_mult']
         self.make_drawing = inlet['make_drawing']
         self.output_stat = inlet['output_stat']
@@ -63,6 +64,7 @@ class RouterSetts:
         out_str += 'init_period ' + str(self.init_period) + '\n'
         out_str += 'mgt_period ' + str(self.mgt_period) + '\n'
         out_str += 'average_period ' + str(self.average_period) + '\n'
+        out_str += 'plot_period ' + str(self.plot_period) + '\n'
         out_str += 'init_mult ' + str(self.init_mult) + '\n'
         out_str += 'make_drawing ' + str(self.make_drawing) + '\n'
         out_str += 'output_stat ' + str(self.output_stat) + '\n'

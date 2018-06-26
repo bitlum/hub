@@ -34,6 +34,9 @@ class RouterMetrics:
         self.average_period = router_mgt.setts.average_period
         self.average_period /= router_mgt.setts.acceleration
 
+        self.plot_period = router_mgt.setts.plot_period
+        self.plot_period /= router_mgt.setts.acceleration
+
         self.make_drawing = router_mgt.setts.make_drawing
         self.output_stat = router_mgt.setts.output_stat
 
@@ -140,6 +143,11 @@ class RouterMetrics:
             axes='x1y2',
             title="predicted locked funds",
             with_="lines lw 3 lt 0 lc 1")
+
+        time_min = self.time[-1] - self.plot_period
+
+        if time_min > 0:
+            self.gnuplot('set xrange[' + str(time_min) + ':]')
 
         self.gnuplot.plot(balance_sum_av_curve,
                           balance_sum_predict_av_curve,

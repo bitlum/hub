@@ -10,6 +10,7 @@
 	"init_period": 0,
 	"mgt_period": 1,
 	"average_period": 10,
+	"plot_period": 5,
 	"init_mult": 0,
 	"make_drawing": true,
 	"output_stat": true,
