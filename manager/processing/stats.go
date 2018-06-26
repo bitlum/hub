@@ -115,13 +115,18 @@ func (s *Stats) scrapeRouterInfo() {
 			totalLockedByUsers := router.BalanceUnit(0)
 			totalLockedByRouter := router.BalanceUnit(0)
 
+			activeUsers := 0
 			for _, user := range users {
+				if user.IsConnected {
+					activeUsers += 1
+				}
+
 				totalLockedByUsers += user.LockedByUser
 				totalLockedByRouter += user.LockedByHub
 			}
 
-			log.Debugf("Total connected users: %v", len(users))
-			s.cfg.MetricsBackend.TotalUsers(asset, len(users))
+			log.Debugf("Total connected users: %v", activeUsers)
+			s.cfg.MetricsBackend.TotalUsers(asset, activeUsers)
 
 			log.Debugf("Funds locked by users: %v", totalLockedByUsers)
 			s.cfg.MetricsBackend.TotalFundsLockedByUser(asset, uint64(totalLockedByUsers))
