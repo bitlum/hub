@@ -26,8 +26,10 @@ func (d *DB) StorePayment(p *router.Payment) error {
 // Payments returns the payments happening inside the hub local network,
 func (d *DB) Payments() ([]*router.Payment, error) {
 	var payments []Payment
-	db := d.Find(&payments)
-	if err := db.Error; err != nil {
+	err := d.Model(&Payment{}).
+		Order("time DESC").
+		Find(&payments).Error
+	if err != nil {
 		return nil, err
 	}
 

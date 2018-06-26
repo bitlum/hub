@@ -36,11 +36,11 @@ func TestPaymentsStorage(t *testing.T) {
 		},
 	}
 
-	if err := db.StorePayment(paymentsBefore[0]); err != nil {
+	if err := db.StorePayment(paymentsBefore[1]); err != nil {
 		t.Fatalf("unable to save payment: %v", err)
 	}
 
-	if err := db.StorePayment(paymentsBefore[1]); err != nil {
+	if err := db.StorePayment(paymentsBefore[0]); err != nil {
 		t.Fatalf("unable to save payment: %v", err)
 	}
 
