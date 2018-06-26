@@ -391,7 +391,7 @@ func TestSimpleStrategy(t *testing.T) {
 	<-updates.Read()
 
 	// Change the network and lock
-	currentNetwork, err := r.Network()
+	currentNetwork, err := r.Channels()
 	if err != nil {
 		t.Fatalf("unable to get router topology: %v", err)
 	}
@@ -412,7 +412,7 @@ func TestSimpleStrategy(t *testing.T) {
 	r.network.blockNotifier.MineBlock()
 	<-updates.Read()
 
-	currentNetwork, err = r.Network()
+	currentNetwork, err = r.Channels()
 	if err != nil {
 		t.Fatalf("unable to get router topology: %v", err)
 	}

@@ -35,7 +35,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	n, err := r.Network()
+	n, err := r.Channels()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
