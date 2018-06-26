@@ -21,4 +21,14 @@ type SyncStorage interface {
 	// LastForwardingIndex return last lnd forwarding pagination index of
 	// which were preceded by the hub.
 	LastForwardingIndex() (uint32, error)
+
+	// PutLastOutgoingPaymentTime saves last outgoing payment time, which is
+	// used to properly synchronise payment table of our lightning network
+	// node.
+	PutLastOutgoingPaymentTime(int64) error
+
+	// LastOutgoingPaymentTime returns last outgoing payment time, which is
+	// used to properly synchronise payment table of our lightning network
+	// node.
+	LastOutgoingPaymentTime() (int64, error)
 }
