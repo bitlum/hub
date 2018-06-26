@@ -22,6 +22,19 @@ func getPaymentsResolver(storage router.PaymentStorage) graphql.FieldResolveFn {
 func getPeersResolver(storage router.UserStorage) graphql.FieldResolveFn {
 	return func(rp graphql.ResolveParams) (
 		interface{}, error) {
-		return storage.Users()
+		var users []*router.User
+
+		allUsers, err := storage.Users()
+		if err != nil {
+			return nil, err
+		}
+
+		for _, user := range allUsers {
+			if user.IsConnected {
+				users = append(users, user)
+			}
+		}
+
+		return users, nil
 	}
 }
