@@ -371,7 +371,7 @@ func (r *Router) RegisterOnUpdates() *broadcast.Receiver {
 //
 // NOTE: Part of the router.Router interface.
 func (r *Router) Channels() ([]*router.Channel, error) {
-	m := crypto.NewMetric(r.cfg.Asset, "Network", r.cfg.MetricsBackend)
+	m := crypto.NewMetric(r.cfg.Asset, "Channels", r.cfg.MetricsBackend)
 	defer m.Finish()
 
 	channels, err := r.cfg.Storage.Channels()
@@ -394,7 +394,7 @@ func (r *Router) Channels() ([]*router.Channel, error) {
 }
 
 func (r *Router) Users() ([]*router.User, error) {
-	m := crypto.NewMetric(r.cfg.Asset, "Network", r.cfg.MetricsBackend)
+	m := crypto.NewMetric(r.cfg.Asset, "Users", r.cfg.MetricsBackend)
 	defer m.Finish()
 
 	users, err := r.cfg.Storage.Users()
