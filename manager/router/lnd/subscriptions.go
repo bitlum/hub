@@ -598,11 +598,11 @@ func syncChannelStates(
 // NOTE: Should run as goroutine.
 func (r *Router) listenForwardingPayments() {
 	defer func() {
-		log.Info("Stopped forwarding payments goroutine")
+		log.Info("Stopped sync forwarding payments goroutine")
 		r.wg.Done()
 	}()
 
-	log.Info("Started forwarding payments goroutine")
+	log.Info("Started sync forwarding payments goroutine")
 
 	for {
 		select {
@@ -741,11 +741,11 @@ func (r *Router) syncForwardingUpdate() {
 func (r *Router) listenIncomingPayments() {
 	defer func() {
 		panicRecovering()
-		log.Info("Stopped incoming payments goroutine")
+		log.Info("Stopped sync incoming payments goroutine")
 		r.wg.Done()
 	}()
 
-	log.Info("Started incoming payments goroutine")
+	log.Info("Started sync incoming payments goroutine")
 
 	m := crypto.NewMetric(r.cfg.Asset, "ListenIncomingPayments",
 		r.cfg.MetricsBackend)
@@ -802,10 +802,13 @@ func (r *Router) listenIncomingPayments() {
 		amount := btcutil.Amount(invoiceUpdate.Value)
 
 		if err := r.cfg.Storage.StorePayment(&router.Payment{
+			// TODO(andrew.shvv) Need to add sender chan id in lnd,
+			// in this case we could understand from which user we have
+			// received the payment.
 			FromUser:  router.UserID("unknown"),
-			ToUser:    router.UserID(r.nodeAddr),
+			ToUser:    r.routerUserID,
 			FromAlias: registry.GetAlias("unknown"),
-			ToAlias:   registry.GetAlias(router.UserID(r.nodeAddr)),
+			ToAlias:   registry.GetAlias(r.routerUserID),
 			Amount:    router.BalanceUnit(amount),
 			Type:      router.Incoming,
 			Status:    router.Successful,
@@ -823,7 +826,7 @@ func (r *Router) listenIncomingPayments() {
 			// in this case we could understand from which user we have
 			// received the payment.
 			Sender:   "unknown",
-			Receiver: router.UserID(r.nodeAddr),
+			Receiver: r.routerUserID,
 
 			Amount: router.BalanceUnit(amount),
 			Earned: 0,
@@ -1174,4 +1177,114 @@ func getInitiator(routerBalance int64) router.ChannelInitiator {
 	} else {
 		return router.RouterInitiator
 	}
+}
+
+// listenOutgoingPayments listens for outgoing payment from out lightning
+// network node.
+//
+// NOTE: Should run as goroutine.
+func (r *Router) listenOutgoingPayments() {
+	defer func() {
+		log.Info("Stopped sync outgoing payments goroutine")
+		r.wg.Done()
+	}()
+
+	log.Info("Started sync outgoing payments goroutine")
+
+	for {
+		select {
+		case <-time.After(time.Second * 15):
+		case <-r.quit:
+			return
+		}
+
+		m := crypto.NewMetric(r.cfg.Asset, "SyncOutgoingPayments", r.cfg.MetricsBackend)
+
+		payments, err := fetchOutgoingPayments(r.client)
+		if err != nil {
+			m.AddError(metrics.HighSeverity)
+			m.Finish()
+
+			log.Errorf("(outgoing payments sync) unable to get lnd outgoing"+
+				" payments: %v", err)
+			continue
+		}
+
+		if err := syncOutgoing(r.routerUserID, payments, r.cfg.Storage,
+			r.cfg.Storage, r.broadcaster); err != nil {
+			m.AddError(metrics.HighSeverity)
+			m.Finish()
+
+			log.Errorf("(outgoing payments sync) unable to sync outgoing"+
+				" payments: %v", err)
+			continue
+		}
+
+		m.Finish()
+	}
+}
+
+// syncOutgoing synchronise lightning network node view on outgoing payments
+// with out state, and send payment updates.
+func syncOutgoing(routerID router.UserID, lndPayments []*lnrpc.Payment,
+	syncStorage SyncStorage, paymentStorage router.PaymentStorage,
+	broadcaster *broadcast.Broadcaster) error {
+
+	lastOutgoingPaymentTime, err := syncStorage.LastOutgoingPaymentTime()
+	if err != nil {
+		return err
+	}
+
+	log.Debugf("(outgoing payments sync) Fetched last outgoing payment"+
+		" time(%v)", lastOutgoingPaymentTime)
+
+	for _, payment := range lndPayments {
+		// Skip entries which are already been proceeded.
+		if payment.CreationDate <= lastOutgoingPaymentTime {
+			continue
+		}
+
+		// Save last time before actually save and send update, because cost
+		// of not having this payment in db is less that having two such
+		// payments.
+		lastOutgoingPaymentTime = payment.CreationDate
+		err := syncStorage.PutLastOutgoingPaymentTime(lastOutgoingPaymentTime)
+		if err != nil {
+			return err
+		}
+
+		sender := routerID
+		receiver := router.UserID(payment.Path[0])
+		amount := router.BalanceUnit(payment.Value)
+		fee := router.BalanceUnit(payment.Fee)
+
+		log.Infof("(outgoing payments sync) Process new outgoing payment"+
+			" from(%v), to(%v), amount(%v), fee(%v), time(%v)", sender,
+			receiver, amount, fee, payment.CreationDate)
+
+		broadcaster.Write(&router.UpdatePayment{
+			Type:     router.Outgoing,
+			Status:   router.Successful,
+			Sender:   sender,
+			Receiver: receiver,
+			Amount:   amount,
+			Earned:   -fee,
+		})
+
+		if err := paymentStorage.StorePayment(&router.Payment{
+			FromUser:  sender,
+			ToUser:    receiver,
+			FromAlias: registry.GetAlias(sender),
+			ToAlias:   registry.GetAlias(receiver),
+			Amount:    amount,
+			Type:      router.Outgoing,
+			Status:    router.Successful,
+			Time:      payment.CreationDate,
+		}); err != nil {
+			log.Errorf("unable to save the payment: %v", err)
+			continue
+		}
+	}
+
+	return nil
 }

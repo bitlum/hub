@@ -121,8 +121,8 @@ type Router struct {
 	client lnrpc.LightningClient
 	conn   *grpc.ClientConn
 
-	cfg      *Config
-	nodeAddr string
+	cfg          *Config
+	routerUserID router.UserID
 
 	// broadcaster is used to broadcast router updates in the non-blocking
 	// manner. If one of receiver would not read te update write wouldn't stuck.
@@ -213,7 +213,7 @@ func (r *Router) Start() error {
 
 	log.Infof("Init lnd router working with network(%v) alias(%v) ", lndNet, respInfo.Alias)
 
-	r.nodeAddr = respInfo.IdentityPubkey
+	r.routerUserID = router.UserID(respInfo.IdentityPubkey)
 	log.Infof("Init lnd router with pub key: %v", respInfo.IdentityPubkey)
 
 	// Register ZigZag us known and public lighting network node.
@@ -230,6 +230,9 @@ func (r *Router) Start() error {
 
 	r.wg.Add(1)
 	go r.listenIncomingPayments()
+
+	r.wg.Add(1)
+	go r.listenOutgoingPayments()
 
 	r.wg.Add(1)
 	go r.updatePeers()
