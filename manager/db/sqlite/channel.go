@@ -84,14 +84,15 @@ func (d *DB) Channels() ([]*router.Channel, error) {
 		}
 
 		routerChannels[i] = &router.Channel{
-			ChannelID:     router.ChannelID(channel.ID),
-			UserID:        router.UserID(channel.UserID),
-			OpenFee:       router.BalanceUnit(channel.OpenFee),
-			UserBalance:   router.BalanceUnit(channel.UserBalance),
-			RouterBalance: router.BalanceUnit(channel.RouterBalance),
-			Initiator:     router.ChannelInitiator(channel.Initiator),
-			CloseFee:      router.BalanceUnit(channel.CloseFee),
-			States:        routerStates,
+			ChannelID:       router.ChannelID(channel.ID),
+			UserID:          router.UserID(channel.UserID),
+			OpenFee:         router.BalanceUnit(channel.OpenFee),
+			UserBalance:     router.BalanceUnit(channel.UserBalance),
+			RouterBalance:   router.BalanceUnit(channel.RouterBalance),
+			Initiator:       router.ChannelInitiator(channel.Initiator),
+			CloseFee:        router.BalanceUnit(channel.CloseFee),
+			IsUserConnected: channel.IsUserConnected,
+			States:          routerStates,
 		}
 	}
 
