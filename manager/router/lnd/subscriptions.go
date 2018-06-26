@@ -865,8 +865,18 @@ func (r *Router) updatePeers() {
 			continue
 		}
 
-		if err := syncPeers(r.cfg.Storage, hubUsers, connectedPeers,
-			openChannels, pendingOpenChannels, pendingClosingChannels,
+		hubChannels, err := r.Channels()
+		if err != nil {
+			m.AddError(metrics.MiddleSeverity)
+			m.Finish()
+
+			log.Errorf("(peer updates) unable to fetch router channels: %v",
+				err)
+			continue
+		}
+
+		if err := syncPeers(r.cfg.Storage, hubUsers, hubChannels,
+			connectedPeers, openChannels, pendingOpenChannels, pendingClosingChannels,
 			pendingForceClosingChannels, pendingWaitingCloseChannels,
 			r.broadcaster);
 			err != nil {
@@ -882,12 +892,20 @@ func (r *Router) updatePeers() {
 	}
 }
 
+type lndUser struct {
+	userID       router.UserID
+	isConnected  bool
+	lockedByUser router.BalanceUnit
+	lockedByHub  router.BalanceUnit
+}
+
 // syncPeers sync information about is the user who is connected to us with
 // payment channel now active i.e has tcp/ip connection with us.
 // With this we could track what percentage of overall time users are
 // connected to our hub.
 func syncPeers(userStorage router.UserStorage,
 	hubUsers []*router.User,
+	hubChannels []*router.Channel,
 	connectedPeers []*lnrpc.Peer,
 	openChannels []*lnrpc.Channel,
 	pendingOpenChannels []*lnrpc.PendingChannelsResponse_PendingOpenChannel,
@@ -896,35 +914,49 @@ func syncPeers(userStorage router.UserStorage,
 	pendingWaitingCloseChannels []*lnrpc.PendingChannelsResponse_WaitingCloseChannel,
 	broadcaster *broadcast.Broadcaster) error {
 
+	if len(connectedPeers) == 0 {
+		return nil
+	}
+
 	// Create map of peers so that easily check presence of user with given id.
 	connectedPeersMap := make(map[router.UserID]*lnrpc.Peer)
 	for _, peer := range connectedPeers {
 		connectedPeersMap[router.UserID(peer.PubKey)] = peer
 	}
 
-	// This is map of hubUsers, who are connected to us with channels.
-	lndPeersView := make(map[router.UserID]*router.User)
+	hubChannelView := make(map[router.ChannelID]*router.Channel)
+	for _, channel := range hubChannels {
+		hubChannelView[channel.ChannelID] = channel
+	}
+
+	// This is map of users who are connected to us with payment channels.
+	lndPeersView := make(map[router.UserID]*lndUser)
 
 	for _, c := range openChannels {
 		userID := router.UserID(c.RemotePubkey)
 		_, isConnected := connectedPeersMap[userID]
 
+		// If channel already exist from hub point of view,
+		// than we need mark.
+		// TODO(andrew.shvv) remove when channel would contain users
+		hubChannel, ok := hubChannelView[router.ChannelID(c.ChannelPoint)]
+		if ok {
+			hubChannel.SetUserConnected(isConnected)
+		}
+
 		lockedByUser := router.BalanceUnit(c.RemoteBalance)
 		lockedByHub := router.BalanceUnit(c.LocalBalance)
 
 		if user, ok := lndPeersView[userID]; ok {
-			user.LockedByUser += lockedByUser
-			user.LockedByHub += lockedByHub
+			user.lockedByUser += lockedByUser
+			user.lockedByHub += lockedByHub
 		} else {
-			user, err := router.NewUser(userID, isConnected,
-				registry.GetAlias(userID), lockedByHub, lockedByUser,
-				&router.UserConfig{
-					Storage: userStorage,
-				})
-			if err != nil {
-				return errors.Errorf("unable to create user: %v", err)
+			lndPeersView[userID] = &lndUser{
+				userID:       userID,
+				isConnected:  isConnected,
+				lockedByHub:  lockedByHub,
+				lockedByUser: lockedByUser,
 			}
-			lndPeersView[userID] = user
 		}
 	}
 
@@ -932,22 +964,27 @@ func syncPeers(userStorage router.UserStorage,
 		userID := router.UserID(c.Channel.RemoteNodePub)
 		_, isConnected := connectedPeersMap[userID]
 
+		// If channel already exist from hub point of view,
+		// than we need mark.
+		// TODO(andrew.shvv) remove when channel would contain users
+		hubChannel, ok := hubChannelView[router.ChannelID(c.Channel.ChannelPoint)]
+		if ok {
+			hubChannel.SetUserConnected(isConnected)
+		}
+
 		lockedByUser := router.BalanceUnit(c.Channel.RemoteBalance)
 		lockedByHub := router.BalanceUnit(c.Channel.LocalBalance)
 
 		if user, ok := lndPeersView[userID]; ok {
-			user.LockedByUser += lockedByUser
-			user.LockedByHub += lockedByHub
+			user.lockedByUser += lockedByUser
+			user.lockedByHub += lockedByHub
 		} else {
-			user, err := router.NewUser(userID, isConnected,
-				registry.GetAlias(userID), lockedByHub, lockedByUser,
-				&router.UserConfig{
-					Storage: userStorage,
-				})
-			if err != nil {
-				return errors.Errorf("unable to create user: %v", err)
+			lndPeersView[userID] = &lndUser{
+				userID:       userID,
+				isConnected:  isConnected,
+				lockedByHub:  lockedByHub,
+				lockedByUser: lockedByUser,
 			}
-			lndPeersView[userID] = user
 		}
 	}
 
@@ -955,22 +992,27 @@ func syncPeers(userStorage router.UserStorage,
 		userID := router.UserID(c.Channel.RemoteNodePub)
 		_, isConnected := connectedPeersMap[userID]
 
+		// If channel already exist from hub point of view,
+		// than we need mark.
+		// TODO(andrew.shvv) remove when channel would contain users
+		hubChannel, ok := hubChannelView[router.ChannelID(c.Channel.ChannelPoint)]
+		if ok {
+			hubChannel.SetUserConnected(isConnected)
+		}
+
 		lockedByUser := router.BalanceUnit(c.Channel.RemoteBalance)
 		lockedByHub := router.BalanceUnit(c.Channel.LocalBalance)
 
 		if user, ok := lndPeersView[userID]; ok {
-			user.LockedByUser += lockedByUser
-			user.LockedByHub += lockedByHub
+			user.lockedByUser += lockedByUser
+			user.lockedByHub += lockedByHub
 		} else {
-			user, err := router.NewUser(userID, isConnected,
-				registry.GetAlias(userID), lockedByHub, lockedByUser,
-				&router.UserConfig{
-					Storage: userStorage,
-				})
-			if err != nil {
-				return errors.Errorf("unable to create user: %v", err)
+			lndPeersView[userID] = &lndUser{
+				userID:       userID,
+				isConnected:  isConnected,
+				lockedByHub:  lockedByHub,
+				lockedByUser: lockedByUser,
 			}
-			lndPeersView[userID] = user
 		}
 	}
 
@@ -978,22 +1020,27 @@ func syncPeers(userStorage router.UserStorage,
 		userID := router.UserID(c.Channel.RemoteNodePub)
 		_, isConnected := connectedPeersMap[userID]
 
+		// If channel already exist from hub point of view,
+		// than we need mark.
+		// TODO(andrew.shvv) remove when channel would contain users
+		hubChannel, ok := hubChannelView[router.ChannelID(c.Channel.ChannelPoint)]
+		if ok {
+			hubChannel.SetUserConnected(isConnected)
+		}
+
 		lockedByUser := router.BalanceUnit(c.Channel.RemoteBalance)
 		lockedByHub := router.BalanceUnit(c.Channel.LocalBalance)
 
 		if user, ok := lndPeersView[userID]; ok {
-			user.LockedByUser += lockedByUser
-			user.LockedByHub += lockedByHub
+			user.lockedByUser += lockedByUser
+			user.lockedByHub += lockedByHub
 		} else {
-			user, err := router.NewUser(userID, isConnected,
-				registry.GetAlias(userID), lockedByHub, lockedByUser,
-				&router.UserConfig{
-					Storage: userStorage,
-				})
-			if err != nil {
-				return errors.Errorf("unable to create user: %v", err)
+			lndPeersView[userID] = &lndUser{
+				userID:       userID,
+				isConnected:  isConnected,
+				lockedByHub:  lockedByHub,
+				lockedByUser: lockedByUser,
 			}
-			lndPeersView[userID] = user
 		}
 	}
 
@@ -1001,22 +1048,27 @@ func syncPeers(userStorage router.UserStorage,
 		userID := router.UserID(c.Channel.RemoteNodePub)
 		_, isConnected := connectedPeersMap[userID]
 
+		// If channel already exist from hub point of view,
+		// than we need mark.
+		// TODO(andrew.shvv) remove when channel would contain users
+		hubChannel, ok := hubChannelView[router.ChannelID(c.Channel.ChannelPoint)]
+		if ok {
+			hubChannel.SetUserConnected(isConnected)
+		}
+
 		lockedByUser := router.BalanceUnit(c.Channel.RemoteBalance)
 		lockedByHub := router.BalanceUnit(c.Channel.LocalBalance)
 
 		if user, ok := lndPeersView[userID]; ok {
-			user.LockedByUser += lockedByUser
-			user.LockedByHub += lockedByHub
+			user.lockedByUser += lockedByUser
+			user.lockedByHub += lockedByHub
 		} else {
-			user, err := router.NewUser(userID, isConnected,
-				registry.GetAlias(userID), lockedByHub, lockedByUser,
-				&router.UserConfig{
-					Storage: userStorage,
-				})
-			if err != nil {
-				return errors.Errorf("unable to create user: %v", err)
+			lndPeersView[userID] = &lndUser{
+				userID:       userID,
+				isConnected:  isConnected,
+				lockedByHub:  lockedByHub,
+				lockedByUser: lockedByUser,
 			}
-			lndPeersView[userID] = user
 		}
 	}
 
@@ -1034,11 +1086,11 @@ func syncPeers(userStorage router.UserStorage,
 			// and we need update information about him,
 			// and also if his connection status has changed,
 			// than we need to sen update.
-			hubUser.LockedByUser = lndUser.LockedByUser
-			hubUser.LockedByHub = lndUser.LockedByHub
+			hubUser.LockedByUser = lndUser.lockedByUser
+			hubUser.LockedByHub = lndUser.lockedByHub
 
-			if hubUser.IsConnected != lndUser.IsConnected {
-				hubUser.IsConnected = lndUser.IsConnected
+			if hubUser.IsConnected != lndUser.isConnected {
+				hubUser.IsConnected = lndUser.isConnected
 				broadcaster.Write(&router.UpdateUserConnected{
 					User:        userID,
 					IsConnected: hubUser.IsConnected,
@@ -1049,16 +1101,25 @@ func syncPeers(userStorage router.UserStorage,
 				return errors.Errorf("unable update user status: %v", err)
 			}
 		} else {
+			newUser, err := router.NewUser(userID, lndUser.isConnected,
+				registry.GetAlias(userID), lndUser.lockedByHub,
+				lndUser.lockedByUser, &router.UserConfig{
+					Storage: userStorage,
+				})
+			if err != nil {
+				return errors.Errorf("unable to create user: %v", err)
+			}
+
 			// In this case we have new user, which wasn't seen before,
 			// and we need to save it.
-			log.Infof("Save new user(%v)", lndUser.UserID)
-			if err := lndUser.Save(); err != nil {
+			log.Infof("Save new user(%v)", lndUser.userID)
+			if err := newUser.Save(); err != nil {
 				return errors.Errorf("unable update user status: %v", err)
 			}
 
 			broadcaster.Write(&router.UpdateUserConnected{
 				User:        userID,
-				IsConnected: lndUser.IsConnected,
+				IsConnected: lndUser.isConnected,
 			})
 		}
 	}
@@ -1074,7 +1135,6 @@ func syncPeers(userStorage router.UserStorage,
 		// As far as we send update only about hubUsers who has channels
 		// with us, we need to mark this user as disconnected.
 		if hubUser.IsConnected {
-			log.Infof("User(%v) removed all channels with us", hubUser.UserID)
 			hubUser.IsConnected = false
 			broadcaster.Write(&router.UpdateUserConnected{
 				User:        userID,
