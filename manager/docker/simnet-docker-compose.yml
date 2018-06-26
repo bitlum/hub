@@ -41,10 +41,10 @@ services:
       - "db:/db"
       # This directory should exist on host, so connector should be deployed
       # first, with lightning network daemon.
-      - /connector/bitcoin-lightning.simnet.primary:/root/.lnd/:ro
+      - /connector/bitcoin-lightning.simnet.secondary:/root/.lnd/:ro
     ports:
       # GraphQL endpoint
-      - "3000:3000"
+      - "80:3000"
 
       # Prometheus monitoring
       - "19999:19999"
@@ -58,7 +58,7 @@ services:
       - "db:/db"
       # This directory should exist on host, so connector should be deployed
       # first, with lightning network daemon.
-      - /connector/bitcoin-lightning.simnet.primary:/root/.lnd/:ro
+      - /connector/bitcoin-lightning.simnet.secondary:/root/.lnd/:ro
 
 volumes:
   db:
