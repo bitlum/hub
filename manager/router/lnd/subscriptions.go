@@ -780,6 +780,8 @@ func (r *Router) listenIncomingPayments() {
 			}
 		}
 
+		log.Info("(payments updates) Waiting for invoice update" +
+			" notification...")
 		invoiceUpdate, err := invoiceSubsc.Recv()
 		if err != nil {
 			m.AddError(metrics.HighSeverity)
@@ -798,6 +800,21 @@ func (r *Router) listenIncomingPayments() {
 		}
 
 		amount := btcutil.Amount(invoiceUpdate.Value)
+
+		if err := r.cfg.Storage.StorePayment(&router.Payment{
+			FromUser:  router.UserID("unknown"),
+			ToUser:    router.UserID(r.nodeAddr),
+			FromAlias: registry.GetAlias("unknown"),
+			ToAlias:   registry.GetAlias(router.UserID(r.nodeAddr)),
+			Amount:    router.BalanceUnit(amount),
+			Type:      router.Incoming,
+			Status:    router.Successful,
+			Time:      time.Now().Unix(),
+		}); err != nil {
+			log.Errorf("unable to save the payment: %v", err)
+			continue
+		}
+
 		update := &router.UpdatePayment{
 			Type:   router.Incoming,
 			Status: router.Successful,
