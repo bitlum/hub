@@ -7,12 +7,13 @@ sys.path.append(os.path.join(current_path, '../'))
 
 from core.transsample import TransSample
 from samples.smartsample import SmartSample
+from core.routersetts import RouterSetts
 
 
 class TransStat(TransSample):
 
-    def __init__(self, transseq):
-        super().__init__(transseq)
+    def __init__(self, transseq, setts):
+        super().__init__(transseq, setts)
 
         self.smart_period = list()
         self.smart_amount = list()
@@ -35,12 +36,16 @@ class TransStat(TransSample):
 
 
 if __name__ == '__main__':
+    router_setts = RouterSetts()
+    router_setts.set_from_file('../optimizer/routermgt_inlet.json')
+
     with open('../activity/outlet/transseq.json') as f:
         transseq = json.load(f)['transseq']
 
     prob_cut = 0.5
 
-    trans_stat = TransStat(transseq)
+    trans_stat = TransStat(transseq,router_setts)
+    trans_stat.accelerate_transseq()
     trans_stat.calc_stat(prob_cut)
 
     print('period:')

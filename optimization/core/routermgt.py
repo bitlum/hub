@@ -12,9 +12,8 @@ from core.routersetts import RouterSetts
 class RouterMgt(FlowStat):
 
     def __init__(self, transseq, setts):
-        super().__init__(transseq)
+        super().__init__(transseq, setts)
         self.indexes = dict()
-        self.setts = setts
         self.pmnt_fee_prop_eff = 1.E-6 * self.setts.pmnt_fee_prop
         self.pmnt_fee_base_eff = 1.E-3 * self.setts.pmnt_fee_base
         self.balances = dict()
@@ -204,18 +203,18 @@ class RouterMgt(FlowStat):
 
 
 if __name__ == '__main__':
-    file_inlet = '../optimizer/routermgt_inlet.json'
-
     router_setts = RouterSetts()
-
-    router_setts.set_from_file(file_inlet)
+    router_setts.set_from_file('../optimizer/routermgt_inlet.json')
 
     with open('../activity/outlet/transseq.json') as f:
         transseq = json.load(f)['transseq']
 
     router_mgt = RouterMgt(transseq, router_setts)
+    router_mgt.accelerate_transseq()
     router_mgt.calc_parameters()
 
+    print('lim_idle', router_mgt.lim_idle)
+    print('lim_period_in', router_mgt.lim_period_in)
     print('balances', router_mgt.balances)
     print('bounds', router_mgt.bounds)
     print('flowvect_in', router_mgt.flowvect_in)

@@ -7,12 +7,13 @@ current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_path, '../'))
 
 from core.userssample import UsersSample
+from core.routersetts import RouterSetts
 
 
 class TransSample(UsersSample):
 
-    def __init__(self, transseq):
-        super().__init__(transseq)
+    def __init__(self, transseq, setts):
+        super().__init__(transseq, setts)
         self.timematr = list()
         self.amountmatr = list()
         self.periodmatr = list()
@@ -55,10 +56,14 @@ class TransSample(UsersSample):
 
 
 if __name__ == '__main__':
+    router_setts = RouterSetts()
+    router_setts.set_from_file('../optimizer/routermgt_inlet.json')
+
     with open('../activity/outlet/transseq.json') as f:
         transseq = json.load(f)['transseq']
 
-    trans_sample = TransSample(transseq)
+    trans_sample = TransSample(transseq, router_setts)
+    trans_sample.accelerate_transseq()
     trans_sample.calc_data()
 
     print('users_number ', trans_sample.users_number)

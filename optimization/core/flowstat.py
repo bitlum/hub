@@ -6,12 +6,13 @@ current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_path, '../'))
 
 from core.transstat import TransStat
+from core.routersetts import RouterSetts
 
 
 class FlowStat(TransStat):
 
-    def __init__(self, transseq):
-        super().__init__(transseq)
+    def __init__(self, transseq, setts):
+        super().__init__(transseq, setts)
         self.flowmatr = list()
         self.flowvect_out = list()
         self.flowvect_in = list()
@@ -69,12 +70,16 @@ class FlowStat(TransStat):
 
 
 if __name__ == '__main__':
+    router_setts = RouterSetts()
+    router_setts.set_from_file('../optimizer/routermgt_inlet.json')
+
     with open('../activity/outlet/transseq.json') as f:
         transseq = json.load(f)['transseq']
 
     prob_cut = 0.5
 
-    flow_stat = FlowStat(transseq)
+    flow_stat = FlowStat(transseq, router_setts)
+    flow_stat.accelerate_transseq()
     flow_stat.calc_flow(prob_cut)
 
     print('flowmatr:')
