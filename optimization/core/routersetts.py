@@ -26,6 +26,7 @@ class RouterSetts:
         self.output_log = bool(True)
         self.output_period = float(1)
         self.show_log = bool(True)
+        self.acceleration = float(1)
 
     def set_from_file(self, file_name):
         with open(file_name) as f:
@@ -47,6 +48,7 @@ class RouterSetts:
         self.output_log = inlet['output_log']
         self.output_period = inlet['output_period']
         self.show_log = inlet['show_log']
+        self.acceleration = inlet['acceleration']
 
     def __str__(self):
         out_str = 'router settings:\n'
@@ -64,5 +66,6 @@ class RouterSetts:
         out_str += 'init_mult ' + str(self.init_mult) + '\n'
         out_str += 'make_drawing ' + str(self.make_drawing) + '\n'
         out_str += 'output_stat ' + str(self.output_stat) + '\n'
-        out_str += 'show_log ' + str(self.show_log)
+        out_str += 'show_log ' + str(self.show_log) + '\n'
+        out_str += 'acceleration ' + str(self.acceleration)
         return out_str

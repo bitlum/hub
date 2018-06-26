@@ -7,13 +7,14 @@
 	"idle_mult": 0.1,
 	"period_mult": 1,
 	"prob_cut": 0.5,
-	"init_period": 5,
+	"init_period": 0,
 	"mgt_period": 1,
 	"average_period": 10,
-	"init_mult": 0.3,
+	"init_mult": 0,
 	"make_drawing": true,
 	"output_stat": true,
 	"output_log": true,
 	"output_period": 70,
-	"show_log": true
+	"show_log": true,
+	"acceleration": 0.5
 }

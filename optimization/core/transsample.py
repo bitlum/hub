@@ -16,15 +16,12 @@ class TransSample(UsersSample):
         self.timematr = list()
         self.amountmatr = list()
         self.periodmatr = list()
-        self.trans_number = int()
 
     def calc_matr_data(self):
 
         self.timematr.clear()
         self.amountmatr.clear()
         self.periodmatr.clear()
-
-        self.trans_number = len(self.transseq)
 
         self.timematr = [[list() for _ in range(self.users_number)] for _ in
                          range(self.users_number)]
@@ -33,15 +30,16 @@ class TransSample(UsersSample):
                            range(self.users_number)]
 
         for i in range(len(self.transseq)):
-            payment = self.transseq[i]["payment"]
-            sender = self.users_ind[payment['sender']]
-            receiver = self.users_ind[payment['receiver']]
+            if i not in self.single_trans:
+                payment = self.transseq[i]["payment"]
+                sender = self.users_ind[payment['sender']]
+                receiver = self.users_ind[payment['receiver']]
 
-            delta = self.transseq[i]['time'] - self.transseq[0]['time']
-            self.timematr[sender][receiver].append(1.E-9 * delta)
+                delta = self.transseq[i]['time'] - self.transseq[0]['time']
+                self.timematr[sender][receiver].append(1.E-9 * delta)
 
-            amount = payment['amount'] + payment['earned']
-            self.amountmatr[sender][receiver].append(amount)
+                amount = payment['amount'] + payment['earned']
+                self.amountmatr[sender][receiver].append(amount)
 
         self.periodmatr = copy.deepcopy(self.timematr)
 
@@ -68,7 +66,6 @@ if __name__ == '__main__':
     print('users_ind ', trans_sample.users_ind)
     print()
 
-    print('trans_number ', trans_sample.trans_number)
     print('amountmatr ', trans_sample.amountmatr)
     print('timematr ', trans_sample.timematr)
     print('periodmatr ', trans_sample.periodmatr)

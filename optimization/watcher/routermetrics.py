@@ -32,6 +32,7 @@ class RouterMetrics:
         self.ROI_predict_av = list([float(0)])
 
         self.average_period = router_mgt.setts.average_period
+        self.average_period /= router_mgt.setts.acceleration
 
         self.make_drawing = router_mgt.setts.make_drawing
         self.output_stat = router_mgt.setts.output_stat

@@ -10,6 +10,7 @@ sys.path.append(os.path.join(current_path, '../../'))
 
 import protobuffer.rpc_pb2 as proto
 import protobuffer.rpc_pb2_grpc as proto_rpc
+from core.routersetts import RouterSetts
 
 
 def set_blch_period(blch_period, stub):
@@ -41,41 +42,48 @@ def create_stub():
 
 
 class TransactionThread(Thread):
-    def __init__(self, stub, time_shift, transaction):
+    def __init__(self, stub, time_shift, transaction, acceleration):
         Thread.__init__(self)
         self.stub = stub
         self.time_shift = time_shift
         self.transaction = transaction
+        self.acceleration = acceleration
         self.request = proto.SendPaymentRequest()
 
     def run(self):
         amount = round(self.transaction['payment']['amount'])
         if amount > 0:
-            time.sleep(1.E-9 * self.transaction['time'] - self.time_shift)
-            self.request.sender = self.transaction['payment']['sender']
-            self.request.receiver = self.transaction['payment']['receiver']
+            period = 1.E-9 * self.transaction['time'] - self.time_shift
+            period /= self.acceleration
+            time.sleep(period)
+            sender = self.transaction['payment']['sender']
+            receiver = self.transaction['payment']['receiver']
+            self.request.sender = sender
+            self.request.receiver = receiver
             self.request.amount = amount
             try:
                 self.stub.SendPayment(self.request)
             except Exception as er:
-                print(er, 'is skipped')
+                print(er, 'is skipped for transaction', sender, '->', receiver)
             print(self.request)
 
 
-def sent_transactions(stub, transseq):
+def sent_transactions(stub, transseq, acceleration):
     time_init = time.time()
     for i in range(len(transseq)):
         TransactionThread(stub, time.time() - time_init,
-                          transseq[i]).start()
+                          transseq[i], acceleration).start()
 
 
 def actrpc_gen(file_name_inlet):
     with open(file_name_inlet) as f:
         inlet = json.load(f)
 
-    blch_period = inlet['blch_period']
-
-    blch_fee = inlet['blch_fee']
+    router_setts = RouterSetts()
+    router_setts.set_from_file('../../optimizer/routermgt_inlet.json')
+    blch_period = int(
+        router_setts.blch_period * 1E+3 / router_setts.acceleration)
+    blch_fee = router_setts.blch_fee
 
     with open(inlet['users_id_file_name']) as f:
         users_id = json.load(f)['users_id']
@@ -100,7 +108,7 @@ def actrpc_gen(file_name_inlet):
 
     time.sleep(1)
 
-    sent_transactions(stub, transseq)
+    sent_transactions(stub, transseq, router_setts.acceleration)
 
     with open(inlet['channels_id_file_name'], 'w') as f:
         json.dump({'channels_id': channels_id}, f,

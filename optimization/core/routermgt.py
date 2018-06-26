@@ -62,6 +62,7 @@ class RouterMgt(FlowStat):
         self.lim_idle.clear()
         for user_id, ind in self.indexes.items():
             amount = self.flowvect_out[ind] * self.setts.blch_period
+            amount /= self.setts.acceleration
             self.lim_idle[user_id] = amount / self.setts.idle_mult
 
         for user_id, ind in self.indexes.items():

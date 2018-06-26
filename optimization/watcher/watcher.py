@@ -32,12 +32,17 @@ class Watcher(PattMatchEvHand):
         self.router_metrics = RouterMetrics(self.smart_log, self.router_mgt)
 
         self.init_period = router_setts.init_period
+        self.init_period /= router_setts.acceleration
+
         self.init_mult = router_setts.init_mult
 
         self.mgt_period = router_setts.mgt_period
+        self.mgt_period /= router_setts.acceleration
+
         self.time_mgt_start = time.time()
 
         self.output_period = router_setts.output_period
+        self.output_period /= router_setts.acceleration
 
         self.sleep_thread = SleepThread(self.router_metrics, self.log_reader,
                                         router_setts.output_period)
