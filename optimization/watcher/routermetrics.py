@@ -44,12 +44,15 @@ class RouterMetrics:
 
         Gnuplot.GnuplotOpts.default_term = 'qt noraise'
         self.gnuplot = Gnuplot.Gnuplot()
-        self.gnuplot.title("metrics vs time")
-        self.gnuplot("set y2tics")
+        self.gnuplot.title("Average Metrics vs Time")
+        self.gnuplot("set ytics nomirror tc rgb '#008000'")
+        self.gnuplot("set y2tics nomirror tc rgb '#800080'")
+        self.gnuplot("set xtics nomirror")
         self.gnuplot("set xlabel 'time, s'")
-        self.gnuplot("set ylabel 'ROI, fraction/s'")
-        self.gnuplot("set y2label 'locked funds, satoshi'")
-        self.gnuplot("set grid")
+        self.gnuplot("set ylabel 'fraction/s'")
+        self.gnuplot("set y2label 'satoshi'")
+        self.gnuplot('set xtics ' + str(self.plot_period / 5))
+        self.gnuplot('set xrange[0:' + str(self.plot_period) + ']')
 
     def process(self):
         self.set_data()
@@ -125,29 +128,30 @@ class RouterMetrics:
         ROI_av_curve = Gnuplot.Data(
             self.time, self.ROI_av,
             title="ROI",
-            with_="lines lw 3 lt 1 lc 2")
+            with_="lines lw 3 lt 1 lc rgb '#008000'")
 
         ROI_predict_av_curve = Gnuplot.Data(
             self.time, self.ROI_predict_av,
             title="predicted ROI",
-            with_="lines lw 3 lt 0 lc 2")
+            with_="lines lw 3 lt 0 lc rgb '#008000'")
 
         balance_sum_av_curve = Gnuplot.Data(
             self.time, self.balance_sum_av,
             axes='x1y2',
             title="locked funds",
-            with_="lines lw 3 lt 1 lc 1")
+            with_="lines lw 3 lt 1 lc rgb '#800080'")
         balance_sum_predict_av_curve = Gnuplot.Data(
             self.time,
             self.balance_sum_predict_av,
             axes='x1y2',
             title="predicted locked funds",
-            with_="lines lw 3 lt 0 lc 1")
+            with_="lines lw 3 lt 0 lc rgb '#800080'")
 
         time_min = self.time[-1] - self.plot_period
 
         if time_min > 0:
-            self.gnuplot('set xrange[' + str(time_min) + ':]')
+            self.gnuplot(
+                'set xrange[' + str(time_min) + ':' + str(self.time[-1]) + ']')
 
         self.gnuplot.plot(balance_sum_av_curve,
                           balance_sum_predict_av_curve,
