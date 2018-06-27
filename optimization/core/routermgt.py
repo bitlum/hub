@@ -16,6 +16,7 @@ class RouterMgt(FlowStat):
         self.indexes = dict()
         self.pmnt_fee_prop_eff = 1.E-6 * self.setts.pmnt_fee_prop
         self.pmnt_fee_base_eff = 1.E-3 * self.setts.pmnt_fee_base
+        self.lim_extrem = dict()
         self.balances = dict()
         self.lim_idle = dict()
         self.periods_in_eff = dict()
@@ -49,18 +50,21 @@ class RouterMgt(FlowStat):
                 self.indexes[user_id] = ind
 
     def calc_extremum(self):
-        self.balances.clear()
+        self.lim_extrem.clear()
         for user_id, ind in self.indexes.items():
             value = self.setts.blch_fee / self.pmnt_fee_prop_eff
-            self.balances[user_id] = value
-
+            self.lim_extrem[user_id] = value
             if self.setts.income:
-                self.balances[user_id] *= 2
+                self.lim_extrem[user_id] *= 2
+
+        self.balances.clear()
+        for user_id, ind in self.lim_extrem.items():
+            self.balances[user_id] = self.lim_extrem[user_id]
 
     def account_idle(self):
         self.lim_idle.clear()
         for user_id, ind in self.indexes.items():
-            amount = self.flowvect_out[ind] * self.setts.blch_period
+            amount = self.flowvect_in[ind] * self.setts.blch_period
             amount /= self.setts.acceleration
             self.lim_idle[user_id] = amount / self.setts.idle_mult
 
@@ -213,6 +217,7 @@ if __name__ == '__main__':
     router_mgt.accelerate_transseq()
     router_mgt.calc_parameters()
 
+    print('lim_extrem', router_mgt.lim_extrem)
     print('lim_idle', router_mgt.lim_idle)
     print('lim_period_in', router_mgt.lim_period_in)
     print('balances', router_mgt.balances)
