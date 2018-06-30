@@ -46,8 +46,8 @@
   name = "github.com/jrick/logrotate"
 
 [[constraint]]
-  name = "github.com/lightningnetwork/lnd"
-  branch = "master"
+  name = "github.com/bitlum/lnd"
+  branch = "dev"
 
 [[constraint]]
   name = "github.com/prometheus/client_golang"

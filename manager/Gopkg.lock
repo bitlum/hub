@@ -29,6 +29,15 @@
   revision = "ff69c1bdcd79a3d2687b553361283bc7d04a25a3"
 
 [[projects]]
+  branch = "dev"
+  name = "github.com/bitlum/lnd"
+  packages = [
+    "lnrpc",
+    "macaroons"
+  ]
+  revision = "41850e4f3b6ba1a68062821945e29c36de52e85e"
+
+[[projects]]
   branch = "master"
   name = "github.com/btcsuite/btclog"
   packages = ["."]
@@ -133,15 +142,6 @@
   name = "github.com/juju/loggo"
   packages = ["."]
   revision = "584905176618da46b895b176c721b02c476b6993"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/lightningnetwork/lnd"
-  packages = [
-    "lnrpc",
-    "macaroons"
-  ]
-  revision = "b73eef12b36af3b98c90137bcc111a3405f781bf"
 
 [[projects]]
   name = "github.com/mattn/go-sqlite3"
@@ -310,6 +310,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "0b15069b9e7cdc9802f455dacff93c81ca77905f3a1e9d27323fa1378d8cb673"
+  inputs-digest = "f933da7d28794e3a24293080007c65448b5b9d2a6e6102b615624e3c3fbfac7c"
   solver-name = "gps-cdcl"
   solver-version = 1
