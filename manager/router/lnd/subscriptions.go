@@ -704,6 +704,19 @@ func (r *Router) syncForwardingUpdate(storage IndexesStorage) {
 			continue
 		}
 
+		var status router.PaymentStatus
+		switch event.Type {
+		case lnrpc.ForwardingEvent_FAILT_ATTEMPT:
+			switch event.FailCode {
+			case lnrpc.ForwardingEvent_INSUFFICIENT_FUNDS:
+				status = router.InsufficientFunds
+			case lnrpc.ForwardingEvent_UNKNOWN_NEXT_PEER:
+				status = router.UserNotFound
+			}
+		case lnrpc.ForwardingEvent_SUCCESS:
+			status = router.Successful
+		}
+
 		if err := r.cfg.Storage.StorePayment(&router.Payment{
 			FromUser:  sender,
 			ToUser:    receiver,
@@ -711,7 +724,7 @@ func (r *Router) syncForwardingUpdate(storage IndexesStorage) {
 			ToAlias:   registry.GetAlias(receiver),
 			Amount:    router.BalanceUnit(event.AmtOut),
 			Type:      router.Forward,
-			Status:    router.Successful,
+			Status:    status,
 			Time:      time.Now().Unix(),
 		}); err != nil {
 			log.Errorf("unable to save the payment: %v", err)

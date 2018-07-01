@@ -61,6 +61,10 @@ const (
 	// with receiver user to route through the payment.
 	InsufficientFunds PaymentStatus = "insufficient_funds"
 
+	// UserNotFound means that router wasn't able to forward payment because
+	// of the receiver peer not being connected.
+	UserNotFound PaymentStatus = "user_not_found"
+
 	// ExternalFail means that receiver failed to receive payment because of
 	// the unknown to us reason.
 	ExternalFail PaymentStatus = "external_fail"
