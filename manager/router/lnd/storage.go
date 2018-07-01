@@ -12,6 +12,9 @@ type RouterStorage interface {
 
 	IndexesStorage
 	SyncStorage
+
+	// GetUserIDByChannelID returns user id by channel id, i.e. channel point.
+	GetUserIDByChannelID(router.ChannelID) (router.UserID, error)
 }
 
 type SyncStorage interface {
