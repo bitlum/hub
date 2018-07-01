@@ -834,15 +834,20 @@ func (r *Router) listenIncomingPayments() {
 			continue
 		}
 
-		amount := btcutil.Amount(invoiceUpdate.Value)
+		chanID := router.ChannelID(invoiceUpdate.ChannelPoint)
+		userID, err := r.cfg.Storage.GetUserIDByChannelID(chanID)
+		if err != nil {
+			log.Errorf("(payments updates) unable to get user id by channel"+
+				" id(%v) for payment(%v): %v", chanID,
+				invoiceUpdate.PaymentRequest, err)
+			continue
+		}
 
+		amount := btcutil.Amount(invoiceUpdate.Value)
 		if err := r.cfg.Storage.StorePayment(&router.Payment{
-			// TODO(andrew.shvv) Need to add sender chan id in lnd,
-			// in this case we could understand from which user we have
-			// received the payment.
-			FromUser:  router.UserID("unknown"),
+			FromUser:  userID,
 			ToUser:    r.routerUserID,
-			FromAlias: registry.GetAlias("unknown"),
+			FromAlias: registry.GetAlias(userID),
 			ToAlias:   registry.GetAlias(r.routerUserID),
 			Amount:    router.BalanceUnit(amount),
 			Type:      router.Incoming,
@@ -853,22 +858,15 @@ func (r *Router) listenIncomingPayments() {
 			continue
 		}
 
-		update := &router.UpdatePayment{
-			Type:   router.Incoming,
-			Status: router.Successful,
-
-			// TODO(andrew.shvv) Need to add sender chan id in lnd,
-			// in this case we could understand from which user we have
-			// received the payment.
-			Sender:   "unknown",
-			Receiver: r.routerUserID,
-
-			Amount: router.BalanceUnit(amount),
-			Earned: 0,
-		}
-
 		// Send update notification to all router updates listeners.
-		r.broadcaster.Write(update)
+		r.broadcaster.Write(&router.UpdatePayment{
+			Type:     router.Incoming,
+			Status:   router.Successful,
+			Sender:   userID,
+			Receiver: r.routerUserID,
+			Amount:   router.BalanceUnit(amount),
+			Earned:   0,
+		})
 	}
 }
 
