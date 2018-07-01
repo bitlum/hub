@@ -160,7 +160,9 @@ func backendMain() error {
 		r = lndRouter
 
 		// Start maintaining the balance of funds locked with users.
-		optimisation.EnableChannelBalancing(lndRouter)
+		balancer := optimisation.NewBalancer(lndRouter, 0.2, time.Second*10)
+		balancer.Start()
+		defer balancer.Stop()
 
 	default:
 		return errors.Errorf("unhandled backend name: '%v'", config.Backend)
