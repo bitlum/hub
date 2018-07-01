@@ -115,7 +115,7 @@ func (r *Router) updateChannelStates() {
 
 		if err := syncChannelStates(openChannels, pendingOpenChannels,
 			pendingClosingChannels, pendingForceClosingChannels, r.broadcaster,
-			r.cfg.Storage, routerChannels); err != nil {
+			r.cfg.Storage, r.cfg.Storage, routerChannels); err != nil {
 			m.AddError(metrics.MiddleSeverity)
 			m.Finish()
 
@@ -136,6 +136,7 @@ func syncChannelStates(
 	pendingForceClosingChannels []*lnrpc.PendingChannelsResponse_ForceClosedChannel,
 	broadcaster *broadcast.Broadcaster,
 	channelStorage router.ChannelStorage,
+	indexStorage IndexesStorage,
 	routerState []*router.Channel) error {
 
 	routerChannelMap := make(map[router.ChannelID]*router.Channel)
@@ -442,6 +443,27 @@ func syncChannelStates(
 		chanID := router.ChannelID(newChannel.ChannelPoint)
 		newChannelIDs[chanID] = struct{}{}
 
+		// Save user id <> short channel id index in order to retrieve it
+		// later on payment notifications without query lightning network
+		// daemon.
+		userID := router.UserID(newChannel.RemotePubkey)
+		if err := indexStorage.AddUserIDToShortChanIDIndex(userID,
+			newChannel.ChanId); err != nil {
+			return errors.Errorf("unable to add user_id("+
+				"%v) <> short_channel_id(%v) index: %v", userID,
+				newChannel.ChanId, err)
+		}
+
+		// Save channel point <> short channel id index in order to retrieve it
+		// later on payment notifications without query lightning network
+		// daemon.
+		if err := indexStorage.AddChannelPointToShortChanIDIndex(chanID,
+			newChannel.ChanId); err != nil {
+			return errors.Errorf("unable to add channel_point("+
+				"%v) <> short_channel_id(%v) index: %v", chanID,
+				newChannel.ChanId, err)
+		}
+
 		channel, ok := routerChannelMap[router.ChannelID(newChannel.ChannelPoint)]
 		state := router.ChannelStateName("not exist")
 		if ok {
@@ -611,14 +633,14 @@ func (r *Router) listenForwardingPayments() {
 			return
 		}
 
-		r.syncForwardingUpdate()
+		r.syncForwardingUpdate(r.cfg.Storage)
 	}
 }
 
 // syncForwardingUpdate is used as wrapper for fetching and syncing forwarding
 // updates. Main purpose of creating distinct method was usage of defer, which
 // is needed mainly for metric gathering usage.
-func (r *Router) syncForwardingUpdate() {
+func (r *Router) syncForwardingUpdate(storage IndexesStorage) {
 	defer panicRecovering()
 
 	var lastIndex uint32
@@ -666,7 +688,7 @@ func (r *Router) syncForwardingUpdate() {
 	log.Infof("(forwarding updates) Broadcast %v forwarding"+
 		" events", len(events))
 	for _, event := range events {
-		sender, err := getPubKeyByChainID(r.client, event.ChanIdIn)
+		sender, err := storage.GetUserIDByShortChanID(event.ChanIdIn)
 		if err != nil {
 			m.AddError(metrics.MiddleSeverity)
 			log.Errorf("(forwarding updates) error during event"+
@@ -674,7 +696,7 @@ func (r *Router) syncForwardingUpdate() {
 			continue
 		}
 
-		receiver, err := getPubKeyByChainID(r.client, event.ChanIdOut)
+		receiver, err := storage.GetUserIDByShortChanID(event.ChanIdOut)
 		if err != nil {
 			m.AddError(metrics.MiddleSeverity)
 			log.Errorf("(forwarding updates) error during event"+
@@ -683,10 +705,10 @@ func (r *Router) syncForwardingUpdate() {
 		}
 
 		if err := r.cfg.Storage.StorePayment(&router.Payment{
-			FromUser:  router.UserID(sender),
-			ToUser:    router.UserID(receiver),
-			FromAlias: registry.GetAlias(router.UserID(sender)),
-			ToAlias:   registry.GetAlias(router.UserID(receiver)),
+			FromUser:  sender,
+			ToUser:    receiver,
+			FromAlias: registry.GetAlias(sender),
+			ToAlias:   registry.GetAlias(receiver),
 			Amount:    router.BalanceUnit(event.AmtOut),
 			Type:      router.Forward,
 			Status:    router.Successful,
@@ -699,8 +721,8 @@ func (r *Router) syncForwardingUpdate() {
 		update := &router.UpdatePayment{
 			Type:     router.Forward,
 			Status:   router.Successful,
-			Sender:   router.UserID(sender),
-			Receiver: router.UserID(receiver),
+			Sender:   sender,
+			Receiver: receiver,
 			Amount:   router.BalanceUnit(event.AmtOut),
 			Earned:   router.BalanceUnit(event.Fee),
 		}

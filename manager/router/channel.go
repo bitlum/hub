@@ -7,6 +7,8 @@ import (
 )
 
 // ChannelID uniquely identifies the channel in the lightning network.
+// For Bitcoin lightning network, we user lnd wire.OutPoint as the channel
+// identification, which is
 type ChannelID string
 
 // BalanceUnit represent the number of funds.
