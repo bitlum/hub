@@ -4,7 +4,7 @@ import (
 	"github.com/bitlum/hub/manager/router"
 )
 
-// Runtime check to ensure that DB implements lnd.RouterStorage interface.
+// Runtime check to ensure that DB implements lnd.InfoStorage interface.
 var _ router.InfoStorage = (*DB)(nil)
 
 // UpdateInfo updates information about the hub lightning network node.
