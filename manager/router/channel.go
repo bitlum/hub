@@ -341,7 +341,10 @@ func (c *Channel) IsPending() bool {
 // payment. For channel to be active it should be in proper state and user of
 // this channel should be connected to hub.
 func (c *Channel) IsActive() bool {
-	return c.IsUserConnected && !c.IsPending()
+	currentState := c.CurrentState()
+	return c.IsUserConnected &&
+		!c.IsPending() &&
+		currentState.Name != ChannelClosed
 }
 
 // FundingFee is the amount of money which was spent to open this channel.
