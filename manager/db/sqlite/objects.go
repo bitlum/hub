@@ -70,3 +70,13 @@ type Payment struct {
 	Type   string
 	Time   int64
 }
+
+type ChannelIDShortChanIDIndex struct {
+	ShortChannelID uint64 `gorm:"primary_key"`
+	ChannelID      string
+}
+
+type UserIDShortChanIDIndex struct {
+	ShortChannelID uint64 `gorm:"primary_key"`
+	UserID         string
+}

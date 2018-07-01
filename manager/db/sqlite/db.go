@@ -31,7 +31,9 @@ func Open(dbPath string, dbName string) (*DB, error) {
 		&Channel{},
 		&Payment{},
 		&User{},
-		&State{}).Error
+		&State{},
+		&ChannelIDShortChanIDIndex{},
+		&UserIDShortChanIDIndex{}).Error
 	if err != nil {
 		return nil, err
 	}
