@@ -22,6 +22,7 @@ class RouterMetrics:
         self.gain_sum_predict = list([float(0)])
         self.ROI = list([float(0)])
         self.ROI_predict = list([float(0)])
+        self.amount_mean = list([float(0)])
 
         self.profit_av = list([float(0)])
         self.income_av = list([float(0)])
@@ -30,6 +31,7 @@ class RouterMetrics:
         self.gain_sum_predict_av = list([float(0)])
         self.ROI_av = list([float(0)])
         self.ROI_predict_av = list([float(0)])
+        self.amount_mean_av = list([float(0)])
 
         self.average_period = router_mgt.setts.average_period
         self.average_period /= router_mgt.setts.acceleration
@@ -86,6 +88,8 @@ class RouterMetrics:
         else:
             self.ROI.append(float(0))
 
+        self.amount_mean.append(self.router_mgt.amount_mean)
+
         if self.balance_sum_predict[-1] > 0:
             ROI = self.gain_sum_predict[-1] / self.balance_sum_predict[-1]
             self.ROI_predict.append(ROI)
@@ -100,6 +104,7 @@ class RouterMetrics:
         self.gain_sum_predict_av.append(float(0))
         self.ROI_av.append(float(0))
         self.ROI_predict_av.append(float(0))
+        self.amount_mean_av.append(float(0))
 
         count = int(0)
         for i in range(len(self.time) - 1, - 1, -1):
@@ -114,6 +119,7 @@ class RouterMetrics:
                 self.gain_sum_predict_av[-1] += self.gain_sum_predict[i]
                 self.ROI_av[-1] += self.ROI[i]
                 self.ROI_predict_av[-1] += self.ROI_predict[i]
+                self.amount_mean_av[-1] += self.amount_mean[i]
 
         self.profit_av[-1] /= count
         self.income_av[-1] /= count
@@ -122,6 +128,7 @@ class RouterMetrics:
         self.gain_sum_predict_av[-1] /= count
         self.ROI_av[-1] /= count
         self.ROI_predict_av[-1] /= count
+        self.amount_mean_av[-1] /= count
 
     def draw(self):
 
@@ -165,5 +172,6 @@ class RouterMetrics:
                            'profit_av': self.profit_av,
                            'income_av': self.income_av,
                            'balance_sum_av': self.balance_sum_av,
-                           'ROI_av': self.ROI_av},
+                           'ROI_av': self.ROI_av,
+                           'amount_mean_av': self.amount_mean_av},
                           f, sort_keys=True, indent=4 * ' ')
