@@ -44,8 +44,9 @@ class Watcher(PattMatchEvHand):
         self.output_period = router_setts.output_period
         self.output_period /= router_setts.acceleration
 
+        json_sleep = router_setts.output_period / router_setts.acceleration
         self.sleep_thread = SleepThread(self.router_metrics, self.log_reader,
-                                        router_setts.output_period)
+                                        json_sleep)
         self.sleep_thread.start()
 
     def process(self, event):
