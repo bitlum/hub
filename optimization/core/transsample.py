@@ -31,16 +31,15 @@ class TransSample(UsersSample):
                            range(self.users_number)]
 
         for i in range(len(self.transseq)):
-            if i not in self.single_trans:
-                payment = self.transseq[i]["payment"]
-                sender = self.users_ind[payment['sender']]
-                receiver = self.users_ind[payment['receiver']]
+            payment = self.transseq[i]["payment"]
+            sender = self.users_ind[payment['sender']]
+            receiver = self.users_ind[payment['receiver']]
 
-                delta = self.transseq[i]['time'] - self.transseq[0]['time']
-                self.timematr[sender][receiver].append(1.E-9 * delta)
+            delta = self.transseq[i]['time'] - self.transseq[0]['time']
+            self.timematr[sender][receiver].append(1.E-9 * delta)
 
-                amount = payment['amount'] + payment['earned']
-                self.amountmatr[sender][receiver].append(amount)
+            amount = payment['amount'] + payment['earned']
+            self.amountmatr[sender][receiver].append(amount)
 
         self.periodmatr = copy.deepcopy(self.timematr)
 

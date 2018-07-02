@@ -58,7 +58,7 @@ class FlowStat(TransStat):
                         self.period_eff_gain[j] += weight_period
 
         for i in range(self.users_number):
-            if self.flowvect_gain[i] != 0:
+            if self.period_eff_gain[i] != 0:
                 self.period_eff_gain[i] /= self.flowvect_gain[i]
             else:
                 self.period_eff_gain[i] = None
