@@ -29,15 +29,6 @@
   revision = "ff69c1bdcd79a3d2687b553361283bc7d04a25a3"
 
 [[projects]]
-  branch = "dev"
-  name = "github.com/bitlum/lnd"
-  packages = [
-    "lnrpc",
-    "macaroons"
-  ]
-  revision = "41850e4f3b6ba1a68062821945e29c36de52e85e"
-
-[[projects]]
   branch = "master"
   name = "github.com/btcsuite/btclog"
   packages = ["."]
@@ -132,10 +123,10 @@
   revision = "04140366298a54a039076d798123ffa108fff46c"
 
 [[projects]]
-  branch = "master"
   name = "github.com/jrick/logrotate"
   packages = ["rotator"]
   revision = "a93b200c26cbae3bb09dd0dc2c7c7fe1468a034a"
+  version = "v1.0.0"
 
 [[projects]]
   branch = "master"
@@ -144,16 +135,25 @@
   revision = "584905176618da46b895b176c721b02c476b6993"
 
 [[projects]]
+  name = "github.com/lightningnetwork/lnd"
+  packages = [
+    "lnrpc",
+    "macaroons"
+  ]
+  revision = "e34a23f322aedff773caa252a005a3b5d00c0eea"
+  source = "github.com/bitlum/lnd"
+
+[[projects]]
   name = "github.com/mattn/go-sqlite3"
   packages = ["."]
-  revision = "323a32be5a2421b8c7087225079c6c900ec397cd"
-  version = "v1.7.0"
+  revision = "25ecb14adfc7543176f7d85291ec7dba82c6f7e4"
+  version = "v1.9.0"
 
 [[projects]]
   name = "github.com/matttproud/golang_protobuf_extensions"
   packages = ["pbutil"]
-  revision = "3247c84500bff8d9fb6d579d800f20b3e091582c"
-  version = "v1.0.0"
+  revision = "c12348ce28de40eed0136aa2b644d0ee0650e56c"
+  version = "v1.0.1"
 
 [[projects]]
   name = "github.com/prometheus/client_golang"
@@ -178,7 +178,7 @@
     "internal/bitbucket.org/ww/goautoneg",
     "model"
   ]
-  revision = "d811d2e9bf898806ecfb6ef6296774b13ffc314c"
+  revision = "7600349dcfe1abd18d72d3a1770870d9800a7801"
 
 [[projects]]
   branch = "master"
@@ -189,7 +189,7 @@
     "nfs",
     "xfs"
   ]
-  revision = "8b1c2da0d56deffdbb9e48d4414b4e674bd8083e"
+  revision = "40f013a808ec4fa79def444a1a56de4d1727efcb"
 
 [[projects]]
   name = "github.com/roasbeef/btcwallet"
@@ -210,13 +210,14 @@
   name = "golang.org/x/crypto"
   packages = [
     "curve25519",
+    "internal/subtle",
     "nacl/box",
     "nacl/secretbox",
     "poly1305",
     "ripemd160",
     "salsa20/salsa"
   ]
-  revision = "2d027ae1dddd4694d54f7a8b6cbe78dca8720226"
+  revision = "a49355c7e3f8fe157a85be2f77e6e269a0f89602"
 
 [[projects]]
   name = "golang.org/x/net"
@@ -235,7 +236,7 @@
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "d0faeb539838e250bd0a9db4182d48d4a1915181"
+  revision = "151529c776cdc58ddbe7963ba9af779f3577b419"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -310,6 +311,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f933da7d28794e3a24293080007c65448b5b9d2a6e6102b615624e3c3fbfac7c"
+  inputs-digest = "678d54c328429a677b49ea04ba0d36442d674fca4bfb24f6377db6ab9246affc"
   solver-name = "gps-cdcl"
   solver-version = 1

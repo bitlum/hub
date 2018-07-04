@@ -1,7 +1,7 @@
 package lnd
 
 import (
-	"github.com/bitlum/lnd/lnrpc"
+	"github.com/lightningnetwork/lnd/lnrpc"
 	"time"
 	"context"
 	"github.com/go-errors/errors"

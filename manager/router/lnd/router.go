@@ -2,7 +2,7 @@ package lnd
 
 import (
 	"time"
-	"github.com/bitlum/lnd/lnrpc"
+	"github.com/lightningnetwork/lnd/lnrpc"
 	"sync"
 	"github.com/go-errors/errors"
 	"google.golang.org/grpc"
@@ -17,7 +17,7 @@ import (
 	"github.com/bitlum/hub/manager/common/broadcast"
 	"github.com/bitlum/hub/manager/router/registry"
 	"io/ioutil"
-	"github.com/bitlum/lnd/macaroons"
+	"github.com/lightningnetwork/lnd/macaroons"
 	"gopkg.in/macaroon.v2"
 )
 

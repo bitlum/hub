@@ -2,7 +2,7 @@ package lnd
 
 import (
 	"time"
-	"github.com/bitlum/lnd/lnrpc"
+	"github.com/lightningnetwork/lnd/lnrpc"
 	"context"
 	"github.com/bitlum/hub/manager/router"
 	"github.com/bitlum/hub/manager/metrics/crypto"
