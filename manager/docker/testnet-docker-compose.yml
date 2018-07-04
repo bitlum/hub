@@ -37,7 +37,8 @@ services:
         - HUB_REVISION
     restart: always
     volumes:
-      - "db:/db"
+      - /connector/hub.testnet/db:/root/.hub/db
+      - /connector/hub.testnet/logs:/root/.hub/logs
       # This directory should exist on host, so connector should be deployed
       # first, with lightning network daemon.
       - /connector/bitcoin-lightning.testnet:/root/.lnd/:ro
