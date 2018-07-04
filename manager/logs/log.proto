@@ -69,6 +69,11 @@ enum PaymentStatus {
     // ExternalFail means that receiver failed to receive payment because of
     // the unknown to us reason.
     external_fail = 3;
+
+    // UserLocalFail means that from user's side all channel are in
+    // pending states or not exist at all, or number of funds from user side
+    // is not enough.
+    user_local_fail = 4;
 }
 
 message ChannelChange {

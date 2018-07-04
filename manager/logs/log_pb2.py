@@ -20,9 +20,8 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='log.proto',
   package='logs',
   syntax='proto3',
-  serialized_pb=_b('\n\tlog.proto\x12\x04logs\"\xb9\x01\n\x03Log\x12\x0c\n\x04time\x18\x01 \x01(\x03\x12\"\n\x05state\x18\x02 \x01(\x0b\x32\x11.logs.RouterStateH\x00\x12 \n\x07payment\x18\x03 \x01(\x0b\x32\r.logs.PaymentH\x00\x12-\n\x0e\x63hannel_change\x18\x04 \x01(\x0b\x32\x13.logs.ChannelChangeH\x00\x12\'\n\x0buser_change\x18\x05 \x01(\x0b\x32\x10.logs.UserChangeH\x00\x42\x06\n\x04\x64\x61ta\"]\n\x0bRouterState\x12\x1f\n\x08\x63hannels\x18\x01 \x03(\x0b\x32\r.logs.Channel\x12\x14\n\x0c\x66ree_balance\x18\x02 \x01(\x04\x12\x17\n\x0fpending_balance\x18\x03 \x01(\x04\"p\n\x07\x43hannel\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x12\n\nchannel_id\x18\x02 \x01(\t\x12\x14\n\x0cuser_balance\x18\x03 \x01(\x04\x12\x16\n\x0erouter_balance\x18\x04 \x01(\x04\x12\x12\n\nis_pending\x18\x05 \x01(\x08\"p\n\x07Payment\x12#\n\x06status\x18\x01 \x01(\x0e\x32\x13.logs.PaymentStatus\x12\x0e\n\x06sender\x18\x02 \x01(\t\x12\x10\n\x08receiver\x18\x03 \x01(\t\x12\x0e\n\x06\x61mount\x18\x05 \x01(\x04\x12\x0e\n\x06\x65\x61rned\x18\x06 \x01(\x03\"\xa8\x01\n\rChannelChange\x12%\n\x04type\x18\x01 \x01(\x0e\x32\x17.logs.ChannelChangeType\x12\x0f\n\x07user_id\x18\x02 \x01(\t\x12\x12\n\nchannel_id\x18\x03 \x01(\t\x12\x14\n\x0cuser_balance\x18\x04 \x01(\x04\x12\x16\n\x0erouter_balance\x18\x05 \x01(\x04\x12\x0b\n\x03\x66\x65\x65\x18\x06 \x01(\x04\x12\x10\n\x08\x64uration\x18\x07 \x01(\x03\"0\n\nUserChange\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x11\n\tis_active\x18\x02 \x01(\x08*X\n\rPaymentStatus\x12\x0f\n\x0bstatus_null\x10\x00\x12\x0b\n\x07success\x10\x01\x12\x16\n\x12unsufficient_funds\x10\x02\x12\x11\n\rexternal_fail\x10\x03*r\n\x11\x43hannelChangeType\x12\x0f\n\x0b\x63hange_null\x10\x00\x12\x0c\n\x08openning\x10\x01\x12\n\n\x06opened\x10\x02\x12\x0b\n\x07\x63losing\x10\x03\x12\n\n\x06\x63losed\x10\x04\x12\x0c\n\x08updating\x10\x05\x12\x0b\n\x07updated\x10\x06\x62\x06proto3')
+  serialized_pb=_b('\n\tlog.proto\x12\x04logs\"\xb9\x01\n\x03Log\x12\x0c\n\x04time\x18\x01 \x01(\x03\x12\"\n\x05state\x18\x02 \x01(\x0b\x32\x11.logs.RouterStateH\x00\x12 \n\x07payment\x18\x03 \x01(\x0b\x32\r.logs.PaymentH\x00\x12-\n\x0e\x63hannel_change\x18\x04 \x01(\x0b\x32\x13.logs.ChannelChangeH\x00\x12\'\n\x0buser_change\x18\x05 \x01(\x0b\x32\x10.logs.UserChangeH\x00\x42\x06\n\x04\x64\x61ta\"]\n\x0bRouterState\x12\x1f\n\x08\x63hannels\x18\x01 \x03(\x0b\x32\r.logs.Channel\x12\x14\n\x0c\x66ree_balance\x18\x02 \x01(\x04\x12\x17\n\x0fpending_balance\x18\x03 \x01(\x04\"p\n\x07\x43hannel\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x12\n\nchannel_id\x18\x02 \x01(\t\x12\x14\n\x0cuser_balance\x18\x03 \x01(\x04\x12\x16\n\x0erouter_balance\x18\x04 \x01(\x04\x12\x12\n\nis_pending\x18\x05 \x01(\x08\"p\n\x07Payment\x12#\n\x06status\x18\x01 \x01(\x0e\x32\x13.logs.PaymentStatus\x12\x0e\n\x06sender\x18\x02 \x01(\t\x12\x10\n\x08receiver\x18\x03 \x01(\t\x12\x0e\n\x06\x61mount\x18\x05 \x01(\x04\x12\x0e\n\x06\x65\x61rned\x18\x06 \x01(\x03\"\xa8\x01\n\rChannelChange\x12%\n\x04type\x18\x01 \x01(\x0e\x32\x17.logs.ChannelChangeType\x12\x0f\n\x07user_id\x18\x02 \x01(\t\x12\x12\n\nchannel_id\x18\x03 \x01(\t\x12\x14\n\x0cuser_balance\x18\x04 \x01(\x04\x12\x16\n\x0erouter_balance\x18\x05 \x01(\x04\x12\x0b\n\x03\x66\x65\x65\x18\x06 \x01(\x04\x12\x10\n\x08\x64uration\x18\x07 \x01(\x03\"3\n\nUserChange\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x14\n\x0cis_connected\x18\x02 \x01(\x08*m\n\rPaymentStatus\x12\x0f\n\x0bstatus_null\x10\x00\x12\x0b\n\x07success\x10\x01\x12\x16\n\x12unsufficient_funds\x10\x02\x12\x11\n\rexternal_fail\x10\x03\x12\x13\n\x0fuser_local_fail\x10\x04*r\n\x11\x43hannelChangeType\x12\x0f\n\x0b\x63hange_null\x10\x00\x12\x0c\n\x08openning\x10\x01\x12\n\n\x06opened\x10\x02\x12\x0b\n\x07\x63losing\x10\x03\x12\n\n\x06\x63losed\x10\x04\x12\x0c\n\x08updating\x10\x05\x12\x0b\n\x07updated\x10\x06\x62\x06proto3')
 )
-_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 _PAYMENTSTATUS = _descriptor.EnumDescriptor(
   name='PaymentStatus',
@@ -46,11 +45,15 @@ _PAYMENTSTATUS = _descriptor.EnumDescriptor(
       name='external_fail', index=3, number=3,
       options=None,
       type=None),
+    _descriptor.EnumValueDescriptor(
+      name='user_local_fail', index=4, number=4,
+      options=None,
+      type=None),
   ],
   containing_type=None,
   options=None,
-  serialized_start=751,
-  serialized_end=839,
+  serialized_start=754,
+  serialized_end=863,
 )
 _sym_db.RegisterEnumDescriptor(_PAYMENTSTATUS)
 
@@ -92,8 +95,8 @@ _CHANNELCHANGETYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=841,
-  serialized_end=955,
+  serialized_start=865,
+  serialized_end=979,
 )
 _sym_db.RegisterEnumDescriptor(_CHANNELCHANGETYPE)
 
@@ -102,6 +105,7 @@ status_null = 0
 success = 1
 unsufficient_funds = 2
 external_fail = 3
+user_local_fail = 4
 change_null = 0
 openning = 1
 opened = 2
@@ -425,7 +429,7 @@ _USERCHANGE = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='is_active', full_name='logs.UserChange.is_active', index=1,
+      name='is_connected', full_name='logs.UserChange.is_connected', index=1,
       number=2, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
@@ -444,7 +448,7 @@ _USERCHANGE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=701,
-  serialized_end=749,
+  serialized_end=752,
 )
 
 _LOG.fields_by_name['state'].message_type = _ROUTERSTATE
@@ -474,6 +478,7 @@ DESCRIPTOR.message_types_by_name['ChannelChange'] = _CHANNELCHANGE
 DESCRIPTOR.message_types_by_name['UserChange'] = _USERCHANGE
 DESCRIPTOR.enum_types_by_name['PaymentStatus'] = _PAYMENTSTATUS
 DESCRIPTOR.enum_types_by_name['ChannelChangeType'] = _CHANNELCHANGETYPE
+_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 Log = _reflection.GeneratedProtocolMessageType('Log', (_message.Message,), dict(
   DESCRIPTOR = _LOG,

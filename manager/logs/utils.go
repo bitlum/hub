@@ -241,8 +241,8 @@ func UpdateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 					Time: time.Now().UnixNano(),
 					Data: &Log_UserChange{
 						UserChange: &UserChange{
-							UserId:   string(u.User),
-							IsActive: u.IsConnected,
+							UserId:      string(u.User),
+							IsConnected: u.IsConnected,
 						},
 					},
 				}
@@ -258,6 +258,8 @@ func UpdateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 					status = PaymentStatus_success
 				case router.ExternalFail:
 					status = PaymentStatus_external_fail
+				case router.UserLocalFail:
+					status = PaymentStatus_user_local_fail
 				default:
 					fail(errChan, "unknown status: %v", u.Status)
 					return
