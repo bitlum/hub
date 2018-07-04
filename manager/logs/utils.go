@@ -7,6 +7,7 @@ import (
 	"os"
 	"github.com/davecgh/go-spew/spew"
 	"reflect"
+	"github.com/bitlum/hub/manager/common/broadcast"
 )
 
 // getState converts router topology into state log.
@@ -84,8 +85,9 @@ func UpdateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 
 	var needWriteState <-chan time.Time
 	triggerStateWrite := func() {
-		needWriteState = nil
-		needWriteState = time.After(3 * time.Second)
+		if needWriteState == nil {
+			needWriteState = time.After(3 * time.Second)
+		}
 	}
 
 	receiver := r.RegisterOnUpdates()
