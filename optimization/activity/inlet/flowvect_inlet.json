@@ -1,6 +1,6 @@
 {
     "users_number": 4,
-    "flow_mean": 50,
+    "flow_mean": 800,
     "flow_stdev": 0.6,
     "receivers_frac": 0.75,
     "gates_frac": 0.25,
