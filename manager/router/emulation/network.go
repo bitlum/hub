@@ -148,8 +148,15 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 				req.Sender)
 		} else if channel.IsPending() {
 			paymentFailed = true
-			return nil, errors.Errorf("channel %v is locked",
-				channel.ChannelID)
+			n.broadcaster.Write(&router.UpdatePayment{
+				Type:     router.Incoming,
+				Status:   router.UserLocalFail,
+				Sender:   router.UserID(req.Sender),
+				Receiver: router.UserID(req.Receiver),
+				Amount:   router.BalanceUnit(transferedAmount),
+			})
+
+			return &SendPaymentResponse{}, nil
 		}
 
 		channel.UserBalance -= router.BalanceUnit(incomingAmount)
@@ -165,10 +172,16 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 			paymentFailed = true
 
 			// In the case of real system such information wouldn't be
-			// accessible to us, for that return error, emulating user wallet
-			// experience.
-			return nil, errors.New("insufficient user balance to " +
-				"make a payment")
+			// accessible to us.
+			n.broadcaster.Write(&router.UpdatePayment{
+				Type:     router.Incoming,
+				Status:   router.UserLocalFail,
+				Sender:   router.UserID(req.Sender),
+				Receiver: router.UserID(req.Receiver),
+				Amount:   router.BalanceUnit(transferedAmount),
+			})
+
+			return &SendPaymentResponse{}, nil
 		}
 	}
 
