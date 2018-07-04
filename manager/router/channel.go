@@ -68,6 +68,11 @@ const (
 	// ExternalFail means that receiver failed to receive payment because of
 	// the unknown to us reason.
 	ExternalFail PaymentStatus = "external_fail"
+
+	// UserLocalFail means that from user's side all channel are in
+	// pending states or not exist at all, or number of funds from user side
+	// is not enough.
+	UserLocalFail PaymentStatus = "user_local_fail"
 )
 
 type PaymentType string
