@@ -7,7 +7,6 @@ import (
 	"os"
 	"github.com/davecgh/go-spew/spew"
 	"reflect"
-	"github.com/bitlum/hub/manager/common/broadcast"
 )
 
 // getState converts router topology into state log.
