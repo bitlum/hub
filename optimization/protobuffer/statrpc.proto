@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package statrpc;
+
+service GetStatistics {
+  rpc GetProfit (GetProfitRequest) returns (GetProfitResponse);
+  rpc GetTime (GetTimeRequest) returns (GetTimeResponse);
+}
+
+message GetProfitRequest {
+}
+
+message GetProfitResponse {
+  double profit = 1;
+}
+
+message GetTimeRequest {
+}
+
+message GetTimeResponse {
+  double time = 1;
+}
