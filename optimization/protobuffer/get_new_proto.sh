@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 echo 'copy log'
-cp ../../manager/logger/log.proto .
+cp ../../manager/logs/log.proto .
 
 echo 'copy hubrpc'
 cp ../../manager/hubrpc/hubrpc.proto .

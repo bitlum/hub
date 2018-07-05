@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 echo 'diff log:'
-diff log.proto ../../manager/logger/log.proto
+diff log.proto ../../manager/logs/log.proto
 
 echo 'diff hubrpc:'
 diff hubrpc.proto ../../manager/hubrpc/hubrpc.proto

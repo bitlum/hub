@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package logger;
+package logs;
 
 // Log is the main object in the file which represent the log entry in the
 // log file.
@@ -11,6 +11,7 @@ message Log {
         RouterState state = 2;
         Payment payment = 3;
         ChannelChange channel_change = 4;
+        UserChange user_change = 5;
     }
 }
 
@@ -28,10 +29,6 @@ message RouterState {
     // PendingBalance is the amount of funds which in the process of
     // being accepted by blockchain.
     uint64 pending_balance = 3;
-
-    // AverageChangeUpdateDuration is number of milliseconds which
-    // is needed to change of state of chanel over blockchain.
-    uint64 average_change_update_duration = 4;
 }
 
 // Channel is used as the building block in describing of the lightning
@@ -72,6 +69,11 @@ enum PaymentStatus {
     // ExternalFail means that receiver failed to receive payment because of
     // the unknown to us reason.
     external_fail = 3;
+
+    // UserLocalFail means that from user's side all channel are in
+    // pending states or not exist at all, or number of funds from user side
+    // is not enough.
+    user_local_fail = 4;
 }
 
 message ChannelChange {
@@ -83,15 +85,20 @@ message ChannelChange {
     uint64 user_balance = 4;
     uint64 router_balance = 5;
 
-    // Fee which was taken by blockchain decentrilized computer / mainers or
-    // some other form of smart contract manager.
+    // Fee which was taken by blockchain decentrilized computer /
+    // mainers or some other form of smart contract manager.
     uint64 fee = 6;
+
+    // Duration which was taken by blockchain decentrilized computer to apply
+    // this change (open, close, update).
+    int64 duration = 7;
 }
 
 // ChannelChangeType represent the type of action which were attempted to
 // apply to the channel.
 enum ChannelChangeType {
-    // ...
+    // ChangeNull identifies the null state of channel change, so that
+    // receiver could identify that some mistake has happened.
     change_null = 0;
 
     openning = 1;
@@ -113,4 +120,14 @@ enum ChannelChangeType {
     // Updated is used when one of the participants decides to update its
     // channel balance.
     updated = 6;
+}
+
+// UserChange represent the change of user state.
+message UserChange {
+    string user_id = 1;
+
+    // IsConnected denotes is this user connected to the hub with tcp/ip
+    // connection. If yes, he/she is able to send and receive payments, if not
+    // than not.
+    bool is_connected = 2;
 }

@@ -18,7 +18,6 @@ class RouterState:
         self.amount = int()
         self.earned = int()
         self.router_balance = int()
-        self.duration = int()
         self.profit = int()
 
         self.id = {'payment': 'payment',
@@ -79,7 +78,6 @@ class RouterState:
 
     def set_state(self, message):
         self.router_balances.clear()
-        self.duration = message[self.id['duration']]
 
         self.router_free_balance = message[self.id['free_balance']]
         difference = self.router_balance_sum - self.profit

@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='rpc.proto',
   package='emulation',
   syntax='proto3',
-  serialized_pb=_b('\n\trpc.proto\x12\temulation\"F\n\x12SendPaymentRequest\x12\x0e\n\x06sender\x18\x01 \x01(\t\x12\x10\n\x08receiver\x18\x02 \x01(\t\x12\x0e\n\x06\x61mount\x18\x04 \x01(\x03\"\x15\n\x13SendPaymentResponse\"=\n\x12OpenChannelRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x16\n\x0elocked_by_user\x18\x02 \x01(\x03\")\n\x13OpenChannelResponse\x12\x12\n\nchannel_id\x18\x03 \x01(\t\")\n\x13\x43loseChannelRequest\x12\x12\n\nchannel_id\x18\x03 \x01(\t\"\x16\n\x14\x43loseChannelResponse\".\n\x1aSetBlockGenDurationRequest\x12\x10\n\x08\x64uration\x18\x03 \x01(\x03\"\x1d\n\x1bSetBlockGenDurationResponse\"&\n\x17SetBlockchainFeeRequest\x12\x0b\n\x03\x66\x65\x65\x18\x03 \x01(\x03\"\x1a\n\x18SetBlockchainFeeResponse2\xba\x03\n\x08\x45mulator\x12L\n\x0bSendPayment\x12\x1d.emulation.SendPaymentRequest\x1a\x1e.emulation.SendPaymentResponse\x12L\n\x0bOpenChannel\x12\x1d.emulation.OpenChannelRequest\x1a\x1e.emulation.OpenChannelResponse\x12O\n\x0c\x43loseChannel\x12\x1e.emulation.CloseChannelRequest\x1a\x1f.emulation.CloseChannelResponse\x12\x64\n\x13SetBlockGenDuration\x12%.emulation.SetBlockGenDurationRequest\x1a&.emulation.SetBlockGenDurationResponse\x12[\n\x10SetBlockchainFee\x12\".emulation.SetBlockchainFeeRequest\x1a#.emulation.SetBlockchainFeeResponseb\x06proto3')
+  serialized_pb=_b('\n\trpc.proto\x12\temulation\"F\n\x12SendPaymentRequest\x12\x0e\n\x06sender\x18\x01 \x01(\t\x12\x10\n\x08receiver\x18\x02 \x01(\t\x12\x0e\n\x06\x61mount\x18\x04 \x01(\x03\"\x15\n\x13SendPaymentResponse\"=\n\x12OpenChannelRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x16\n\x0elocked_by_user\x18\x02 \x01(\x03\")\n\x13OpenChannelResponse\x12\x12\n\nchannel_id\x18\x03 \x01(\t\")\n\x13\x43loseChannelRequest\x12\x12\n\nchannel_id\x18\x03 \x01(\t\"\x16\n\x14\x43loseChannelResponse\".\n\x1aSetBlockGenDurationRequest\x12\x10\n\x08\x64uration\x18\x03 \x01(\x03\"\x1d\n\x1bSetBlockGenDurationResponse\"&\n\x17SetBlockchainFeeRequest\x12\x0b\n\x03\x66\x65\x65\x18\x03 \x01(\x03\"\x1a\n\x18SetBlockchainFeeResponse\"=\n\x17SetUserConnectedRequest\x12\x11\n\tis_online\x18\x01 \x01(\x08\x12\x0f\n\x07user_id\x18\x02 \x01(\t\"\x1a\n\x18SetUserConnectedResponse2\x97\x04\n\x08\x45mulator\x12L\n\x0bSendPayment\x12\x1d.emulation.SendPaymentRequest\x1a\x1e.emulation.SendPaymentResponse\x12L\n\x0bOpenChannel\x12\x1d.emulation.OpenChannelRequest\x1a\x1e.emulation.OpenChannelResponse\x12O\n\x0c\x43loseChannel\x12\x1e.emulation.CloseChannelRequest\x1a\x1f.emulation.CloseChannelResponse\x12[\n\x10SetUserConnected\x12\".emulation.SetUserConnectedRequest\x1a#.emulation.SetUserConnectedResponse\x12\x64\n\x13SetBlockGenDuration\x12%.emulation.SetBlockGenDurationRequest\x1a&.emulation.SetBlockGenDurationResponse\x12[\n\x10SetBlockchainFee\x12\".emulation.SetBlockchainFeeRequest\x1a#.emulation.SetBlockchainFeeResponseb\x06proto3')
 )
 
 
@@ -327,6 +327,68 @@ _SETBLOCKCHAINFEERESPONSE = _descriptor.Descriptor(
   serialized_end=437,
 )
 
+
+_SETUSERCONNECTEDREQUEST = _descriptor.Descriptor(
+  name='SetUserConnectedRequest',
+  full_name='emulation.SetUserConnectedRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='is_online', full_name='emulation.SetUserConnectedRequest.is_online', index=0,
+      number=1, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='user_id', full_name='emulation.SetUserConnectedRequest.user_id', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=439,
+  serialized_end=500,
+)
+
+
+_SETUSERCONNECTEDRESPONSE = _descriptor.Descriptor(
+  name='SetUserConnectedResponse',
+  full_name='emulation.SetUserConnectedResponse',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=502,
+  serialized_end=528,
+)
+
 DESCRIPTOR.message_types_by_name['SendPaymentRequest'] = _SENDPAYMENTREQUEST
 DESCRIPTOR.message_types_by_name['SendPaymentResponse'] = _SENDPAYMENTRESPONSE
 DESCRIPTOR.message_types_by_name['OpenChannelRequest'] = _OPENCHANNELREQUEST
@@ -337,6 +399,8 @@ DESCRIPTOR.message_types_by_name['SetBlockGenDurationRequest'] = _SETBLOCKGENDUR
 DESCRIPTOR.message_types_by_name['SetBlockGenDurationResponse'] = _SETBLOCKGENDURATIONRESPONSE
 DESCRIPTOR.message_types_by_name['SetBlockchainFeeRequest'] = _SETBLOCKCHAINFEEREQUEST
 DESCRIPTOR.message_types_by_name['SetBlockchainFeeResponse'] = _SETBLOCKCHAINFEERESPONSE
+DESCRIPTOR.message_types_by_name['SetUserConnectedRequest'] = _SETUSERCONNECTEDREQUEST
+DESCRIPTOR.message_types_by_name['SetUserConnectedResponse'] = _SETUSERCONNECTEDRESPONSE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 SendPaymentRequest = _reflection.GeneratedProtocolMessageType('SendPaymentRequest', (_message.Message,), dict(
@@ -409,6 +473,20 @@ SetBlockchainFeeResponse = _reflection.GeneratedProtocolMessageType('SetBlockcha
   ))
 _sym_db.RegisterMessage(SetBlockchainFeeResponse)
 
+SetUserConnectedRequest = _reflection.GeneratedProtocolMessageType('SetUserConnectedRequest', (_message.Message,), dict(
+  DESCRIPTOR = _SETUSERCONNECTEDREQUEST,
+  __module__ = 'rpc_pb2'
+  # @@protoc_insertion_point(class_scope:emulation.SetUserConnectedRequest)
+  ))
+_sym_db.RegisterMessage(SetUserConnectedRequest)
+
+SetUserConnectedResponse = _reflection.GeneratedProtocolMessageType('SetUserConnectedResponse', (_message.Message,), dict(
+  DESCRIPTOR = _SETUSERCONNECTEDRESPONSE,
+  __module__ = 'rpc_pb2'
+  # @@protoc_insertion_point(class_scope:emulation.SetUserConnectedResponse)
+  ))
+_sym_db.RegisterMessage(SetUserConnectedResponse)
+
 
 
 _EMULATOR = _descriptor.ServiceDescriptor(
@@ -417,8 +495,8 @@ _EMULATOR = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   options=None,
-  serialized_start=440,
-  serialized_end=882,
+  serialized_start=531,
+  serialized_end=1066,
   methods=[
   _descriptor.MethodDescriptor(
     name='SendPayment',
@@ -448,9 +526,18 @@ _EMULATOR = _descriptor.ServiceDescriptor(
     options=None,
   ),
   _descriptor.MethodDescriptor(
+    name='SetUserConnected',
+    full_name='emulation.Emulator.SetUserConnected',
+    index=3,
+    containing_service=None,
+    input_type=_SETUSERCONNECTEDREQUEST,
+    output_type=_SETUSERCONNECTEDRESPONSE,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
     name='SetBlockGenDuration',
     full_name='emulation.Emulator.SetBlockGenDuration',
-    index=3,
+    index=4,
     containing_service=None,
     input_type=_SETBLOCKGENDURATIONREQUEST,
     output_type=_SETBLOCKGENDURATIONRESPONSE,
@@ -459,7 +546,7 @@ _EMULATOR = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='SetBlockchainFee',
     full_name='emulation.Emulator.SetBlockchainFee',
-    index=4,
+    index=5,
     containing_service=None,
     input_type=_SETBLOCKCHAINFEEREQUEST,
     output_type=_SETBLOCKCHAINFEERESPONSE,
