@@ -122,7 +122,12 @@ enum ChannelChangeType {
     updated = 6;
 }
 
+// UserChange represent the change of user state.
 message UserChange {
     string user_id = 1;
+
+    // IsConnected denotes is this user connected to the hub with tcp/ip
+    // connection. If yes, he/she is able to send and receive payments, if not
+    // than not.
     bool is_connected = 2;
 }

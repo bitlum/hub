@@ -520,9 +520,13 @@ func (m *ChannelChange) GetDuration() int64 {
 	return 0
 }
 
+// UserChange represent the change of user state.
 type UserChange struct {
-	UserId      string `protobuf:"bytes,1,opt,name=user_id,json=userId" json:"user_id,omitempty"`
-	IsConnected bool   `protobuf:"varint,2,opt,name=is_connected,json=isConnected" json:"is_connected,omitempty"`
+	UserId string `protobuf:"bytes,1,opt,name=user_id,json=userId" json:"user_id,omitempty"`
+	// IsConnected denotes is this user connected to the hub with tcp/ip
+	// connection. If yes, he/she is able to send and receive payments, if not
+	// than not.
+	IsConnected bool `protobuf:"varint,2,opt,name=is_connected,json=isConnected" json:"is_connected,omitempty"`
 }
 
 func (m *UserChange) Reset()                    { *m = UserChange{} }
