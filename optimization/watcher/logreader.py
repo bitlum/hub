@@ -24,6 +24,7 @@ class LogReader:
         self.file = None
         self.message_names = ['payment', 'state', 'channel_change']
         self.show_log = router_setts.show_log
+        self.show_pretty_log = router_setts.show_pretty_log
         self.output_log = router_setts.output_log
 
     def process_log(self):
@@ -42,7 +43,7 @@ class LogReader:
 
                 self.convert()
 
-                if not self.show_log:
+                if self.show_pretty_log:
                     print(self.smart_log)
 
     def read_message(self):
