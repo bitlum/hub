@@ -11,7 +11,7 @@ sys.path.append(os.path.join(current_path, '../'))
 from watcher.protologutills import split_path_name
 from samples.smartlog import SmartLog
 from watcher.logreader import LogReader
-from statistics.statserver import stat_serve
+from statrpc.statserver import stat_serve
 
 
 class StatServerThread(Thread):
