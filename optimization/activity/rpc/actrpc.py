@@ -1,6 +1,7 @@
 import time
 import json
 from threading import Thread
+import threading
 import grpc
 import sys
 import os
@@ -68,11 +69,14 @@ class TransactionThread(Thread):
             print(self.request)
 
 
-def sent_transactions(stub, transseq, acceleration):
+def sent_transactions(stub, transseq, thread_limit, acceleration):
     time_init = time.time()
-    for i in range(len(transseq)):
-        TransactionThread(stub, time.time() - time_init,
-                          transseq[i], acceleration).start()
+    i = 0
+    while i < len(transseq):
+        if threading.active_count() < thread_limit:
+            TransactionThread(stub, time.time() - time_init,
+                              transseq[i], acceleration).start()
+            i += 1
 
 
 def actrpc_gen(file_name_inlet):
@@ -108,7 +112,8 @@ def actrpc_gen(file_name_inlet):
 
     time.sleep(1)
 
-    sent_transactions(stub, transseq, router_setts.acceleration)
+    thread_limit = inlet['thread_limit']
+    sent_transactions(stub, transseq, thread_limit, router_setts.acceleration)
 
     with open(inlet['channels_id_file_name'], 'w') as f:
         json.dump({'channels_id': channels_id}, f,

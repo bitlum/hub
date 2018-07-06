@@ -2,5 +2,6 @@
     "transseq_file_name": "../outlet/transseq.json",
     "users_id_file_name": "../outlet/users_id.json",
     "user_balances_file_name": "../outlet/user_balances.json",
-    "channels_id_file_name": "channels_id.json"
+    "channels_id_file_name": "channels_id.json",
+    "thread_limit": 1000
 }
