@@ -124,6 +124,8 @@ func (u *UpdateChannelOpened) String() string {
 }
 
 type UpdatePayment struct {
+	ID string
+
 	Status PaymentStatus
 	Type   PaymentType
 

@@ -149,6 +149,7 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 		} else if channel.IsPending() {
 			paymentFailed = true
 			n.broadcaster.Write(&router.UpdatePayment{
+				ID:       req.Id,
 				Type:     router.Incoming,
 				Status:   router.UserLocalFail,
 				Sender:   router.UserID(req.Sender),
@@ -174,6 +175,7 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 			// In the case of real system such information wouldn't be
 			// accessible to us.
 			n.broadcaster.Write(&router.UpdatePayment{
+				ID:       req.Id,
 				Type:     router.Incoming,
 				Status:   router.UserLocalFail,
 				Sender:   router.UserID(req.Sender),
@@ -214,6 +216,7 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 			// but instead notify another subsystem about error,
 			// so that it might be written in log for example an later examined.
 			n.broadcaster.Write(&router.UpdatePayment{
+				ID:       req.Id,
 				Type:     router.Incoming,
 				Status:   router.InsufficientFunds,
 				Sender:   router.UserID(req.Sender),
@@ -226,6 +229,7 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 	}
 
 	n.broadcaster.Write(&router.UpdatePayment{
+		ID:       req.Id,
 		Type:     router.Incoming,
 		Status:   router.Successful,
 		Sender:   router.UserID(req.Sender),

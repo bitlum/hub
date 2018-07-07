@@ -270,6 +270,7 @@ func UpdateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 					Time: time.Now().UnixNano(),
 					Data: &Log_Payment{
 						Payment: &Payment{
+							Id:       u.ID,
 							Status:   status,
 							Sender:   string(u.Sender),
 							Receiver: string(u.Receiver),
