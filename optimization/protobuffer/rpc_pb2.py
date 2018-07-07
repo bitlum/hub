@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='rpc.proto',
   package='emulation',
   syntax='proto3',
-  serialized_pb=_b('\n\trpc.proto\x12\temulation\"F\n\x12SendPaymentRequest\x12\x0e\n\x06sender\x18\x01 \x01(\t\x12\x10\n\x08receiver\x18\x02 \x01(\t\x12\x0e\n\x06\x61mount\x18\x04 \x01(\x03\"\x15\n\x13SendPaymentResponse\"=\n\x12OpenChannelRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x16\n\x0elocked_by_user\x18\x02 \x01(\x03\")\n\x13OpenChannelResponse\x12\x12\n\nchannel_id\x18\x03 \x01(\t\")\n\x13\x43loseChannelRequest\x12\x12\n\nchannel_id\x18\x03 \x01(\t\"\x16\n\x14\x43loseChannelResponse\".\n\x1aSetBlockGenDurationRequest\x12\x10\n\x08\x64uration\x18\x03 \x01(\x03\"\x1d\n\x1bSetBlockGenDurationResponse\"&\n\x17SetBlockchainFeeRequest\x12\x0b\n\x03\x66\x65\x65\x18\x03 \x01(\x03\"\x1a\n\x18SetBlockchainFeeResponse\"=\n\x17SetUserConnectedRequest\x12\x11\n\tis_online\x18\x01 \x01(\x08\x12\x0f\n\x07user_id\x18\x02 \x01(\t\"\x1a\n\x18SetUserConnectedResponse2\x97\x04\n\x08\x45mulator\x12L\n\x0bSendPayment\x12\x1d.emulation.SendPaymentRequest\x1a\x1e.emulation.SendPaymentResponse\x12L\n\x0bOpenChannel\x12\x1d.emulation.OpenChannelRequest\x1a\x1e.emulation.OpenChannelResponse\x12O\n\x0c\x43loseChannel\x12\x1e.emulation.CloseChannelRequest\x1a\x1f.emulation.CloseChannelResponse\x12[\n\x10SetUserConnected\x12\".emulation.SetUserConnectedRequest\x1a#.emulation.SetUserConnectedResponse\x12\x64\n\x13SetBlockGenDuration\x12%.emulation.SetBlockGenDurationRequest\x1a&.emulation.SetBlockGenDurationResponse\x12[\n\x10SetBlockchainFee\x12\".emulation.SetBlockchainFeeRequest\x1a#.emulation.SetBlockchainFeeResponseb\x06proto3')
+  serialized_pb=_b('\n\trpc.proto\x12\temulation\"R\n\x12SendPaymentRequest\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0e\n\x06sender\x18\x02 \x01(\t\x12\x10\n\x08receiver\x18\x03 \x01(\t\x12\x0e\n\x06\x61mount\x18\x04 \x01(\x03\"\x15\n\x13SendPaymentResponse\"=\n\x12OpenChannelRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x16\n\x0elocked_by_user\x18\x02 \x01(\x03\")\n\x13OpenChannelResponse\x12\x12\n\nchannel_id\x18\x03 \x01(\t\")\n\x13\x43loseChannelRequest\x12\x12\n\nchannel_id\x18\x03 \x01(\t\"\x16\n\x14\x43loseChannelResponse\".\n\x1aSetBlockGenDurationRequest\x12\x10\n\x08\x64uration\x18\x03 \x01(\x03\"\x1d\n\x1bSetBlockGenDurationResponse\"&\n\x17SetBlockchainFeeRequest\x12\x0b\n\x03\x66\x65\x65\x18\x03 \x01(\x03\"\x1a\n\x18SetBlockchainFeeResponse\"=\n\x17SetUserConnectedRequest\x12\x11\n\tis_online\x18\x01 \x01(\x08\x12\x0f\n\x07user_id\x18\x02 \x01(\t\"\x1a\n\x18SetUserConnectedResponse2\x97\x04\n\x08\x45mulator\x12L\n\x0bSendPayment\x12\x1d.emulation.SendPaymentRequest\x1a\x1e.emulation.SendPaymentResponse\x12L\n\x0bOpenChannel\x12\x1d.emulation.OpenChannelRequest\x1a\x1e.emulation.OpenChannelResponse\x12O\n\x0c\x43loseChannel\x12\x1e.emulation.CloseChannelRequest\x1a\x1f.emulation.CloseChannelResponse\x12[\n\x10SetUserConnected\x12\".emulation.SetUserConnectedRequest\x1a#.emulation.SetUserConnectedResponse\x12\x64\n\x13SetBlockGenDuration\x12%.emulation.SetBlockGenDurationRequest\x1a&.emulation.SetBlockGenDurationResponse\x12[\n\x10SetBlockchainFee\x12\".emulation.SetBlockchainFeeRequest\x1a#.emulation.SetBlockchainFeeResponseb\x06proto3')
 )
 
 
@@ -33,21 +33,28 @@ _SENDPAYMENTREQUEST = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='sender', full_name='emulation.SendPaymentRequest.sender', index=0,
+      name='id', full_name='emulation.SendPaymentRequest.id', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='receiver', full_name='emulation.SendPaymentRequest.receiver', index=1,
+      name='sender', full_name='emulation.SendPaymentRequest.sender', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='amount', full_name='emulation.SendPaymentRequest.amount', index=2,
+      name='receiver', full_name='emulation.SendPaymentRequest.receiver', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='amount', full_name='emulation.SendPaymentRequest.amount', index=3,
       number=4, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -66,7 +73,7 @@ _SENDPAYMENTREQUEST = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=24,
-  serialized_end=94,
+  serialized_end=106,
 )
 
 
@@ -89,8 +96,8 @@ _SENDPAYMENTRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=96,
-  serialized_end=117,
+  serialized_start=108,
+  serialized_end=129,
 )
 
 
@@ -127,8 +134,8 @@ _OPENCHANNELREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=119,
-  serialized_end=180,
+  serialized_start=131,
+  serialized_end=192,
 )
 
 
@@ -158,8 +165,8 @@ _OPENCHANNELRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=182,
-  serialized_end=223,
+  serialized_start=194,
+  serialized_end=235,
 )
 
 
@@ -189,8 +196,8 @@ _CLOSECHANNELREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=225,
-  serialized_end=266,
+  serialized_start=237,
+  serialized_end=278,
 )
 
 
@@ -213,8 +220,8 @@ _CLOSECHANNELRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=268,
-  serialized_end=290,
+  serialized_start=280,
+  serialized_end=302,
 )
 
 
@@ -244,8 +251,8 @@ _SETBLOCKGENDURATIONREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=292,
-  serialized_end=338,
+  serialized_start=304,
+  serialized_end=350,
 )
 
 
@@ -268,8 +275,8 @@ _SETBLOCKGENDURATIONRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=340,
-  serialized_end=369,
+  serialized_start=352,
+  serialized_end=381,
 )
 
 
@@ -299,8 +306,8 @@ _SETBLOCKCHAINFEEREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=371,
-  serialized_end=409,
+  serialized_start=383,
+  serialized_end=421,
 )
 
 
@@ -323,8 +330,8 @@ _SETBLOCKCHAINFEERESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=411,
-  serialized_end=437,
+  serialized_start=423,
+  serialized_end=449,
 )
 
 
@@ -361,8 +368,8 @@ _SETUSERCONNECTEDREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=439,
-  serialized_end=500,
+  serialized_start=451,
+  serialized_end=512,
 )
 
 
@@ -385,8 +392,8 @@ _SETUSERCONNECTEDRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=502,
-  serialized_end=528,
+  serialized_start=514,
+  serialized_end=540,
 )
 
 DESCRIPTOR.message_types_by_name['SendPaymentRequest'] = _SENDPAYMENTREQUEST
@@ -495,8 +502,8 @@ _EMULATOR = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   options=None,
-  serialized_start=531,
-  serialized_end=1066,
+  serialized_start=543,
+  serialized_end=1078,
   methods=[
   _descriptor.MethodDescriptor(
     name='SendPayment',

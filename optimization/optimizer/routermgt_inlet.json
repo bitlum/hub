@@ -16,7 +16,7 @@
 	"output_stat": true,
 	"output_log": true,
 	"output_period": 10000,
-	"show_log": false,
-	"show_pretty_log": true,
+	"show_log": true,
+	"show_pretty_log": false,
 	"acceleration": 200
 }

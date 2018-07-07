@@ -43,12 +43,13 @@ def create_stub():
 
 
 class TransactionThread(Thread):
-    def __init__(self, stub, time_shift, transaction, acceleration):
+    def __init__(self, stub, time_shift, transaction, acceleration, id):
         Thread.__init__(self)
         self.stub = stub
         self.time_shift = time_shift
         self.transaction = transaction
         self.acceleration = acceleration
+        self.id = id
         self.request = proto.SendPaymentRequest()
 
     def run(self):
@@ -62,6 +63,8 @@ class TransactionThread(Thread):
             self.request.sender = sender
             self.request.receiver = receiver
             self.request.amount = amount
+            self.request.id = str(self.id)
+
             try:
                 self.stub.SendPayment(self.request)
             except Exception as er:
@@ -75,7 +78,7 @@ def sent_transactions(stub, transseq, thread_limit, acceleration):
     while i < len(transseq):
         if threading.active_count() < thread_limit:
             TransactionThread(stub, time.time() - time_init,
-                              transseq[i], acceleration).start()
+                              transseq[i], acceleration, i).start()
             i += 1
 
 
