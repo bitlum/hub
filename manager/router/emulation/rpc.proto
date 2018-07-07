@@ -40,13 +40,16 @@ service Emulator {
 }
 
 message SendPaymentRequest {
+    // ID is unique identificator of the payment.
+    string id = 1;
+
     // Sender is the id of user which sends the payment. If equals zero than we
     // believe that router is the sender.
-    string sender = 1;
+    string sender = 2;
 
     // Receiver is the id of user who receive the payment. If equals zero than we
     // believe that router is the receiver.
-    string receiver = 2;
+    string receiver = 3;
 
     int64 amount = 4;
 }
