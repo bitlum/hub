@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 	"strconv"
+	"github.com/go-errors/errors"
 )
 
 func TestBroadcaster_Broadcast(t *testing.T) {
@@ -32,6 +33,9 @@ func TestBroadcaster_Order(t *testing.T) {
 	r := b.Subscribe()
 	defer r.Stop()
 
+	r2 := b.Subscribe()
+	defer r2.Stop()
+
 	n := 100000
 	go func() {
 		for i := 0; i < n; i++ {
@@ -39,15 +43,55 @@ func TestBroadcaster_Order(t *testing.T) {
 		}
 	}()
 
-	for i := 0; i < n; i++ {
+	errChan := make(chan error, 100)
+
+	go func() {
+		for i := 0; i < n; i++ {
+			select {
+			case number := <-r.Read():
+				expected := strconv.Itoa(i)
+				if number != expected {
+					errChan <- errors.Errorf("wrong data: %v, expected: %v",
+						number, expected)
+					return
+				}
+			case <-time.After(time.Second):
+				errChan <- errors.Errorf("data not received")
+				return
+			}
+
+			errChan <- nil
+		}
+	}()
+
+	go func() {
+		for i := 0; i < n; i++ {
+			select {
+			case number := <-r2.Read():
+				expected := strconv.Itoa(i)
+				if number != expected {
+					errChan <- errors.Errorf("wrong data: %v, expected: %v",
+						number, expected)
+					return
+				}
+			case <-time.After(time.Second):
+				errChan <- errors.Errorf("data not received")
+				return
+			}
+
+			errChan <- nil
+		}
+	}()
+
+	for i := 0; i < 2*n; i++ {
 		select {
-		case s := <-r.Read():
-			expected := strconv.Itoa(i)
-			if s != expected {
-				t.Fatalf("wrong data: %v, expected: %v", s, expected)
+		case err := <-errChan:
+			if err != nil {
+				t.Fatal(err)
 			}
 		case <-time.After(time.Second):
 			t.Fatalf("data not received")
+			return
 		}
 	}
 }
