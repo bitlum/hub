@@ -203,6 +203,7 @@ class RouterMetrics:
             ROI_day /= self.router_mgt.setts.acceleration
             with open('outlet/statistics.json', 'w') as f:
                 json.dump({'time': self.time,
+                           'acceleration': self.router_mgt.setts.acceleration,
                            'profit_av': self.profit_av,
                            'balance_sum_av': self.balance_sum_av,
                            'balance_sum_max_final': self.balance_sum_max[-1],
