@@ -56,7 +56,7 @@ var _ EmulatorServer = (*emulationNetwork)(nil)
 func (n *emulationNetwork) start(host, port string) {
 	go func() {
 		addr := net.JoinHostPort(host, port)
-		log.Infof("Start listening on: %v", addr)
+		log.Infof("Start emulator network listening on: %v", addr)
 		lis, err := net.Listen("tcp", addr)
 		if err != nil {
 			fail(n.errChan, "gRPC server unable to listen on %s", addr)
@@ -64,7 +64,6 @@ func (n *emulationNetwork) start(host, port string) {
 		}
 		defer lis.Close()
 
-		log.Infof("Start gRPC serving on: %v", addr)
 		if err := n.grpcServer.Serve(lis); err != nil {
 			fail(n.errChan, "gRPC server unable to serve on %s", addr)
 			return
@@ -135,7 +134,16 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 		transferedAmount = outgoingAmount
 
 		if outgoingAmount <= 0 {
-			return nil, errors.Errorf("fee is greater than amount")
+			n.broadcaster.Write(&router.UpdatePayment{
+				ID:       req.Id,
+				Type:     router.Incoming,
+				Status:   router.UserLocalFail,
+				Sender:   router.UserID(req.Sender),
+				Receiver: router.UserID(req.Receiver),
+				Amount:   router.BalanceUnit(transferedAmount),
+			})
+
+			return &SendPaymentResponse{}, errors.Errorf("fee is greater than amount")
 		}
 	}
 
@@ -144,7 +152,17 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 		channel, ok := n.users[router.UserID(req.Sender)]
 		if !ok {
 			paymentFailed = true
-			return nil, errors.Errorf("unable to find sender with %v id",
+
+			n.broadcaster.Write(&router.UpdatePayment{
+				ID:       req.Id,
+				Type:     router.Incoming,
+				Status:   router.UserLocalFail,
+				Sender:   router.UserID(req.Sender),
+				Receiver: router.UserID(req.Receiver),
+				Amount:   router.BalanceUnit(transferedAmount),
+			})
+
+			return &SendPaymentResponse{}, errors.Errorf("unable to find sender with %v id",
 				req.Sender)
 		} else if channel.IsPending() {
 			paymentFailed = true
@@ -192,10 +210,30 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 		channel, ok := n.users[router.UserID(req.Receiver)]
 		if !ok {
 			paymentFailed = true
+
+			n.broadcaster.Write(&router.UpdatePayment{
+				ID:       req.Id,
+				Type:     router.Incoming,
+				Status:   router.UserLocalFail,
+				Sender:   router.UserID(req.Sender),
+				Receiver: router.UserID(req.Receiver),
+				Amount:   router.BalanceUnit(transferedAmount),
+			})
+
 			return nil, errors.Errorf("unable to find receiver with %v id",
 				req.Receiver)
 		} else if channel.IsPending() {
 			paymentFailed = true
+
+			n.broadcaster.Write(&router.UpdatePayment{
+				ID:       req.Id,
+				Type:     router.Incoming,
+				Status:   router.UserLocalFail,
+				Sender:   router.UserID(req.Sender),
+				Receiver: router.UserID(req.Receiver),
+				Amount:   router.BalanceUnit(transferedAmount),
+			})
+
 			return nil, errors.Errorf("channel %v is locked",
 				channel.ChannelID)
 		}

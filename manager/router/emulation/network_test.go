@@ -564,6 +564,11 @@ func TestForwardingPaymentFee(t *testing.T) {
 		t.Fatalf("should have failed with small amount error")
 	}
 
+	obj := &router.UpdatePayment{}
+	if err := waitUpdate(routerUpdates, obj); err != nil {
+		t.Fatal(err)
+	}
+
 	if _, err := r.network.SendPayment(context.Background(), &SendPaymentRequest{
 		Sender:   "1",
 		Receiver: "2",
@@ -574,6 +579,7 @@ func TestForwardingPaymentFee(t *testing.T) {
 
 	update := <-routerUpdates.Read()
 	payment := update.(*router.UpdatePayment)
+
 	if payment.Earned != 4 {
 		t.Fatalf("wrong earned / router fee")
 	}
