@@ -79,6 +79,8 @@ class RouterMetrics:
         for _, balance in self.smart_log.router_balances.items():
             self.balance_sum[-1] += balance
 
+        self.balance_sum[-1] -= self.smart_log.io_funds
+
         if self.balance_sum_max[-1] > self.balance_sum[-1]:
             self.balance_sum_max.append(self.balance_sum_max[-1])
         else:
