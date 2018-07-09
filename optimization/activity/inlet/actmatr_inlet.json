@@ -1,5 +1,5 @@
 {
-    "time_period": 30000,
+    "time_period": 70000,
     "timematr_file_name": "outlet/timematr.json",
     "amountmatr_file_name": "outlet/amountmatr.json",
     "periodmatr_mean_file_name": "outlet/periodmatr_mean.json",
