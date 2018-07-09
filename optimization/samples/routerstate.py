@@ -19,6 +19,7 @@ class RouterState:
         self.earned = int()
         self.router_balance = int()
         self.profit = int()
+        self.io_funds = int()
 
         self.id = {'payment': 'payment',
                    'state': 'state',
@@ -61,16 +62,22 @@ class RouterState:
             self.router_balance_sum += balance
 
     def calc_router_free_balance(self):
-        difference = self.router_balance_sum - self.profit
+        difference = self.router_balance_sum - self.profit - self.io_funds
         self.router_free_balance = self.router_free_balance_ini - difference
 
     def set_payment(self, message):
         if message[self.id['status']] == self.id['success']:
             self.get_payment_data(message)
+
             if self.sender != '0':
                 self.set_amount(self.sender, self.amount + self.earned)
+            else:
+                self.io_funds -= self.amount
+
             if self.receiver != '0':
                 self.set_amount(self.receiver, -self.amount)
+            else:
+                self.io_funds += self.amount
             self.profit += self.earned
 
             self.calc_router_balance_sum()
@@ -80,7 +87,7 @@ class RouterState:
         self.router_balances.clear()
 
         self.router_free_balance = message[self.id['free_balance']]
-        difference = self.router_balance_sum - self.profit
+        difference = self.router_balance_sum - self.profit - self.io_funds
         self.router_free_balance_ini = self.router_free_balance + difference
 
         for channel in message[self.id['channels']]:
