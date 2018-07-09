@@ -114,6 +114,10 @@ class Watcher(PattMatchEvHand):
             self.router_mgt.balances[user] = user_balance_ini * self.init_mult
         self.smart_log.just_opened_set.clear()
 
+        # TODO tmp
+        if self.router_mgt.setts.init_mult == 0:
+            self.hubrpc.update_set.clear()
+
 
 class SleepThread(Thread):
     def __init__(self, router_metrics, log_reader, sleep):
