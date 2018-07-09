@@ -1,6 +1,8 @@
 {
     "min_mult": 0.75,
     "max_mult": 1.75,
+    "io_mult": 100,
+    "sparse_frac": 0.5,
     "flowvect_file_name": "outlet/flowvect.json",
     "flowmatr_file_name": "outlet/flowmatr.json"
 }

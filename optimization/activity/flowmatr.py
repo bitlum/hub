@@ -9,6 +9,10 @@ current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_path, '../'))
 
 
+def get_true_frac(frac):
+    return random.randrange(0, 100) < frac * 100
+
+
 # Deploy flow vector in flow matrix using random factors and
 # accounting gates and recipient.
 
@@ -20,17 +24,35 @@ def flowmatr_gen(file_name_inlet):
         flowvect = json.load(f)['flowvect']
 
     with open(inlet['flowvect_file_name']) as f:
+        io_users = json.load(f)['io_users']
+
+    with open(inlet['flowvect_file_name']) as f:
         receivers = json.load(f)['receivers']
 
-    flowmatr = [copy.deepcopy(flowvect) for _ in range(len(flowvect))]
+    users_number = len(flowvect)
+
+    flowmatr = [[None for _ in range(users_number)] for _ in
+                range(users_number)]
 
     for i in range(len(flowmatr)):
         for j in range(len(flowmatr[i])):
             if receivers[j] and i != j:
-                flowmatr[i][j] *= random.uniform(inlet['min_mult'],
-                                                 inlet['max_mult'])
-            else:
-                flowmatr[i][j] = None
+                flowmatr[i][j] = flowvect[j] * random.uniform(
+                    inlet['min_mult'],
+                    inlet['max_mult'])
+                if i == 0:
+                    if io_users[j]:
+                        flowmatr[i][j] *= inlet['io_mult']
+                    else:
+                        flowmatr[i][j] = None
+                elif j == 0:
+                    if io_users[i]:
+                        flowmatr[i][j] *= inlet['io_mult']
+                    else:
+                        flowmatr[i][j] = None
+                else:
+                    if get_true_frac(inlet['sparse_frac']):
+                        flowmatr[i][j] = None
 
     # write flow matrix into a file
 

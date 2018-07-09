@@ -51,6 +51,20 @@ def flowvect_gen(file_name_inlet):
         flowvect[gates_ind[i]] *= random.uniform(inlet['gates_min_mult'],
                                                  inlet['gates_max_mult'])
 
+    # io_users accounting
+
+    io_users = [False for _ in range(users_number + 1)]
+    io_users[0] = False
+
+    io_users_number = int((users_number + 1) * inlet['io_users_frac'])
+
+    io_users_ind = [i for i in range((users_number + 1))]
+
+    io_users_ind = random.sample(range(len(io_users_ind)), io_users_number)
+
+    for i in range(len(io_users_ind)):
+        io_users[io_users_ind[i]] = True
+
     # Recipient accounting
 
     receivers = [False for _ in range(users_number + 1)]
@@ -60,9 +74,8 @@ def flowvect_gen(file_name_inlet):
 
     receivers_ind = [i for i in range((users_number + 1))]
 
-    receivers_ind = random.sample(range(len(receivers_ind)), receivers_number)
-
-    # write bool receiver vector into a file
+    receivers_ind = random.sample(range(len(receivers_ind)),
+                                  receivers_number)
 
     for i in range(len(receivers_ind)):
         receivers[receivers_ind[i]] = True
@@ -73,10 +86,11 @@ def flowvect_gen(file_name_inlet):
         json.dump({'users_id': users_id}, f,
                   sort_keys=True, indent=4 * ' ')
 
-    # write flow vector into a file
+    # write flow vector, receivers and io_users into a file
 
     with open(inlet['flowvect_file_name'], 'w') as f:
-        json.dump({'flowvect': flowvect, 'receivers': receivers}, f,
+        json.dump({'flowvect': flowvect, 'receivers': receivers,
+                   'io_users': io_users}, f,
                   sort_keys=True, indent=4 * ' ')
 
 
