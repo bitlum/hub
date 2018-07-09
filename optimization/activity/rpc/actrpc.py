@@ -191,9 +191,9 @@ def actrpc_gen(file_name_inlet):
 
     channels_id = open_channels(users_id, user_balances, stub)
 
-    print(1 + router_setts.blch_period / router_setts.acceleration * 1.1)
+    print(3 + 2 * router_setts.blch_period / router_setts.acceleration * 1.1)
 
-    time.sleep(1 + router_setts.blch_period / router_setts.acceleration * 1.1)
+    time.sleep(3 + 2 * router_setts.blch_period / router_setts.acceleration * 1.1)
 
     # thread_limit = inlet['thread_limit']
     # sent_transactions(stub, transseq, thread_limit, router_setts.acceleration)
