@@ -43,8 +43,12 @@ def create_stub():
 
 
 class TransactionThread(Thread):
-    def __init__(self, stub, time_shift, transaction, acceleration, id):
+    def __init__(self, stub, time_shift, transaction, acceleration, id,
+                 time_list, pmt_list):
         Thread.__init__(self)
+        self.time_list = time_list
+        self.pmt_list = pmt_list
+
         self.stub = stub
         self.time_shift = time_shift
         self.transaction = transaction
@@ -65,6 +69,9 @@ class TransactionThread(Thread):
             self.request.amount = amount
             self.request.id = str(self.id)
 
+            self.time_list.append(time.time())
+            self.pmt_list.append(str(self.id))
+
             try:
                 self.stub.SendPayment(self.request)
             except Exception as er:
@@ -75,11 +82,82 @@ class TransactionThread(Thread):
 def sent_transactions(stub, transseq, thread_limit, acceleration):
     time_init = time.time()
     i = 0
+
+    time_list = list()
+    pmt_list = list()
+
+    flag = True
+
     while i < len(transseq):
+        if len(time_list) > 1000 and flag is True:
+            flag = False
+
+            time_delta = list()
+            for i in range(len(time_list)):
+                time_delta.append(time_list[i] - time_list[0])
+
+            for i in range(len(time_list)):
+                pmt_list[i] += ' :: ' + str(time_delta[i])
+
+            with open('pmt_list.json', 'w') as f:
+                json.dump(pmt_list, f, sort_keys=True, indent=4 * ' ')
+
         if threading.active_count() < thread_limit:
             TransactionThread(stub, time.time() - time_init,
-                              transseq[i], acceleration, i).start()
+                              transseq[i], acceleration, i, time_list,
+                              pmt_list).start()
             i += 1
+
+
+def sent_transactions_new(stub, transseq, acceleration):
+    time_init = time.time()
+
+    time_list = list()
+    pmt_list = list()
+
+    flag = True
+    trans_id = 0
+
+    for transaction in transseq:
+        amount = round(transaction['payment']['amount'])
+        if amount > 0:
+
+            sender = transaction['payment']['sender']
+            receiver = transaction['payment']['receiver']
+            trans_id += 1
+
+            request = proto.SendPaymentRequest()
+            request.sender = sender
+            request.receiver = receiver
+            request.amount = amount
+            request.id = str(trans_id)
+
+            time_shift = time.time() - time_init
+            period = 1.E-9 * transaction['time'] - time_shift
+            period /= acceleration
+            time.sleep(period)
+
+            time_list.append(time.time())
+            pmt_list.append(str(id))
+
+            try:
+                stub.SendPayment(request)
+            except Exception as er:
+                print(er, 'is skipped for transaction', sender, '->', receiver)
+            print(request)
+
+            if len(time_list) > 1000 and flag is True:
+                flag = False
+
+                time_delta = list()
+                for i in range(len(time_list)):
+                    time_delta.append(time_list[i] - time_list[0])
+
+                for i in range(len(time_list)):
+                    pmt_list[i] += ' :: ' + str(time_delta[i])
+
+                with open('pmt_list.json', 'w') as f:
+                    json.dump(pmt_list, f, sort_keys=True, indent=4 * ' ')
 
 
 def actrpc_gen(file_name_inlet):
@@ -113,10 +191,14 @@ def actrpc_gen(file_name_inlet):
 
     channels_id = open_channels(users_id, user_balances, stub)
 
-    time.sleep(1)
+    print(1 + router_setts.blch_period / router_setts.acceleration * 1.1)
 
-    thread_limit = inlet['thread_limit']
-    sent_transactions(stub, transseq, thread_limit, router_setts.acceleration)
+    time.sleep(1 + router_setts.blch_period / router_setts.acceleration * 1.1)
+
+    # thread_limit = inlet['thread_limit']
+    # sent_transactions(stub, transseq, thread_limit, router_setts.acceleration)
+
+    sent_transactions_new(stub, transseq, router_setts.acceleration)
 
     with open(inlet['channels_id_file_name'], 'w') as f:
         json.dump({'channels_id': channels_id}, f,
