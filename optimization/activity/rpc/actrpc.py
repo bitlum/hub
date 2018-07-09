@@ -138,7 +138,7 @@ def sent_transactions_new(stub, transseq, acceleration):
             time.sleep(period)
 
             time_list.append(time.time())
-            pmt_list.append(str(id))
+            pmt_list.append(str(trans_id))
 
             try:
                 stub.SendPayment(request)
@@ -146,7 +146,7 @@ def sent_transactions_new(stub, transseq, acceleration):
                 print(er, 'is skipped for transaction', sender, '->', receiver)
             print(request)
 
-            if len(time_list) > 1000 and flag is True:
+            if len(time_list) > 500 and flag is True:
                 flag = False
 
                 time_delta = list()
