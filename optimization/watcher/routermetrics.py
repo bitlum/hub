@@ -201,6 +201,7 @@ class RouterMetrics:
         if self.output_stat:
             ROI_day = self.ROI_accum[-1] * 60 * 60 * 24
             ROI_day /= self.router_mgt.setts.acceleration
+            pmnt_fee_prop = 1.E-6 * self.router_mgt.setts.pmnt_fee_prop
             with open('outlet/statistics.json', 'w') as f:
                 json.dump({'time': self.time,
                            'acceleration': self.router_mgt.setts.acceleration,
@@ -210,5 +211,5 @@ class RouterMetrics:
                            'ROI_day': ROI_day,
                            'amount_mean_forw_av': self.amount_mean_forw_av,
                            'amount_mean_io_av': self.amount_mean_io_av,
-                           'pmnt_fee_prop': self.router_mgt.setts.pmnt_fee_prop},
+                           'pmnt_fee_prop': pmnt_fee_prop},
                           f, sort_keys=True, indent=4 * ' ')
