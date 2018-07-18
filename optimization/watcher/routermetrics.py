@@ -48,17 +48,18 @@ class RouterMetrics:
 
         self.router_mgt = router_mgt
 
-        Gnuplot.GnuplotOpts.default_term = 'qt noraise'
-        self.gnuplot = Gnuplot.Gnuplot()
-        self.gnuplot.title("Average Metrics vs Time")
-        self.gnuplot("set ytics nomirror tc rgb '#008000'")
-        self.gnuplot("set y2tics nomirror tc rgb '#800080'")
-        self.gnuplot("set xtics nomirror")
-        self.gnuplot("set xlabel 'time, s'")
-        self.gnuplot("set ylabel 'fraction/s'")
-        self.gnuplot("set y2label 'satoshi'")
-        self.gnuplot('set xtics ' + str(self.plot_period / 5))
-        self.gnuplot('set xrange[0:' + str(self.plot_period) + ']')
+        if self.make_drawing:
+            Gnuplot.GnuplotOpts.default_term = 'qt noraise'
+            self.gnuplot = Gnuplot.Gnuplot()
+            self.gnuplot.title("Average Metrics vs Time")
+            self.gnuplot("set ytics nomirror tc rgb '#008000'")
+            self.gnuplot("set y2tics nomirror tc rgb '#800080'")
+            self.gnuplot("set xtics nomirror")
+            self.gnuplot("set xlabel 'time, s'")
+            self.gnuplot("set ylabel 'fraction/s'")
+            self.gnuplot("set y2label 'satoshi'")
+            self.gnuplot('set xtics ' + str(self.plot_period / 5))
+            self.gnuplot('set xrange[0:' + str(self.plot_period) + ']')
 
     def process(self):
         self.set_data()
