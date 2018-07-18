@@ -11,6 +11,7 @@ sys.path.append(os.path.join(current_path, '../'))
 
 import protobuffer.statrpc_pb2 as proto
 import protobuffer.statrpc_pb2_grpc as proto_grpc
+from statrpc.statsetts import StatSetts
 
 _ONE_DAY_IN_SECONDS = 60 * 60 * 24
 
@@ -34,11 +35,11 @@ class GetStatistics(proto_grpc.GetStatisticsServicer):
         return proto.GetTimeResponse(time=(time.time() - self.init_time))
 
 
-def stat_serve(smart_log, inlet):
+def stat_serve(smart_log, setts):
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     proto_grpc.add_GetStatisticsServicer_to_server(
         GetStatistics(smart_log), server)
-    server.add_insecure_port('[::]:' + inlet['port'])
+    server.add_insecure_port('[::]:' + setts.port)
     server.start()
     print('serve() is started')
     try:
@@ -49,8 +50,7 @@ def stat_serve(smart_log, inlet):
 
 
 if __name__ == '__main__':
-    with open(sys.argv[1]) as f:
-        inlet = json.load(f)
-
-    stat_serve(SmartLog(), inlet)
+    setts = StatSetts()
+    setts.set_from_file(sys.argv[1])
+    stat_serve(SmartLog(), setts)
     print('serve() is stoped')

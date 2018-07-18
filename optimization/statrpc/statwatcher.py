@@ -12,20 +12,17 @@ from watcher.protologutills import split_path_name
 from samples.smartlog import SmartLog
 from watcher.logreader import LogReader
 from statrpc.statserver import stat_serve
+from statrpc.statsetts import StatSetts
 
 
 class StatServerThread(Thread):
-    def __init__(self, smart_log):
+    def __init__(self, smart_log, setts):
         Thread.__init__(self)
         self.smart_log = smart_log
+        self.setts = setts
 
     def run(self):
-        stat_serve(self.smart_log)
-
-
-class SmartLogTmp:
-    def __init__(self):
-        self.profit = float(42)
+        stat_serve(self.smart_log, self.setts)
 
 
 class WatcherStat(PattMatchEvHand):
@@ -36,7 +33,7 @@ class WatcherStat(PattMatchEvHand):
             ignore_directories=True, case_sensitive=False)
         self.smart_log = SmartLog()
         self.log_reader = LogReader(log_file_name, self.smart_log, setts)
-        self.stat_server_thread = StatServerThread(self.smart_log)
+        self.stat_server_thread = StatServerThread(self.smart_log, setts)
         self.stat_server_thread.start()
 
     def process(self, event):
@@ -57,17 +54,13 @@ class WatcherStat(PattMatchEvHand):
         self.process(event)
 
 
-class Setts:
-    def __init__(self):
-        self.show_log = bool(True)
-        self.show_pretty_log = bool(False)
-        self.output_log = bool(False)
-
-
-def watch(log_file_name):
-    obser = Observer()
+def watch(log_file_name, inlet_file_name):
     path = split_path_name(log_file_name)['path']
-    obser.schedule(WatcherStat(Setts(), log_file_name), path)
+    setts = StatSetts()
+    setts.set_from_file(inlet_file_name)
+
+    obser = Observer()
+    obser.schedule(WatcherStat(setts, log_file_name), path)
     obser.start()
     try:
         while True:
@@ -77,5 +70,5 @@ def watch(log_file_name):
 
 
 if __name__ == '__main__':
-    watch(log_file_name=sys.argv[1])
+    watch(log_file_name=sys.argv[1], inlet_file_name=sys.argv[2])
     print('watch() is stoped')
