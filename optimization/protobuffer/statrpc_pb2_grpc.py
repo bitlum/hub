@@ -20,15 +20,10 @@ class GetStatisticsStub(object):
     Args:
       channel: A grpc.Channel.
     """
-    self.GetProfit = channel.unary_unary(
-        '/statrpc.GetStatistics/GetProfit',
-        request_serializer=statrpc__pb2.GetProfitRequest.SerializeToString,
-        response_deserializer=statrpc__pb2.GetProfitResponse.FromString,
-        )
-    self.GetTime = channel.unary_unary(
-        '/statrpc.GetStatistics/GetTime',
-        request_serializer=statrpc__pb2.GetTimeRequest.SerializeToString,
-        response_deserializer=statrpc__pb2.GetTimeResponse.FromString,
+    self.GetStatParams = channel.unary_unary(
+        '/statrpc.GetStatistics/GetStatParams',
+        request_serializer=statrpc__pb2.GetStatParamsRequest.SerializeToString,
+        response_deserializer=statrpc__pb2.GetStatParamsResponse.FromString,
         )
 
 
@@ -36,14 +31,7 @@ class GetStatisticsServicer(object):
   # missing associated documentation comment in .proto file
   pass
 
-  def GetProfit(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def GetTime(self, request, context):
+  def GetStatParams(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -53,15 +41,10 @@ class GetStatisticsServicer(object):
 
 def add_GetStatisticsServicer_to_server(servicer, server):
   rpc_method_handlers = {
-      'GetProfit': grpc.unary_unary_rpc_method_handler(
-          servicer.GetProfit,
-          request_deserializer=statrpc__pb2.GetProfitRequest.FromString,
-          response_serializer=statrpc__pb2.GetProfitResponse.SerializeToString,
-      ),
-      'GetTime': grpc.unary_unary_rpc_method_handler(
-          servicer.GetTime,
-          request_deserializer=statrpc__pb2.GetTimeRequest.FromString,
-          response_serializer=statrpc__pb2.GetTimeResponse.SerializeToString,
+      'GetStatParams': grpc.unary_unary_rpc_method_handler(
+          servicer.GetStatParams,
+          request_deserializer=statrpc__pb2.GetStatParamsRequest.FromString,
+          response_serializer=statrpc__pb2.GetStatParamsResponse.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(

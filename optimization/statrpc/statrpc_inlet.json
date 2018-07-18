@@ -1,8 +1,9 @@
 {
 	"port": "50051",
-	"average_period": 500,
-	"velocity_period": 50,
+	"average_period": 10,
+	"velocity_period": 2,
 	"show_log": true,
 	"show_pretty_log": false,
-	"output_log": false
+	"output_log": false,
+	"acceleration": 1
 }

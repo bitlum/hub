@@ -3,20 +3,22 @@ syntax = "proto3";
 package statrpc;
 
 service GetStatistics {
-  rpc GetProfit (GetProfitRequest) returns (GetProfitResponse);
-  rpc GetTime (GetTimeRequest) returns (GetTimeResponse);
+    rpc GetStatParams (GetStatParamsRequest) returns (GetStatParamsResponse);
 }
 
-message GetProfitRequest {
+message GetStatParamsRequest {
 }
 
-message GetProfitResponse {
-  double profit = 1;
+message GetStatParamsResponse {
+    int64 profit = 2;
+    double income = 3;
+    int64 locked_balance = 4;
+    double ROI_day = 5;
+    int64 free_balance = 6;
+    double profit_av = 7;
+    double income_av = 8;
+    double locked_balance_av = 9;
+    double ROI_day_av = 10;
+    double free_balance_av = 11;
 }
 
-message GetTimeRequest {
-}
-
-message GetTimeResponse {
-  double time = 1;
-}

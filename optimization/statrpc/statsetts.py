@@ -15,6 +15,7 @@ class StatSetts:
         self.output_log = bool(False)
         self.show_log = bool(False)
         self.show_pretty_log = bool(False)
+        self.acceleration = float(1)
 
     def set_from_file(self, file_name):
         with open(file_name) as f:
@@ -25,6 +26,7 @@ class StatSetts:
         self.output_log = inlet['output_log']
         self.show_log = inlet['show_log']
         self.show_pretty_log = inlet['show_pretty_log']
+        self.acceleration = inlet['acceleration']
 
     def __str__(self):
         out_str = 'statistics settings:\n'
@@ -34,6 +36,7 @@ class StatSetts:
         out_str += 'output_log ' + str(self.output_log) + '\n'
         out_str += 'show_log ' + str(self.show_log) + '\n'
         out_str += 'show_pretty_log ' + str(self.show_pretty_log) + '\n'
+        out_str += 'acceleration ' + str(self.acceleration) + '\n'
         return out_str
 
 

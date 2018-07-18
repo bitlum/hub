@@ -19,15 +19,15 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='statrpc.proto',
   package='statrpc',
   syntax='proto3',
-  serialized_pb=_b('\n\rstatrpc.proto\x12\x07statrpc\"\x12\n\x10GetProfitRequest\"#\n\x11GetProfitResponse\x12\x0e\n\x06profit\x18\x01 \x01(\x01\"\x10\n\x0eGetTimeRequest\"\x1f\n\x0fGetTimeResponse\x12\x0c\n\x04time\x18\x01 \x01(\x01\x32\x91\x01\n\rGetStatistics\x12\x42\n\tGetProfit\x12\x19.statrpc.GetProfitRequest\x1a\x1a.statrpc.GetProfitResponse\x12<\n\x07GetTime\x12\x17.statrpc.GetTimeRequest\x1a\x18.statrpc.GetTimeResponseb\x06proto3')
+  serialized_pb=_b('\n\rstatrpc.proto\x12\x07statrpc\"\x16\n\x14GetStatParamsRequest\"\xe4\x01\n\x15GetStatParamsResponse\x12\x0e\n\x06profit\x18\x02 \x01(\x03\x12\x0e\n\x06income\x18\x03 \x01(\x01\x12\x16\n\x0elocked_balance\x18\x04 \x01(\x03\x12\x0f\n\x07ROI_day\x18\x05 \x01(\x01\x12\x14\n\x0c\x66ree_balance\x18\x06 \x01(\x03\x12\x11\n\tprofit_av\x18\x07 \x01(\x01\x12\x11\n\tincome_av\x18\x08 \x01(\x01\x12\x19\n\x11locked_balance_av\x18\t \x01(\x01\x12\x12\n\nROI_day_av\x18\n \x01(\x01\x12\x17\n\x0f\x66ree_balance_av\x18\x0b \x01(\x01\x32_\n\rGetStatistics\x12N\n\rGetStatParams\x12\x1d.statrpc.GetStatParamsRequest\x1a\x1e.statrpc.GetStatParamsResponseb\x06proto3')
 )
 
 
 
 
-_GETPROFITREQUEST = _descriptor.Descriptor(
-  name='GetProfitRequest',
-  full_name='statrpc.GetProfitRequest',
+_GETSTATPARAMSREQUEST = _descriptor.Descriptor(
+  name='GetStatParamsRequest',
+  full_name='statrpc.GetStatParamsRequest',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
@@ -45,20 +45,83 @@ _GETPROFITREQUEST = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=26,
-  serialized_end=44,
+  serialized_end=48,
 )
 
 
-_GETPROFITRESPONSE = _descriptor.Descriptor(
-  name='GetProfitResponse',
-  full_name='statrpc.GetProfitResponse',
+_GETSTATPARAMSRESPONSE = _descriptor.Descriptor(
+  name='GetStatParamsResponse',
+  full_name='statrpc.GetStatParamsResponse',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='profit', full_name='statrpc.GetProfitResponse.profit', index=0,
-      number=1, type=1, cpp_type=5, label=1,
+      name='profit', full_name='statrpc.GetStatParamsResponse.profit', index=0,
+      number=2, type=3, cpp_type=2, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='income', full_name='statrpc.GetStatParamsResponse.income', index=1,
+      number=3, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='locked_balance', full_name='statrpc.GetStatParamsResponse.locked_balance', index=2,
+      number=4, type=3, cpp_type=2, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='ROI_day', full_name='statrpc.GetStatParamsResponse.ROI_day', index=3,
+      number=5, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='free_balance', full_name='statrpc.GetStatParamsResponse.free_balance', index=4,
+      number=6, type=3, cpp_type=2, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='profit_av', full_name='statrpc.GetStatParamsResponse.profit_av', index=5,
+      number=7, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='income_av', full_name='statrpc.GetStatParamsResponse.income_av', index=6,
+      number=8, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='locked_balance_av', full_name='statrpc.GetStatParamsResponse.locked_balance_av', index=7,
+      number=9, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='ROI_day_av', full_name='statrpc.GetStatParamsResponse.ROI_day_av', index=8,
+      number=10, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='free_balance_av', full_name='statrpc.GetStatParamsResponse.free_balance_av', index=9,
+      number=11, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -75,98 +138,27 @@ _GETPROFITRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=46,
-  serialized_end=81,
+  serialized_start=51,
+  serialized_end=279,
 )
 
-
-_GETTIMEREQUEST = _descriptor.Descriptor(
-  name='GetTimeRequest',
-  full_name='statrpc.GetTimeRequest',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=83,
-  serialized_end=99,
-)
-
-
-_GETTIMERESPONSE = _descriptor.Descriptor(
-  name='GetTimeResponse',
-  full_name='statrpc.GetTimeResponse',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='time', full_name='statrpc.GetTimeResponse.time', index=0,
-      number=1, type=1, cpp_type=5, label=1,
-      has_default_value=False, default_value=float(0),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=101,
-  serialized_end=132,
-)
-
-DESCRIPTOR.message_types_by_name['GetProfitRequest'] = _GETPROFITREQUEST
-DESCRIPTOR.message_types_by_name['GetProfitResponse'] = _GETPROFITRESPONSE
-DESCRIPTOR.message_types_by_name['GetTimeRequest'] = _GETTIMEREQUEST
-DESCRIPTOR.message_types_by_name['GetTimeResponse'] = _GETTIMERESPONSE
+DESCRIPTOR.message_types_by_name['GetStatParamsRequest'] = _GETSTATPARAMSREQUEST
+DESCRIPTOR.message_types_by_name['GetStatParamsResponse'] = _GETSTATPARAMSRESPONSE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
-GetProfitRequest = _reflection.GeneratedProtocolMessageType('GetProfitRequest', (_message.Message,), dict(
-  DESCRIPTOR = _GETPROFITREQUEST,
+GetStatParamsRequest = _reflection.GeneratedProtocolMessageType('GetStatParamsRequest', (_message.Message,), dict(
+  DESCRIPTOR = _GETSTATPARAMSREQUEST,
   __module__ = 'statrpc_pb2'
-  # @@protoc_insertion_point(class_scope:statrpc.GetProfitRequest)
+  # @@protoc_insertion_point(class_scope:statrpc.GetStatParamsRequest)
   ))
-_sym_db.RegisterMessage(GetProfitRequest)
+_sym_db.RegisterMessage(GetStatParamsRequest)
 
-GetProfitResponse = _reflection.GeneratedProtocolMessageType('GetProfitResponse', (_message.Message,), dict(
-  DESCRIPTOR = _GETPROFITRESPONSE,
+GetStatParamsResponse = _reflection.GeneratedProtocolMessageType('GetStatParamsResponse', (_message.Message,), dict(
+  DESCRIPTOR = _GETSTATPARAMSRESPONSE,
   __module__ = 'statrpc_pb2'
-  # @@protoc_insertion_point(class_scope:statrpc.GetProfitResponse)
+  # @@protoc_insertion_point(class_scope:statrpc.GetStatParamsResponse)
   ))
-_sym_db.RegisterMessage(GetProfitResponse)
-
-GetTimeRequest = _reflection.GeneratedProtocolMessageType('GetTimeRequest', (_message.Message,), dict(
-  DESCRIPTOR = _GETTIMEREQUEST,
-  __module__ = 'statrpc_pb2'
-  # @@protoc_insertion_point(class_scope:statrpc.GetTimeRequest)
-  ))
-_sym_db.RegisterMessage(GetTimeRequest)
-
-GetTimeResponse = _reflection.GeneratedProtocolMessageType('GetTimeResponse', (_message.Message,), dict(
-  DESCRIPTOR = _GETTIMERESPONSE,
-  __module__ = 'statrpc_pb2'
-  # @@protoc_insertion_point(class_scope:statrpc.GetTimeResponse)
-  ))
-_sym_db.RegisterMessage(GetTimeResponse)
+_sym_db.RegisterMessage(GetStatParamsResponse)
 
 
 
@@ -176,25 +168,16 @@ _GETSTATISTICS = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   options=None,
-  serialized_start=135,
-  serialized_end=280,
+  serialized_start=281,
+  serialized_end=376,
   methods=[
   _descriptor.MethodDescriptor(
-    name='GetProfit',
-    full_name='statrpc.GetStatistics.GetProfit',
+    name='GetStatParams',
+    full_name='statrpc.GetStatistics.GetStatParams',
     index=0,
     containing_service=None,
-    input_type=_GETPROFITREQUEST,
-    output_type=_GETPROFITRESPONSE,
-    options=None,
-  ),
-  _descriptor.MethodDescriptor(
-    name='GetTime',
-    full_name='statrpc.GetStatistics.GetTime',
-    index=1,
-    containing_service=None,
-    input_type=_GETTIMEREQUEST,
-    output_type=_GETTIMERESPONSE,
+    input_type=_GETSTATPARAMSREQUEST,
+    output_type=_GETSTATPARAMSRESPONSE,
     options=None,
   ),
 ])
