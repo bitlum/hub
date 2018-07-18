@@ -1,6 +1,4 @@
 from watchdog.events import PatternMatchingEventHandler as PattMatchEvHand
-from watchdog.observers import Observer
-import time
 from threading import Thread
 import sys
 import os
@@ -12,7 +10,6 @@ from watcher.protologutills import split_path_name
 from samples.smartlog import SmartLog
 from watcher.logreader import LogReader
 from statrpc.statserver import stat_serve
-from statrpc.statsetts import StatSetts
 
 
 class StatServerThread(Thread):
@@ -52,23 +49,3 @@ class WatcherStat(PattMatchEvHand):
 
     def on_deleted(self, event):
         self.process(event)
-
-
-def watch(log_file_name, inlet_file_name):
-    path = split_path_name(log_file_name)['path']
-    setts = StatSetts()
-    setts.set_from_file(inlet_file_name)
-
-    obser = Observer()
-    obser.schedule(WatcherStat(setts, log_file_name), path)
-    obser.start()
-    try:
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        obser.stop()
-
-
-if __name__ == '__main__':
-    watch(log_file_name=sys.argv[1], inlet_file_name=sys.argv[2])
-    print('watch() is stoped')
