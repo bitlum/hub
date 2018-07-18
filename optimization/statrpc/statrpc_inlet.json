@@ -1,0 +1,5 @@
+{
+	"port": "50051",
+	"average_period": 500,
+	"velocity_period": 50
+}

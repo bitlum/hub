@@ -1,6 +1,7 @@
 from concurrent import futures
 import time
 import grpc
+import json
 
 import sys
 import os
@@ -33,11 +34,11 @@ class GetStatistics(proto_grpc.GetStatisticsServicer):
         return proto.GetTimeResponse(time=(time.time() - self.init_time))
 
 
-def stat_serve(smart_log):
+def stat_serve(smart_log, inlet):
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     proto_grpc.add_GetStatisticsServicer_to_server(
         GetStatistics(smart_log), server)
-    server.add_insecure_port('[::]:50051')
+    server.add_insecure_port('[::]:' + inlet['port'])
     server.start()
     print('serve() is started')
     try:
@@ -48,5 +49,8 @@ def stat_serve(smart_log):
 
 
 if __name__ == '__main__':
-    stat_serve(SmartLog())
+    with open(sys.argv[1]) as f:
+        inlet = json.load(f)
+
+    stat_serve(SmartLog(), inlet)
     print('serve() is stoped')
