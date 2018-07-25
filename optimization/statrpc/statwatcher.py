@@ -26,15 +26,15 @@ class StatServerThread(Thread):
 
 class WatcherStat(PattMatchEvHand):
 
-    def __init__(self, setts, log_file_name):
+    def __init__(self, setts):
         super().__init__(
-            patterns='*' + split_path_name(log_file_name)['name'],
+            patterns='*' + split_path_name(setts.router_log)['name'],
             ignore_directories=True, case_sensitive=False)
         self.setts = setts
         self.velocity_period = self.setts.velocity_period
         self.velocity_period /= self.setts.acceleration
         self.smart_log = SmartLog()
-        self.log_reader = LogReader(log_file_name, self.smart_log, setts)
+        self.log_reader = LogReader(self.setts.router_log, self.smart_log, setts)
         self.time_stat_start = time.time()
         self.stat_params = StatParams(self.smart_log, self.setts)
         self.stat_server_thread = StatServerThread(self.stat_params, setts)

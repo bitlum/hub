@@ -1,7 +1,6 @@
 from __future__ import print_function
 import time
 import grpc
-import json
 
 import sys
 import os
@@ -11,6 +10,7 @@ sys.path.append(os.path.join(current_path, '../'))
 
 import protobuffer.statrpc_pb2 as proto
 import protobuffer.statrpc_pb2_grpc as proto_grpc
+from statrpc.statsetts import StatSetts
 
 
 def run(port):
@@ -33,10 +33,10 @@ def run(port):
 
 if __name__ == '__main__':
 
-    with open(sys.argv[1]) as f:
-        inlet = json.load(f)
-    port = inlet['port']
+    setts = StatSetts()
+    setts.get_from_file(sys.argv[1])
+    print(setts)
 
     while True:
         time.sleep(1)
-        run(port)
+        run(setts.port)

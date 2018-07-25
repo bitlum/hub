@@ -12,13 +12,14 @@ from statrpc.statwatcher import WatcherStat
 from statrpc.statsetts import StatSetts
 
 
-def start_stat(log_file_name, inlet_file_name):
-    path = split_path_name(log_file_name)['path']
+def start_stat(setts_file_name):
     setts = StatSetts()
-    setts.set_from_file(inlet_file_name)
+    setts.get_from_file(setts_file_name)
+
+    path = split_path_name(setts.router_log)['path']
 
     obser = Observer()
-    obser.schedule(WatcherStat(setts, log_file_name), path)
+    obser.schedule(WatcherStat(setts), path)
     obser.start()
     try:
         while True:
@@ -27,4 +28,4 @@ def start_stat(log_file_name, inlet_file_name):
         obser.stop()
 
 
-start_stat(log_file_name=sys.argv[1], inlet_file_name='statrpc_inlet.json')
+start_stat(setts_file_name=sys.argv[1])
