@@ -50,7 +50,6 @@ class StatParams:
         if self.locked_balance[-1] > 0:
             self.ROI_day.append(self.income[-1] / self.locked_balance[-1])
             self.ROI_day[-1] *= 60 * 60 * 24 * 100
-            self.ROI_day[-1] /= self.setts.acceleration
         else:
             self.ROI_day.append(float(0))
 
