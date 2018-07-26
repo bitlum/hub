@@ -2,7 +2,10 @@ syntax = "proto3";
 
 package statrpc;
 
+
+// GetStatistics grpc service is used to make available hub statistical data.
 service GetStatistics {
+    // GetStatParams is used to get hub statistical patrameters.
     rpc GetStatParams (GetStatParamsRequest) returns (GetStatParamsResponse);
 }
 
@@ -10,15 +13,36 @@ message GetStatParamsRequest {
 }
 
 message GetStatParamsResponse {
+    // profit is total amount earned funds.
     int64 profit = 2;
+    // income is "velocity" of getting profit.
+    // income(t) = (profit(t) - profit(t - velocity_period)) / velocity_period
+    // To have real time income it's necessary to divide it on acceleration.
     double income = 3;
+    // locked_balance is total amount of locked funds without acounting
+    // incoming transaction funds.
     int64 locked_balance = 4;
+    // ROI_day is ROI for one day (%).
+    // ROI_day = income(t) / locked_balance(t) * 60 * 60 * 24 * 100
+    // To have real time ROI it's necessary to divide it on acceleration.
     double ROI_day = 5;
+    // free_balance is current free balance.
     int64 free_balance = 6;
+    // profit_av is averaged total amount earned funds
+    // for period [t - average_period, t].
     double profit_av = 7;
+    // income_av is averaged "velocity" of getting profit
+    // for period [t - average_period, t].
     double income_av = 8;
+    // locked_balance_av is averaged total amount of locked funds
+    // without acounting incoming transaction funds
+    // for period [t - average_period, t].
     double locked_balance_av = 9;
+    // ROI_day_av is averaged ROI for one day (%)
+    // for period [t - average_period, t].
     double ROI_day_av = 10;
+    // free_balance_av is averaged current free balance
+    // for period [t - average_period, t].
     double free_balance_av = 11;
 }
 
