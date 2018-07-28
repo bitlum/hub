@@ -119,7 +119,7 @@ def actrpc_gen(file_name_inlet):
         inlet = json.load(f)
 
     router_setts = RouterSetts()
-    router_setts.set_from_file('../../optimizer/routermgt_inlet.json')
+    router_setts.get_from_file('../../optimizer/routersetts.ini')
     blch_period = int(
         router_setts.blch_period * 1E+3 / router_setts.acceleration)
     blch_fee = router_setts.blch_fee

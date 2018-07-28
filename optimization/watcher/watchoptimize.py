@@ -15,43 +15,43 @@ from core.routermgt import RouterMgt
 from watcher.routermetrics import RouterMetrics
 
 
-class Watcher(PattMatchEvHand):
+class WatchOptimize(PattMatchEvHand):
 
-    def __init__(self, router_setts, log_file_name):
+    def __init__(self, setts):
         super().__init__(
-            patterns='*' + split_path_name(log_file_name)['name'],
+            patterns='*' + split_path_name(setts.router_log)['name'],
             ignore_directories=True, case_sensitive=False)
 
         self.init_time = time.time()
 
         self.smart_log = SmartLog()
-        self.log_reader = LogReader(log_file_name, self.smart_log,
-                                    router_setts)
-        self.router_mgt = RouterMgt(self.smart_log.transseq, router_setts)
-        self.hubrpc = HubRPC(self.router_mgt.balances, router_setts)
-        self.router_metrics = RouterMetrics(self.smart_log, self.router_mgt)
+        self.log_reader = LogReader(self.smart_log, setts)
+        self.router_mgt = RouterMgt(self.smart_log.transseq, setts)
+        self.hubrpc = HubRPC(self.router_mgt.balances, setts)
+        self.router_metrics = RouterMetrics(self.smart_log, self.router_mgt,
+                                            setts)
 
-        self.init_period = router_setts.init_period
-        self.init_period /= router_setts.acceleration
+        self.init_period = setts.init_period
+        self.init_period /= setts.acceleration
 
-        self.init_mult = router_setts.init_mult
+        self.init_mult = setts.init_mult
 
-        self.mgt_period = router_setts.mgt_period
-        self.mgt_period /= router_setts.acceleration
+        self.mgt_period = setts.mgt_period
+        self.mgt_period /= setts.acceleration
 
         self.time_mgt_start = time.time()
 
-        self.output_period = router_setts.output_period
-        self.output_period /= router_setts.acceleration
+        self.output_period = setts.output_period
+        self.output_period /= setts.acceleration
 
-        json_sleep = router_setts.output_period / router_setts.acceleration
+        output_sleep = setts.output_period / setts.acceleration
         self.sleep_thread = SleepThread(self.router_metrics, self.log_reader,
-                                        json_sleep)
+                                        output_sleep)
         self.sleep_thread.start()
 
     def process(self, event):
         if (event.event_type == 'modified') and (
-                event.src_path == self.log_reader.file_name):
+                event.src_path == self.log_reader.router_log):
 
             self.log_reader.process_log()
 

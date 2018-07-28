@@ -14,8 +14,9 @@ from samples.protolog import ProtoLog
 
 class LogReader:
 
-    def __init__(self, file_name, smart_log, router_setts):
-        self.file_name = file_name
+    def __init__(self, smart_log, setts):
+        self.router_log = setts.router_log
+        self.serialized_log = setts.serialized_log
         self.proto_log = ProtoLog()
         self.smart_log = smart_log
         self.pos = int(0)
@@ -23,13 +24,13 @@ class LogReader:
         self.size_file = int(0)
         self.file = None
         self.message_names = ['payment', 'state', 'channel_change']
-        self.show_log = router_setts.show_log
-        self.show_pretty_log = router_setts.show_pretty_log
-        self.output_log = router_setts.output_log
+        self.show_log = setts.show_log
+        self.show_pretty_log = setts.show_pretty_log
+        self.output_log = setts.output_log
 
     def process_log(self):
-        with open(self.file_name, "rb") as self.file:
-            self.size_file = os.path.getsize(self.file_name)
+        with open(self.router_log, "rb") as self.file:
+            self.size_file = os.path.getsize(self.router_log)
             while True:
                 if self.pos >= self.size_file:
                     break
@@ -73,6 +74,6 @@ class LogReader:
 
     def out_log(self):
         if self.output_log:
-            with open('outlet/log.json', 'w') as f:
+            with open(self.serialized_log, 'w') as f:
                 json.dump(self.smart_log.messages, f, sort_keys=True,
                           indent=4 * ' ')

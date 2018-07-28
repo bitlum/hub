@@ -6,18 +6,18 @@ import os
 current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_path, '../'))
 
-from watcher.watcher import Watcher
+from watcher.watchoptimize import WatchOptimize
 from watcher.protologutills import split_path_name
 from core.routersetts import RouterSetts
 
 
-def optimize(file_name_inlet, log_file_name):
-    router_setts = RouterSetts()
-    router_setts.set_from_file(file_name_inlet)
+def optimize(setts_file_name):
+    setts = RouterSetts()
+    setts.get_from_file(setts_file_name)
 
     obser = Observer()
-    path = split_path_name(log_file_name)['path']
-    obser.schedule(Watcher(router_setts, log_file_name), path)
+    path = split_path_name(setts.router_log)['path']
+    obser.schedule(WatchOptimize(setts), path)
 
     obser.start()
 
@@ -30,4 +30,4 @@ def optimize(file_name_inlet, log_file_name):
     obser.join()
 
 
-optimize(file_name_inlet='routermgt_inlet.json', log_file_name=sys.argv[1])
+optimize(setts_file_name=sys.argv[1])

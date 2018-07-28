@@ -34,7 +34,7 @@ class StatSetts:
         self.port = str(config.get('Main', 'port'))
         self.router_log = str(config.get('Main', 'router_log'))
 
-        self.output_log = bool(config.get('Output', 'output_log'))
+        self.output_log = config.getboolean('Output', 'output_log')
         self.serialized_log = str(config.get('Output', 'serialized_log'))
 
         self.average_period = float(config.get('Time', 'average_period'))
@@ -42,11 +42,12 @@ class StatSetts:
         self.output_period = float(config.get('Time', 'output_period'))
         self.acceleration = float(config.get('Time', 'acceleration'))
 
-        self.show_log = bool(config.get('Terminal', 'show_log'))
-        self.show_pretty_log = bool(config.get('Terminal', 'show_pretty_log'))
+        self.show_log = config.getboolean('Terminal', 'show_log')
+        self.show_pretty_log = config.getboolean('Terminal', 'show_pretty_log')
 
     def __str__(self):
         out_str = '\nRPC statistics settings\n'
+
         out_str += '\nMain:\n'
         out_str += 'port' + ' = ' + str(self.port) + '\n'
         out_str += 'router_log' + ' = ' + str(self.router_log) + '\n'

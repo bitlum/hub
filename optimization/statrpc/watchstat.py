@@ -24,7 +24,7 @@ class StatServerThread(Thread):
         stat_serve(self.stat_params, self.setts)
 
 
-class WatcherStat(PattMatchEvHand):
+class WatchStat(PattMatchEvHand):
 
     def __init__(self, setts):
         super().__init__(
@@ -34,15 +34,20 @@ class WatcherStat(PattMatchEvHand):
         self.velocity_period = self.setts.velocity_period
         self.velocity_period /= self.setts.acceleration
         self.smart_log = SmartLog()
-        self.log_reader = LogReader(self.setts.router_log, self.smart_log, setts)
+        self.log_reader = LogReader(self.smart_log, setts)
         self.time_stat_start = time.time()
         self.stat_params = StatParams(self.smart_log, self.setts)
+
         self.stat_server_thread = StatServerThread(self.stat_params, setts)
         self.stat_server_thread.start()
 
+        output_sleep = self.setts.output_period / self.setts.acceleration
+        self.sleep_thread = SleepThread(self.log_reader, output_sleep)
+        self.sleep_thread.start()
+
     def process(self, event):
         if (event.event_type == 'modified') and (
-                event.src_path == self.log_reader.file_name):
+                event.src_path == self.log_reader.router_log):
             self.log_reader.process_log()
 
             delta_time = time.time() - self.time_stat_start
@@ -61,3 +66,15 @@ class WatcherStat(PattMatchEvHand):
 
     def on_deleted(self, event):
         self.process(event)
+
+
+class SleepThread(Thread):
+    def __init__(self, log_reader, sleep):
+        Thread.__init__(self)
+        self.log_reader = log_reader
+        self.sleep = sleep
+
+    def run(self):
+        time.sleep(self.sleep)
+        self.log_reader.out_log()
+        print('\nMade json output\n')

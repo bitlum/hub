@@ -9,9 +9,11 @@ sys.path.append(os.path.join(current_path, '../'))
 
 
 class RouterMetrics:
-    def __init__(self, smart_log, router_mgt):
+    def __init__(self, smart_log, router_mgt, setts):
         self.smart_log = smart_log
         self.init_time = time.time()
+
+        self.stat_file = setts.stat_file
 
         self.time = list([float(0)])
 
@@ -205,7 +207,7 @@ class RouterMetrics:
             ROI_day = self.ROI_accum[-1] * 60 * 60 * 24
             ROI_day /= self.router_mgt.setts.acceleration
             pmnt_fee_prop = 1.E-6 * self.router_mgt.setts.pmnt_fee_prop
-            with open('outlet/statistics.json', 'w') as f:
+            with open(self.stat_file, 'w') as f:
                 json.dump({'time': self.time,
                            'acceleration': self.router_mgt.setts.acceleration,
                            'profit_av': self.profit_av,
