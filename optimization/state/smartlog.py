@@ -4,7 +4,7 @@ import time
 
 from sortedcontainers import SortedDict
 
-from samples.routerstate import RouterState
+from state.routerstate import RouterState
 
 current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_path, '../'))

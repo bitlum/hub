@@ -6,7 +6,7 @@ current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_path, '../'))
 
 from core.transsample import TransSample
-from samples.smartsample import SmartSample
+from state.smartsample import SmartSample
 from core.routersetts import RouterSetts
 
 

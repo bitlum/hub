@@ -8,7 +8,7 @@ current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_path, '../'))
 
 from watcher.protologutills import split_path_name
-from statrpc.watchstat import WatchStat
+from watcher.watchstat import WatchStat
 from statrpc.statsetts import StatSetts
 
 

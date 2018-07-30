@@ -8,10 +8,10 @@ current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_path, '../'))
 
 from watcher.protologutills import split_path_name
-from samples.smartlog import SmartLog
+from state.smartlog import SmartLog
 from watcher.logreader import LogReader
 from statrpc.statserver import stat_serve
-from statrpc.statparams import StatParams
+from state.statparams import StatParams
 
 
 class StatServerThread(Thread):

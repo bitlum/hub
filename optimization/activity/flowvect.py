@@ -7,7 +7,7 @@ import os
 current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_path, '../'))
 
-from samples.samplegen import generate_sample
+from state.samplegen import generate_sample
 
 
 # Formation of a vector of flows (each vector element corresponds to a

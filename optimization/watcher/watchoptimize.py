@@ -8,11 +8,11 @@ current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_path, '../'))
 
 from watcher.protologutills import split_path_name
-from samples.smartlog import SmartLog
+from state.smartlog import SmartLog
 from watcher.logreader import LogReader
 from core.hubrpc import HubRPC
 from core.routermgt import RouterMgt
-from watcher.routermetrics import RouterMetrics
+from state.routermetrics import RouterMetrics
 
 
 class WatchOptimize(PattMatchEvHand):
