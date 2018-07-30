@@ -3,6 +3,7 @@ import os
 import time
 import Gnuplot
 import json
+import statistics
 
 current_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_path, '../'))
@@ -20,7 +21,8 @@ class RouterMetrics:
         self.profit = list([int(0)])
         self.income = list([float(0)])
         self.balance_sum = list([int(0)])
-        self.balance_sum_max = list([int(0)])
+        self.balance_sum_mean = list([float(0)])
+
         self.balance_sum_predict = list([int(0)])
         self.gain_sum_predict = list([float(0)])
         self.ROI = list([float(0)])
@@ -84,10 +86,7 @@ class RouterMetrics:
 
         self.balance_sum[-1] -= self.smart_log.io_funds
 
-        if self.balance_sum_max[-1] > self.balance_sum[-1]:
-            self.balance_sum_max.append(self.balance_sum_max[-1])
-        else:
-            self.balance_sum_max.append(self.balance_sum[-1])
+        self.balance_sum_mean.append(statistics.mean(self.balance_sum))
 
         self.balance_sum_predict.append(int(0))
         for _, balance in self.router_mgt.balances_eff.items():
@@ -102,9 +101,9 @@ class RouterMetrics:
         else:
             self.ROI.append(float(0))
 
-        if self.balance_sum_max[-1] > 0:
+        if self.balance_sum_mean[-1] > 0:
             self.ROI_accum.append(
-                self.profit[-1] / self.time[-1] / self.balance_sum_max[-1])
+                self.profit[-1] / self.time[-1] / self.balance_sum_mean[-1])
         else:
             self.ROI_accum.append(0)
 
@@ -176,18 +175,19 @@ class RouterMetrics:
             axes='x1y2',
             title="locked funds",
             with_="lines lw 3 lt 1 lc rgb '#800080'")
+
+        balance_sum_mean_curve = Gnuplot.Data(
+            self.time, self.balance_sum_mean,
+            axes='x1y2',
+            title="mean locked funds",
+            with_="lines lw 1 lt 1 lc rgb '#800080'")
+
         balance_sum_predict_av_curve = Gnuplot.Data(
             self.time,
             self.balance_sum_predict_av,
             axes='x1y2',
             title="predicted locked funds",
             with_="lines lw 3 lt 0 lc rgb '#800080'")
-        balance_sum_max_curve = Gnuplot.Data(
-            self.time,
-            self.balance_sum_max,
-            axes='x1y2',
-            title="max locked funds",
-            with_="lines lw 1 lt 1 lc rgb '#800080'")
 
         time_min = self.time[-1] - self.plot_period
 
@@ -196,8 +196,8 @@ class RouterMetrics:
                 'set xrange[' + str(time_min) + ':' + str(self.time[-1]) + ']')
 
         self.gnuplot.plot(balance_sum_av_curve,
+                          balance_sum_mean_curve,
                           balance_sum_predict_av_curve,
-                          balance_sum_max_curve,
                           ROI_av_curve,
                           ROI_predict_av_curve,
                           ROI_accum_curve)
