@@ -15,9 +15,6 @@ class FlowStat(TransStat):
         super().__init__(transseq, setts)
         self.amountmatr_mean = list()
         self.amountmatr_number = list()
-        self.amountvec_mean = dict()
-        self.amount_mean_forw = float()
-        self.amount_mean_io = float()
         self.flowmatr = list()
         self.flowvect_out = list()
         self.flowvect_in = list()
@@ -75,63 +72,10 @@ class FlowStat(TransStat):
 
         self.calc_amount_mean()
 
-    def calc_amount_mean(self):
-        self.amountmatr_mean.clear()
-        self.amountmatr_mean = [[amount.mean for amount in amount_vect] for
-                                amount_vect in self.smart_amount]
-        self.amountmatr_number.clear()
-        self.amountmatr_number = [[amount.number for amount in amount_vect] for
-                                  amount_vect in self.smart_amount]
-
-        self.amountvec_mean.clear()
-        for i in range(self.users_number):
-            val = 0
-            num = 0
-            for j in range(self.users_number):
-                if self.amountmatr_mean[i][j] is not None:
-                    val += self.amountmatr_mean[i][j] * \
-                           self.amountmatr_number[i][j]
-                    num += self.amountmatr_number[i][j]
-            if val > 0:
-                self.amountvec_mean[self.users_id[i]] = val / num
-            else:
-                self.amountvec_mean[self.users_id[i]] = None
-
-        num_total_forw = 0
-        num_total_io = 0
-        for i in range(self.users_number):
-            val_forw = 0
-            val_io = 0
-            num_forw = 0
-            num_io = 0
-            for j in range(self.users_number):
-                if self.amountmatr_mean[i][j] is not None:
-                    val = self.amountmatr_mean[i][j] * \
-                          self.amountmatr_number[i][j]
-
-                    if self.users_id[i] == '0' or self.users_id[j] == '0':
-                        val_io += val
-                        num_io += self.amountmatr_number[i][j]
-                    else:
-                        val_forw += val
-                        num_forw += self.amountmatr_number[i][j]
-
-            self.amount_mean_forw += val_forw
-            num_total_forw += num_forw
-
-            self.amount_mean_io += val_io
-            num_total_io += num_io
-
-        if num_total_forw > 0:
-            self.amount_mean_forw /= num_total_forw
-
-        if num_total_io > 0:
-            self.amount_mean_io /= num_total_io
-
 
 if __name__ == '__main__':
     router_setts = RouterSetts()
-    router_setts.set_from_file('../optimizer/routermgt_inlet.json')
+    router_setts.get_from_file('../optimizer/routersetts.ini')
 
     with open('../activity/outlet/transseq.json') as f:
         transseq = json.load(f)['transseq']
@@ -141,18 +85,6 @@ if __name__ == '__main__':
     flow_stat = FlowStat(transseq, router_setts)
     flow_stat.accelerate_transseq()
     flow_stat.calc_flow(prob_cut)
-
-    print('amountvec_mean:')
-    print(flow_stat.amountvec_mean)
-    print()
-
-    print('amount_mean_forw:')
-    print(flow_stat.amount_mean_forw)
-    print()
-
-    print('amount_mean_io:')
-    print(flow_stat.amount_mean_io)
-    print()
 
     print('flowmatr:')
     print(flow_stat.flowmatr)

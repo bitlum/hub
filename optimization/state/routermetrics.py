@@ -29,7 +29,8 @@ class RouterMetrics:
         self.ROI_accum = list([float(0)])
         self.ROI_predict = list([float(0)])
         self.amount_mean_forw = list([float(0)])
-        self.amount_mean_io = list([float(0)])
+        self.amount_mean_inco = list([float(0)])
+        self.amount_mean_outg = list([float(0)])
 
         self.profit_av = list([float(0)])
         self.income_av = list([float(0)])
@@ -39,7 +40,8 @@ class RouterMetrics:
         self.ROI_av = list([float(0)])
         self.ROI_predict_av = list([float(0)])
         self.amount_mean_forw_av = list([float(0)])
-        self.amount_mean_io_av = list([float(0)])
+        self.amount_mean_inco_av = list([float(0)])
+        self.amount_mean_outg_av = list([float(0)])
 
         self.average_period = router_mgt.setts.average_period
         self.average_period /= router_mgt.setts.acceleration
@@ -108,7 +110,8 @@ class RouterMetrics:
             self.ROI_accum.append(0)
 
         self.amount_mean_forw.append(self.router_mgt.amount_mean_forw)
-        self.amount_mean_io.append(self.router_mgt.amount_mean_io)
+        self.amount_mean_inco.append(self.router_mgt.amount_mean_inco)
+        self.amount_mean_outg.append(self.router_mgt.amount_mean_outg)
 
         if self.balance_sum_predict[-1] > 0:
             ROI = self.gain_sum_predict[-1] / self.balance_sum_predict[-1]
@@ -125,7 +128,8 @@ class RouterMetrics:
         self.ROI_av.append(float(0))
         self.ROI_predict_av.append(float(0))
         self.amount_mean_forw_av.append(float(0))
-        self.amount_mean_io_av.append(float(0))
+        self.amount_mean_inco_av.append(float(0))
+        self.amount_mean_outg_av.append(float(0))
 
         count = int(0)
         for i in range(len(self.time) - 1, - 1, -1):
@@ -141,7 +145,8 @@ class RouterMetrics:
                 self.ROI_av[-1] += self.ROI[i]
                 self.ROI_predict_av[-1] += self.ROI_predict[i]
                 self.amount_mean_forw_av[-1] += self.amount_mean_forw[i]
-                self.amount_mean_io_av[-1] += self.amount_mean_io[i]
+                self.amount_mean_inco_av[-1] += self.amount_mean_inco[i]
+                self.amount_mean_outg_av[-1] += self.amount_mean_outg[i]
 
         self.profit_av[-1] /= count
         self.income_av[-1] /= count
@@ -151,7 +156,8 @@ class RouterMetrics:
         self.ROI_av[-1] /= count
         self.ROI_predict_av[-1] /= count
         self.amount_mean_forw_av[-1] /= count
-        self.amount_mean_io_av[-1] /= count
+        self.amount_mean_inco_av[-1] /= count
+        self.amount_mean_outg_av[-1] /= count
 
     def draw(self):
 
@@ -211,10 +217,11 @@ class RouterMetrics:
                 json.dump({'time': self.time,
                            'acceleration': self.router_mgt.setts.acceleration,
                            'profit_av': self.profit_av,
+                           'balance_sum_mean': self.balance_sum_mean,
                            'balance_sum_av': self.balance_sum_av,
-                           'balance_sum_max_final': self.balance_sum_max[-1],
                            'ROI_day': ROI_day,
                            'amount_mean_forw_av': self.amount_mean_forw_av,
-                           'amount_mean_io_av': self.amount_mean_io_av,
+                           'amount_mean_inco_av': self.amount_mean_inco_av,
+                           'amount_mean_outg_av': self.amount_mean_outg_av,
                            'pmnt_fee_prop': pmnt_fee_prop},
                           f, sort_keys=True, indent=4 * ' ')

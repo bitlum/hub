@@ -208,7 +208,7 @@ class RouterMgt(FlowStat):
 
 if __name__ == '__main__':
     router_setts = RouterSetts()
-    router_setts.set_from_file('../optimizer/routermgt_inlet.json')
+    router_setts.get_from_file('../optimizer/routersetts.ini')
 
     with open('../activity/outlet/transseq.json') as f:
         transseq = json.load(f)['transseq']

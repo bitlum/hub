@@ -18,8 +18,13 @@ class TransStat(TransSample):
         self.smart_period = list()
         self.smart_amount = list()
 
+        self.amount_mean_forw = float()
+        self.amount_mean_inco = float()
+        self.amount_mean_outg = float()
+
     def calc_stat(self, prob_cut=0.5):
         self.calc_data()
+        self.calc_amount_mean()
 
         self.smart_period.clear()
         self.smart_period = [[SmartSample(period) for period in periodvect] for
@@ -34,17 +39,45 @@ class TransStat(TransSample):
                 self.smart_period[i][j].calc_stat(prob_cut)
                 self.smart_amount[i][j].calc_stat(prob_cut)
 
+    def calc_amount_mean(self):
+        self.amount_mean_forw = float()
+        self.amount_mean_inco = float()
+        self.amount_mean_outg = float()
+        forw_number = int()
+        inco_number = int()
+        outg_number = int()
+        for trans in self.transseq:
+            sender = trans['payment']['sender']
+            receiver = trans['payment']['receiver']
+            amount = trans['payment']['amount']
+            if sender == '0':
+                outg_number += 1
+                self.amount_mean_outg += amount
+            elif receiver == '0':
+                inco_number += 1
+                self.amount_mean_inco += amount
+            else:
+                forw_number += 1
+                self.amount_mean_forw += amount
+
+        if outg_number > 0:
+            self.amount_mean_outg /= outg_number
+        if inco_number > 0:
+            self.amount_mean_inco /= inco_number
+        if forw_number > 0:
+            self.amount_mean_forw /= forw_number
+
 
 if __name__ == '__main__':
     router_setts = RouterSetts()
-    router_setts.set_from_file('../optimizer/routermgt_inlet.json')
+    router_setts.get_from_file('../optimizer/routersetts.ini')
 
     with open('../activity/outlet/transseq.json') as f:
         transseq = json.load(f)['transseq']
 
     prob_cut = 0.5
 
-    trans_stat = TransStat(transseq,router_setts)
+    trans_stat = TransStat(transseq, router_setts)
     trans_stat.accelerate_transseq()
     trans_stat.calc_stat(prob_cut)
 
@@ -60,3 +93,15 @@ if __name__ == '__main__':
         for amount in amount_vect:
             print(amount.cut, end='\t')
         print()
+
+    print('amount_mean_forw:')
+    print(trans_stat.amount_mean_forw)
+    print()
+
+    print('amount_mean_inco:')
+    print(trans_stat.amount_mean_inco)
+    print()
+
+    print('amount_mean_outg:')
+    print(trans_stat.amount_mean_outg)
+    print()
