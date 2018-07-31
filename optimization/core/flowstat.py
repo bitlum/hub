@@ -13,8 +13,6 @@ class FlowStat(TransStat):
 
     def __init__(self, transseq, setts):
         super().__init__(transseq, setts)
-        self.amountmatr_mean = list()
-        self.amountmatr_number = list()
         self.flowmatr = list()
         self.flowvect_out = list()
         self.flowvect_in = list()
@@ -69,8 +67,6 @@ class FlowStat(TransStat):
         self.flowvect_in_eff = [flow for flow in self.flowvect_in]
         for i in range(self.users_number):
             self.flowvect_in_eff[i] -= self.flowvect_out[i]
-
-        self.calc_amount_mean()
 
 
 if __name__ == '__main__':

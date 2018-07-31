@@ -31,18 +31,26 @@ class RouterMgt(FlowStat):
         self.gain_eff = dict()
 
     def calc_parameters(self):
+
         self.calc_flow(self.setts.prob_cut)
+
         self.calc_ind_list()
+
         self.calc_extremum()
+
         self.account_idle()
+
         self.calc_periods_in_eff()
         self.calc_periods_out_eff()
         self.account_periods_in_eff()
+
         self.calc_freqs_in()
         self.calc_freqs_out()
+
         self.calc_closure()
 
     def calc_ind_list(self):
+
         self.indexes.clear()
         router_id = '0'
         for user_id, ind in self.users_ind.items():
@@ -50,6 +58,7 @@ class RouterMgt(FlowStat):
                 self.indexes[user_id] = ind
 
     def calc_extremum(self):
+
         self.lim_extrem.clear()
         for user_id, ind in self.indexes.items():
             value = self.setts.blch_fee / self.pmnt_fee_prop_eff
@@ -62,6 +71,7 @@ class RouterMgt(FlowStat):
             self.balances[user_id] = self.lim_extrem[user_id]
 
     def account_idle(self):
+
         self.lim_idle.clear()
         for user_id, ind in self.indexes.items():
             amount = self.flowvect_in[ind] * self.setts.blch_period
@@ -74,6 +84,7 @@ class RouterMgt(FlowStat):
                 self.balances[user_id] = lim
 
     def calc_periods_in_eff(self):
+
         self.periods_in_eff.clear()
         for user_id, ind in self.indexes.items():
             self.periods_in_eff[user_id] = None
@@ -90,6 +101,7 @@ class RouterMgt(FlowStat):
                         self.periods_in_eff[user_id] += value
 
     def calc_periods_out_eff(self):
+
         self.periods_out_eff.clear()
         for user_id, ind in self.indexes.items():
             self.periods_out_eff[user_id] = None
