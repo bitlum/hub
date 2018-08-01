@@ -19,7 +19,7 @@ class RouterMetrics:
         self.time = list([float(0)])
 
         self.profit = list([int(0)])
-        self.income = list([float(0)])
+        self.gain_sum = list([float(0)])
         self.balance_sum = list([int(0)])
         self.balance_sum_mean = list([float(0)])
 
@@ -33,7 +33,7 @@ class RouterMetrics:
         self.amount_mean_outg = list([float(0)])
 
         self.profit_av = list([float(0)])
-        self.income_av = list([float(0)])
+        self.gain_sum_av = list([float(0)])
         self.balance_sum_av = list([float(0)])
         self.balance_sum_predict_av = list([float(0)])
         self.gain_sum_predict_av = list([float(0)])
@@ -80,7 +80,7 @@ class RouterMetrics:
 
         time_delta = self.time[-1] - self.time[-2]
 
-        self.income.append((self.profit[-1] - self.profit[-2]) / time_delta)
+        self.gain_sum.append((self.profit[-1] - self.profit[-2]) / time_delta)
 
         self.balance_sum.append(int(0))
         for _, balance in self.smart_log.router_balances.items():
@@ -99,7 +99,7 @@ class RouterMetrics:
             self.gain_sum_predict[-1] += gain
 
         if self.balance_sum[-1] > 0:
-            self.ROI.append(self.income[-1] / self.balance_sum[-1])
+            self.ROI.append(self.gain_sum[-1] / self.balance_sum[-1])
         else:
             self.ROI.append(float(0))
 
@@ -121,7 +121,7 @@ class RouterMetrics:
 
     def calc_data_av(self):
         self.profit_av.append(float(0))
-        self.income_av.append(float(0))
+        self.gain_sum_av.append(float(0))
         self.balance_sum_av.append(float(0))
         self.balance_sum_predict_av.append(float(0))
         self.gain_sum_predict_av.append(float(0))
@@ -138,7 +138,7 @@ class RouterMetrics:
             else:
                 count += 1
                 self.profit_av[-1] += self.profit[i]
-                self.income_av[-1] += self.income[i]
+                self.gain_sum_av[-1] += self.gain_sum[i]
                 self.balance_sum_av[-1] += self.balance_sum[i]
                 self.balance_sum_predict_av[-1] += self.balance_sum_predict[i]
                 self.gain_sum_predict_av[-1] += self.gain_sum_predict[i]
@@ -149,7 +149,7 @@ class RouterMetrics:
                 self.amount_mean_outg_av[-1] += self.amount_mean_outg[i]
 
         self.profit_av[-1] /= count
-        self.income_av[-1] /= count
+        self.gain_sum_av[-1] /= count
         self.balance_sum_av[-1] /= count
         self.balance_sum_predict_av[-1] /= count
         self.gain_sum_predict_av[-1] /= count
@@ -205,8 +205,8 @@ class RouterMetrics:
                           balance_sum_mean_curve,
                           balance_sum_predict_av_curve,
                           ROI_av_curve,
-                          ROI_predict_av_curve,
-                          ROI_accum_curve)
+                          ROI_accum_curve,
+                          ROI_predict_av_curve)
 
     def out_stat(self):
         if self.output_stat:

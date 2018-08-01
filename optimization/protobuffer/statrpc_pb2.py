@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='statrpc.proto',
   package='statrpc',
   syntax='proto3',
-  serialized_pb=_b('\n\rstatrpc.proto\x12\x07statrpc\"\x16\n\x14GetStatParamsRequest\"\xe4\x01\n\x15GetStatParamsResponse\x12\x0e\n\x06profit\x18\x02 \x01(\x03\x12\x0e\n\x06income\x18\x03 \x01(\x01\x12\x16\n\x0elocked_balance\x18\x04 \x01(\x03\x12\x0f\n\x07ROI_day\x18\x05 \x01(\x01\x12\x14\n\x0c\x66ree_balance\x18\x06 \x01(\x03\x12\x11\n\tprofit_av\x18\x07 \x01(\x01\x12\x11\n\tincome_av\x18\x08 \x01(\x01\x12\x19\n\x11locked_balance_av\x18\t \x01(\x01\x12\x12\n\nROI_day_av\x18\n \x01(\x01\x12\x17\n\x0f\x66ree_balance_av\x18\x0b \x01(\x01\x32_\n\rGetStatistics\x12N\n\rGetStatParams\x12\x1d.statrpc.GetStatParamsRequest\x1a\x1e.statrpc.GetStatParamsResponseb\x06proto3')
+  serialized_pb=_b('\n\rstatrpc.proto\x12\x07statrpc\"\x16\n\x14GetStatParamsRequest\"\xe8\x01\n\x15GetStatParamsResponse\x12\x0e\n\x06profit\x18\x02 \x01(\x03\x12\x10\n\x08gain_sum\x18\x03 \x01(\x01\x12\x16\n\x0elocked_balance\x18\x04 \x01(\x03\x12\x0f\n\x07ROI_day\x18\x05 \x01(\x01\x12\x14\n\x0c\x66ree_balance\x18\x06 \x01(\x03\x12\x11\n\tprofit_av\x18\x07 \x01(\x01\x12\x13\n\x0bgain_sum_av\x18\x08 \x01(\x01\x12\x19\n\x11locked_balance_av\x18\t \x01(\x01\x12\x12\n\nROI_day_av\x18\n \x01(\x01\x12\x17\n\x0f\x66ree_balance_av\x18\x0b \x01(\x01\x32_\n\rGetStatistics\x12N\n\rGetStatParams\x12\x1d.statrpc.GetStatParamsRequest\x1a\x1e.statrpc.GetStatParamsResponseb\x06proto3')
 )
 
 
@@ -64,7 +64,7 @@ _GETSTATPARAMSRESPONSE = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='income', full_name='statrpc.GetStatParamsResponse.income', index=1,
+      name='gain_sum', full_name='statrpc.GetStatParamsResponse.gain_sum', index=1,
       number=3, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
@@ -99,7 +99,7 @@ _GETSTATPARAMSRESPONSE = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='income_av', full_name='statrpc.GetStatParamsResponse.income_av', index=6,
+      name='gain_sum_av', full_name='statrpc.GetStatParamsResponse.gain_sum_av', index=6,
       number=8, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
@@ -139,7 +139,7 @@ _GETSTATPARAMSRESPONSE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=51,
-  serialized_end=279,
+  serialized_end=283,
 )
 
 DESCRIPTOR.message_types_by_name['GetStatParamsRequest'] = _GETSTATPARAMSREQUEST
@@ -168,8 +168,8 @@ _GETSTATISTICS = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   options=None,
-  serialized_start=281,
-  serialized_end=376,
+  serialized_start=285,
+  serialized_end=380,
   methods=[
   _descriptor.MethodDescriptor(
     name='GetStatParams',

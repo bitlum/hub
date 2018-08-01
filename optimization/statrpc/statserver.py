@@ -26,12 +26,12 @@ class GetStatistics(proto_grpc.GetStatisticsServicer):
     def GetStatParams(self, request, context):
         response = proto.GetStatParamsResponse()
         response.profit = self.stat_params.profit[-1]
-        response.income = self.stat_params.income[-1]
+        response.gain_sum = self.stat_params.gain_sum[-1]
         response.locked_balance = self.stat_params.locked_balance[-1]
         response.ROI_day = self.stat_params.ROI_day[-1]
         response.free_balance = self.stat_params.free_balance[-1]
         response.profit_av = self.stat_params.profit_av
-        response.income_av = self.stat_params.income_av
+        response.gain_sum_av = self.stat_params.gain_sum_av
         response.locked_balance_av = self.stat_params.locked_balance_av
         response.ROI_day_av = self.stat_params.ROI_day_av
         response.free_balance_av = self.stat_params.free_balance_av

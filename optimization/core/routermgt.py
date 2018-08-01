@@ -213,6 +213,7 @@ class RouterMgt(FlowStat):
             if self.period_eff_gain[ind] is not None:
                 gain = self.flowvect_gain[ind] * self.pmnt_fee_prop_eff
                 gain += self.pmnt_fee_base_eff / self.period_eff_gain[ind]
+                gain -= self.setts.blch_fee * self.freqs[user_id]
                 self.gain_eff[user_id] = float(gain)
             else:
                 self.gain_eff[user_id] = float(0)

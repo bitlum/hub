@@ -15,15 +15,15 @@ message GetStatParamsRequest {
 message GetStatParamsResponse {
     // profit is total amount earned funds.
     int64 profit = 2;
-    // income is "velocity" of getting profit.
-    // income(t) = (profit(t) - profit(t - velocity_period)) / velocity_period
-    // To have real time income it's necessary to divide it on acceleration.
-    double income = 3;
+    // gain_sum is "velocity" of getting profit.
+    // gain_sum(t) = (profit(t) - profit(t - velocity_period)) / velocity_period
+    // To have real time gain_sum it's necessary to divide it on acceleration.
+    double gain_sum = 3;
     // locked_balance is total amount of locked funds without acounting
     // incoming transaction funds.
     int64 locked_balance = 4;
     // ROI_day is ROI for one day (%).
-    // ROI_day = income(t) / locked_balance(t) * 60 * 60 * 24 * 100
+    // ROI_day = gain_sum(t) / locked_balance(t) * 60 * 60 * 24 * 100
     // To have real time ROI it's necessary to divide it on acceleration.
     double ROI_day = 5;
     // free_balance is current free balance.
@@ -31,9 +31,9 @@ message GetStatParamsResponse {
     // profit_av is averaged total amount earned funds
     // for period [t - average_period, t].
     double profit_av = 7;
-    // income_av is averaged "velocity" of getting profit
+    // gain_sum_av is averaged "velocity" of getting profit
     // for period [t - average_period, t].
-    double income_av = 8;
+    double gain_sum_av = 8;
     // locked_balance_av is averaged total amount of locked funds
     // without acounting incoming transaction funds
     // for period [t - average_period, t].

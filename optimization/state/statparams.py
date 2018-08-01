@@ -18,13 +18,13 @@ class StatParams:
         self.time = list([float(0)])
 
         self.profit = list([int(0)])
-        self.income = list([float(0)])
+        self.gain_sum = list([float(0)])
         self.locked_balance = list([int(0)])
         self.ROI_day = list([float(0)])
         self.free_balance = list([int(0)])
 
         self.profit_av = float(0)
-        self.income_av = float(0)
+        self.gain_sum_av = float(0)
         self.locked_balance_av = float(0)
         self.ROI_day_av = float(0)
         self.free_balance_av = float(0)
@@ -40,7 +40,7 @@ class StatParams:
 
         time_delta = self.time[-1] - self.time[-2]
         profit_delta = self.profit[-1] - self.profit[-2]
-        self.income.append(profit_delta / time_delta)
+        self.gain_sum.append(profit_delta / time_delta)
 
         self.locked_balance.append(int(0))
         for _, balance in self.smart_log.router_balances.items():
@@ -48,7 +48,7 @@ class StatParams:
         self.locked_balance[-1] -= self.smart_log.io_funds
 
         if self.locked_balance[-1] > 0:
-            self.ROI_day.append(self.income[-1] / self.locked_balance[-1])
+            self.ROI_day.append(self.gain_sum[-1] / self.locked_balance[-1])
             self.ROI_day[-1] *= 60 * 60 * 24 * 100
         else:
             self.ROI_day.append(float(0))
@@ -59,7 +59,7 @@ class StatParams:
         while self.time[-1] - self.time[0] > self.average_period:
             del self.time[0]
             del self.profit[0]
-            del self.income[0]
+            del self.gain_sum[0]
             del self.locked_balance[0]
             del self.ROI_day[0]
             del self.free_balance[0]
@@ -67,7 +67,7 @@ class StatParams:
     def calc_data_av(self):
         for i in range(len(self.time)):
             self.profit_av = statistics.mean(self.profit)
-            self.income_av = statistics.mean(self.income)
+            self.gain_sum_av = statistics.mean(self.gain_sum)
             self.locked_balance_av = statistics.mean(self.locked_balance)
             self.ROI_day_av = statistics.mean(self.ROI_day)
             self.free_balance_av = statistics.mean(self.free_balance)
