@@ -84,7 +84,7 @@ class WatchOptimize(PattMatchEvHand):
             bound = self.router_mgt.bounds[user]
             balance_opt = self.router_mgt.balances[user]
             if wane:
-                if balance_cur < bound:
+                if balance_cur < bound or balance_cur > balance_opt:
                     self.hubrpc.update_set.add(user)
             else:
                 if balance_cur > bound or balance_cur < balance_opt:
