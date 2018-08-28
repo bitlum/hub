@@ -25,6 +25,16 @@
 #   unused-packages = true
 
 
+[[override]]
+  name = "github.com/prometheus/client_model"
+  revision = "99fa1f4be8e564e8a6b613da7fa6f46c9edafc6c"
+
+[[override]]
+  # Because of the lnd specify strict revision of genproto we also need to do
+  # that, otherwise we met dep error.
+  name = "google.golang.org/genproto"
+  revision = "df60624c1e9b9d2973e889c7a1cff73155da81c4"
+
 [[constraint]]
   branch = "master"
   name = "github.com/bitlum/btcutil"
@@ -32,12 +42,6 @@
 [[constraint]]
   name = "github.com/go-errors/errors"
   version = "1.0.1"
-
-[[override]]
-  # Because of the lnd specify strict revision of genproto we also need to do
-  # that, otherwise we met dep error.
-  name = "google.golang.org/genproto"
-  revision = "df60624c1e9b9d2973e889c7a1cff73155da81c4"
 
 [[constraint]]
   name = "github.com/golang/protobuf"
@@ -56,7 +60,7 @@
   # merged
   name = "github.com/lightningnetwork/lnd"
   source = "github.com/bitlum/lnd"
-  revision = "e34a23f322aedff773caa252a005a3b5d00c0eea"
+  revision = "625b210f441ece841c76b81377dd96e8d09aba8e"
 
 [[constraint]]
   name = "github.com/prometheus/client_golang"
