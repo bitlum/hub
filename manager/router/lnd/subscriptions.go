@@ -704,18 +704,8 @@ func (r *Router) syncForwardingUpdate(storage IndexesStorage) {
 			continue
 		}
 
-		var status router.PaymentStatus
-		switch event.Type {
-		case lnrpc.ForwardingEvent_FAILT_ATTEMPT:
-			switch event.FailCode {
-			case lnrpc.ForwardingEvent_INSUFFICIENT_FUNDS:
-				status = router.InsufficientFunds
-			case lnrpc.ForwardingEvent_UNKNOWN_NEXT_PEER:
-				status = router.UserNotFound
-			}
-		case lnrpc.ForwardingEvent_SUCCESS:
-			status = router.Successful
-		}
+		// TODO(andrew.shvv) Add fail attempts
+		status := router.Successful
 
 		if err := r.cfg.Storage.StorePayment(&router.Payment{
 			FromUser:  sender,
@@ -733,7 +723,7 @@ func (r *Router) syncForwardingUpdate(storage IndexesStorage) {
 
 		update := &router.UpdatePayment{
 			Type:     router.Forward,
-			Status:   router.Successful,
+			Status:   status,
 			Sender:   sender,
 			Receiver: receiver,
 			Amount:   router.BalanceUnit(event.AmtOut),
@@ -834,14 +824,7 @@ func (r *Router) listenIncomingPayments() {
 			continue
 		}
 
-		chanID := router.ChannelID(invoiceUpdate.ChannelPoint)
-		userID, err := r.cfg.Storage.GetUserIDByChannelID(chanID)
-		if err != nil {
-			log.Errorf("(payments updates) unable to get user id by channel"+
-				" id(%v) for payment(%v): %v", chanID,
-				invoiceUpdate.PaymentRequest, err)
-			continue
-		}
+		userID := router.UserID("unknown")
 
 		amount := btcutil.Amount(invoiceUpdate.Value)
 		if err := r.cfg.Storage.StorePayment(&router.Payment{
