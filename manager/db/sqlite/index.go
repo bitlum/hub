@@ -11,8 +11,9 @@ var _ lnd.IndexesStorage = (*DB)(nil)
 // GetUserIDByShortChanID returns user id by the given lightning network
 // specification channel id.
 func (d *DB) GetUserIDByShortChanID(shortChanID uint64) (router.UserID, error) {
-	index := UserIDShortChanIDIndex{ShortChannelID: shortChanID}
-	if err := d.Find(&index).Error; err != nil {
+	index := UserIDShortChanIDIndex{}
+	if err := d.Where("short_channel_id = ?", shortChanID).
+		Find(&index).Error; err != nil {
 		return "", err
 	}
 
@@ -34,7 +35,8 @@ func (d *DB) AddUserIDToShortChanIDIndex(userID router.UserID,
 // identification i.e. channel point by the given lnd short channel id.
 func (d *DB) GetChannelPointByShortChanID(shortChanID uint64) (router.ChannelID, error) {
 	index := ChannelIDShortChanIDIndex{ShortChannelID: shortChanID}
-	if err := d.Find(&index).Error; err != nil {
+	if err := d.Where("short_channel_id = ?", shortChanID).
+		Find(&index).Error; err != nil {
 		return "", err
 	}
 
