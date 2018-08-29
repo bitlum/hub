@@ -88,17 +88,18 @@ type emulateRouterConfig struct {
 }
 
 type lndRouterConfig struct {
-	Network      string            `long:"network" description:"Blockchain network which should be used" choice:"simnet" choice:"testnet" choice:"mainnet"`
-	DataDir      string            `long:"dbpath" description:"Path to dir where BoltDB will be stored"`
-	TlsCertPath  string            `long:"tlscertpath" description:"Path to the LND certificate"`
-	MacaroonPath string            `long:"macaroonpath" description:"Path to the LND macaroon"`
-	GRPCHost     string            `long:"grpchost" description:"Host on which we expect to find LND gRPC endpoint"`
-	GRPCPort     string            `long:"grpcport" description:"Port on which we expect to find LND gRPC endpoint"`
-	NeutrinoHost string            `long:"neutrinohost" description:"Public host where neutrino Bitcoin node resides. Needed only to inform users over API"`
-	NeutrinoPort string            `long:"neutrinoport" description:"Public port where neutrino Bitcoin node resides. Needed only to inform users over API"`
-	PeerHost     string            `long:"peerhost" description:"Public host where LND node resides. Needed only to inform users over API"`
-	PeerPort     string            `long:"peerport" description:"Public port where LND node resides. Needed only to inform users over API"`
-	KnownPeers   map[string]string `long:"knownpeer" description:"A map from peer alias to its public key"`
+	Network         string            `long:"network" description:"Blockchain network which should be used" choice:"simnet" choice:"testnet" choice:"mainnet"`
+	DataDir         string            `long:"dbpath" description:"Path to dir where BoltDB will be stored"`
+	TlsCertPath     string            `long:"tlscertpath" description:"Path to the LND certificate"`
+	MacaroonPath    string            `long:"macaroonpath" description:"Path to the LND macaroon"`
+	GRPCHost        string            `long:"grpchost" description:"Host on which we expect to find LND gRPC endpoint"`
+	GRPCPort        string            `long:"grpcport" description:"Port on which we expect to find LND gRPC endpoint"`
+	NeutrinoHost    string            `long:"neutrinohost" description:"Public host where neutrino Bitcoin node resides. Needed only to inform users over API"`
+	NeutrinoPort    string            `long:"neutrinoport" description:"Public port where neutrino Bitcoin node resides. Needed only to inform users over API"`
+	PeerHost        string            `long:"peerhost" description:"Public host where LND node resides. Needed only to inform users over API"`
+	PeerPort        string            `long:"peerport" description:"Public port where LND node resides. Needed only to inform users over API"`
+	BalancerEnabled bool              `long:"balancerenabled" description:"enable creation of the channel to connected peers"`
+	KnownPeers      map[string]string `long:"knownpeer" description:"A map from peer alias to its public key"`
 }
 
 type prometheusConfig struct {
