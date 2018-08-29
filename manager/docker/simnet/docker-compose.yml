@@ -1,28 +1,28 @@
 version: "3.5"
 
 
-# Explicitly defined connector network to be able to set static IPs
+# Define network compatible with payserver network
 networks:
   connector.simnet:
     name: connector.simnet
     driver: bridge
     ipam:
       config:
-      - subnet: 172.100.0.0/24
+      - subnet: 172.100.1.0/24
 
 # Default settings for all containers.
 x-defaults:
   &defaults
 
-  # Using automatically assigned ip address from connect.simnet network.
+  logging:
+    driver: "json-file"
+    options:
+        max-size: "200m"
+        max-file: "10"
+
+# Using automatically assigned ip address from connect.simnet network.
   networks:
     connector.simnet:
-
-  # Using syslog driver and set tag to container_name.
-  logging:
-    driver: syslog
-    options:
-      tag: "connector-docker/{{ .Name }}"
 
   # Restart on exit.
   restart: always
@@ -34,12 +34,9 @@ services:
     image: hub.simnet
     build:
       context: ./hub/
-      args:
-        - HUB_REVISION
-    restart: always
     volumes:
       - "db:/db"
-      # This directory should exist on host, so connector should be deployed
+      # This directory should exist on host, so payserver should be deployed
       # first, with lightning network daemon.
       - /connector/bitcoin-lightning.simnet.secondary:/root/.lnd/:ro
     ports:
@@ -49,14 +46,14 @@ services:
       # Prometheus monitoring
       - "19999:19999"
 
-  hubcli:
+  hubcli.simnet:
+    << : *defaults
+    container_name: hubcli.simnet
+    image: hubcli.simnet
     build: hubcli
-    image: bitlum/hubcli
-    container_name: hubcli
-    restart: always
     volumes:
       - "db:/db"
-      # This directory should exist on host, so connector should be deployed
+      # This directory should exist on host, so payserver should be deployed
       # first, with lightning network daemon.
       - /connector/bitcoin-lightning.simnet.secondary:/root/.lnd/:ro
 

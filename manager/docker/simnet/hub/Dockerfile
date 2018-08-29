@@ -6,14 +6,16 @@ RUN apt-get update
 RUN apt-get install -y ca-certificates
 RUN update-ca-certificates
 
-WORKDIR /
-
 # This implies that service has to be built locally first, and putted in the
 # docker directory, fore running docker build.
-COPY hub .
+COPY /bin/hub /usr/local/bin/
 
 # This implies that service config is defines and located in the
 # directory with docker file.
-COPY hub.conf .
+COPY hub.simnet.conf /root/default/hub.conf
 
-ENTRYPOINT [ "./hub", "--config", "hub.conf"]
+# Entrypoint script used to init datadir if required and for
+# starting dash daemon
+COPY entrypoint.sh /root/
+
+ENTRYPOINT [ "bash", "/root/entrypoint.sh" ]

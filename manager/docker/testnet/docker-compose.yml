@@ -1,6 +1,7 @@
 version: "3.5"
 
-# Explicitly defined connector network to be able to set static IPs
+
+# Define network compatible with payserver network
 networks:
   connector.testnet:
     name: connector.testnet
@@ -13,15 +14,15 @@ networks:
 x-defaults:
   &defaults
 
+  logging:
+    driver: "json-file"
+    options:
+        max-size: "200m"
+        max-file: "10"
+
   # Using automatically assigned ip address from connect.testnet network.
   networks:
     connector.testnet:
-
-  # Using syslog driver and set tag to container_name.
-  logging:
-    driver: syslog
-    options:
-      tag: "connector-docker/{{ .Name }}"
 
   # Restart on exit.
   restart: always
@@ -37,8 +38,8 @@ services:
         - HUB_REVISION
     restart: always
     volumes:
-      - /connector/hub.testnet/db:/root/.hub/db
-      - /connector/hub.testnet/logs:/root/.hub/logs
+      - /connector/hub.testnet/:/root/.hub/
+
       # This directory should exist on host, so connector should be deployed
       # first, with lightning network daemon.
       - /connector/bitcoin-lightning.testnet:/root/.lnd/:ro
@@ -49,16 +50,14 @@ services:
       # Prometheus monitoring
       - "19999:19999"
 
-  hubcli:
+  hubcli.testnet:
+    << : *defaults
+    container_name: hubcli.testnet
+    image: hubcli.testnet
     build: hubcli
-    image: bitlum/hubcli
-    container_name: hubcli
-    restart: always
     volumes:
-      - "db:/db"
-      # This directory should exist on host, so connector should be deployed
+      - /connector/hub.testnet/:/root/.hub/
+
+      # This directory should exist on host, so payserver should be deployed
       # first, with lightning network daemon.
       - /connector/bitcoin-lightning.testnet:/root/.lnd/:ro
-
-volumes:
-  db:

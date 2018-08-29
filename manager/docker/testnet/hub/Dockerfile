@@ -34,7 +34,7 @@ COPY --from=builder /go/bin/manager /usr/local/bin/hub
 
 # Default config used to initalize datadir volume at first or
 # cleaned deploy. It will be restored and used after each restart.
-COPY hub.mainnet.conf /root/default/hub.conf
+COPY hub.testnet.conf /root/default/hub.conf
 
 # Entrypoint script used to init datadir if required and for
 # starting dash daemon
