@@ -199,16 +199,22 @@ func (r *Router) Start() error {
 		return errors.Errorf("unable get lnd node info: %v", err)
 	}
 
-	// TODO(andrew.shvv) not working for mainnet, as far response don't have
-	// a mainnet param.
 	lndNet := "simnet"
 	if respInfo.Testnet {
 		lndNet = "testnet"
 	}
 
-	if lndNet != r.cfg.Net {
-		return errors.Errorf("hub net is '%v', but config network is '%v'",
-			r.cfg.Net, lndNet)
+	// TODO(andrew.shvv) not working for mainnet, as far response don't have
+	// a mainnet param.
+	if r.cfg.Net != "mainnet" {
+		if lndNet != r.cfg.Net {
+			return errors.Errorf("hub net is '%v', but config net is '%v'",
+				r.cfg.Net, lndNet)
+		}
+
+		log.Infof("Init connector working with '%v' net", lndNet)
+	} else {
+		log.Info("Init connector working with 'mainnet' net")
 	}
 
 	log.Infof("Init lnd router working with network(%v) alias(%v) ", lndNet, respInfo.Alias)
