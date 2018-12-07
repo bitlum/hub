@@ -1,19 +1,19 @@
 package logs
 
 import (
-	"time"
-	"github.com/bitlum/hub/manager/router"
+	"github.com/bitlum/hub/lightning"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/go-errors/errors"
 	"os"
-	"github.com/davecgh/go-spew/spew"
 	"reflect"
+	"time"
 )
 
-// getState converts router topology into state log.
-func getState(r router.Router) (*Log, error) {
-	// Get the router local network in order to write it on log file,
+// getState converts nodes topology into state log.
+func getState(client lightning.Client) (*Log, error) {
+	// Get the node's local network in order to write it on log file,
 	// so that external optimisation program could sync it state.
-	routerChannels, err := r.Channels()
+	nodeChannels, err := client.Channels()
 	if err != nil {
 		return nil, err
 	}
@@ -21,27 +21,27 @@ func getState(r router.Router) (*Log, error) {
 	// TODO(andrew.shvv) As far we have gap between those two operations
 	// the free balance might actually change, need to cope with that.
 
-	// Get the number of money under control of router in order to write
+	// Get the number of money under control of lightning node in order to write
 	// in the log.
-	freeBalance, err := r.FreeBalance()
+	freeBalance, err := client.FreeBalance()
 	if err != nil {
 		return nil, err
 	}
 
 	// Get the number of money which is in the process of being proceeded by
 	// blockchain.
-	pendingBalance, err := r.PendingBalance()
+	pendingBalance, err := client.PendingBalance()
 	if err != nil {
 		return nil, err
 	}
 
-	channels := make([]*Channel, len(routerChannels))
-	for i, c := range routerChannels {
+	channels := make([]*Channel, len(nodeChannels))
+	for i, c := range nodeChannels {
 		channels[i] = &Channel{
 			ChannelId:     string(c.ChannelID),
 			UserId:        string(c.UserID),
-			UserBalance:   uint64(c.UserBalance),
-			RouterBalance: uint64(c.RouterBalance),
+			RemoteBalance: uint64(c.RemoteBalance),
+			LocalBalance:  uint64(c.LocalBalance),
 			IsPending:     c.IsPending(),
 		}
 	}
@@ -49,7 +49,7 @@ func getState(r router.Router) (*Log, error) {
 	return &Log{
 		Time: time.Now().UnixNano(),
 		Data: &Log_State{
-			State: &RouterState{
+			State: &NodeState{
 				FreeBalance:    uint64(freeBalance),
 				PendingBalance: uint64(pendingBalance),
 				Channels:       channels,
@@ -58,11 +58,11 @@ func getState(r router.Router) (*Log, error) {
 	}, nil
 }
 
-// UpdateLogFileGoroutine subscribe on routers topology update and update
-// the log with the current router state and channel updates.
+// UpdateLogFileGoroutine subscribe on lightning node topology updates and
+// update the log with the current node state and channel updates.
 //
 // NOTE: Should be run as goroutine.
-func UpdateLogFileGoroutine(r router.Router, path string, errChan chan error) {
+func UpdateLogFileGoroutine(client lightning.Client, path string, errChan chan error) {
 	defer func() {
 		log.Infof("Stopped update log file goroutine, log path(%v)", path)
 	}()
@@ -76,7 +76,7 @@ func UpdateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 	pretty.DisableMethods = true
 	pretty.DisablePointerAddresses = true
 
-	logEntry, err := getState(r)
+	logEntry, err := getState(client)
 	if err != nil {
 		fail(errChan, "unable to get state: %v", err)
 		return
@@ -89,7 +89,7 @@ func UpdateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 		}
 	}
 
-	receiver := r.RegisterOnUpdates()
+	receiver := client.RegisterOnUpdates()
 	defer receiver.Stop()
 
 	for {
@@ -99,7 +99,7 @@ func UpdateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 			// log update via watchdog package.
 			log.Tracef("Open update log file(%v) to write an update: %v",
 				path, pretty.Sdump(logEntry))
-			updateLogFile, err := os.OpenFile(path, os.O_APPEND | os.O_RDWR|
+			updateLogFile, err := os.OpenFile(path, os.O_APPEND|os.O_RDWR|
 				os.O_CREATE, 0666)
 			if err != nil {
 				fail(errChan, "unable to open update log file: %v", err)
@@ -121,13 +121,13 @@ func UpdateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 		select {
 		case update, ok := <-receiver.Read():
 			if !ok {
-				log.Info("Router update channel close, " +
+				log.Info("Client update channel close, " +
 					"exiting log update goroutine")
 				return
 			}
 
 			switch u := update.(type) {
-			case *router.UpdateChannelClosing:
+			case *lightning.UpdateChannelClosing:
 				log.Infof("Update(%v) received, logging", u)
 
 				logEntry = &Log{
@@ -137,15 +137,15 @@ func UpdateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 							Type:          ChannelChangeType_closing,
 							ChannelId:     string(u.ChannelID),
 							UserId:        string(u.UserID),
-							UserBalance:   0,
-							RouterBalance: 0,
+							RemoteBalance: 0,
+							LocalBalance:  0,
 							Fee:           uint64(u.Fee),
 							Duration:      0,
 						},
 					},
 				}
 
-			case *router.UpdateChannelClosed:
+			case *lightning.UpdateChannelClosed:
 				log.Infof("Update(%v) received, logging", u)
 
 				logEntry = &Log{
@@ -155,15 +155,15 @@ func UpdateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 							Type:          ChannelChangeType_closed,
 							ChannelId:     string(u.ChannelID),
 							UserId:        string(u.UserID),
-							UserBalance:   0,
-							RouterBalance: 0,
+							RemoteBalance: 0,
+							LocalBalance:  0,
 							Fee:           uint64(u.Fee),
 							Duration:      time.Unix(0, u.Duration).Unix(),
 						},
 					},
 				}
 
-			case *router.UpdateChannelOpening:
+			case *lightning.UpdateChannelOpening:
 				log.Infof("Update(%v) received, logging", u)
 
 				logEntry = &Log{
@@ -173,15 +173,15 @@ func UpdateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 							Type:          ChannelChangeType_openning,
 							ChannelId:     string(u.ChannelID),
 							UserId:        string(u.UserID),
-							UserBalance:   uint64(u.UserBalance),
-							RouterBalance: uint64(u.RouterBalance),
+							RemoteBalance: uint64(u.RemoteBalance),
+							LocalBalance:  uint64(u.LocalBalance),
 							Fee:           uint64(u.Fee),
 							Duration:      0,
 						},
 					},
 				}
 
-			case *router.UpdateChannelOpened:
+			case *lightning.UpdateChannelOpened:
 				log.Infof("Update(%v) received, logging", u)
 
 				logEntry = &Log{
@@ -191,15 +191,15 @@ func UpdateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 							Type:          ChannelChangeType_opened,
 							ChannelId:     string(u.ChannelID),
 							UserId:        string(u.UserID),
-							UserBalance:   uint64(u.UserBalance),
-							RouterBalance: uint64(u.RouterBalance),
+							RemoteBalance: uint64(u.RemoteBalance),
+							LocalBalance:  uint64(u.LocalBalance),
 							Fee:           uint64(u.Fee),
 							Duration:      time.Unix(0, u.Duration).Unix(),
 						},
 					},
 				}
 
-			case *router.UpdateChannelUpdating:
+			case *lightning.UpdateChannelUpdating:
 				log.Infof("Update(%v) received, logging", u)
 
 				logEntry = &Log{
@@ -209,15 +209,15 @@ func UpdateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 							Type:          ChannelChangeType_updating,
 							ChannelId:     string(u.ChannelID),
 							UserId:        string(u.UserID),
-							UserBalance:   uint64(u.UserBalance),
-							RouterBalance: uint64(u.RouterBalance),
+							RemoteBalance: uint64(u.RemoteBalance),
+							LocalBalance:  uint64(u.LocalBalance),
 							Fee:           uint64(u.Fee),
 							Duration:      0,
 						},
 					},
 				}
 
-			case *router.UpdateChannelUpdated:
+			case *lightning.UpdateChannelUpdated:
 				log.Infof("Update(%v) received, logging", u)
 
 				logEntry = &Log{
@@ -227,15 +227,15 @@ func UpdateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 							Type:          ChannelChangeType_updated,
 							ChannelId:     string(u.ChannelID),
 							UserId:        string(u.UserID),
-							UserBalance:   uint64(u.UserBalance),
-							RouterBalance: uint64(u.RouterBalance),
+							RemoteBalance: uint64(u.RemoteBalance),
+							LocalBalance:  uint64(u.LocalBalance),
 							Fee:           uint64(u.Fee),
 							Duration:      time.Unix(0, u.Duration).Unix(),
 						},
 					},
 				}
 
-			case *router.UpdateUserConnected:
+			case *lightning.UpdateUserConnected:
 				log.Infof("Update(%v) received, logging", u)
 
 				logEntry = &Log{
@@ -248,18 +248,18 @@ func UpdateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 					},
 				}
 
-			case *router.UpdatePayment:
+			case *lightning.UpdatePayment:
 				log.Infof("Update(%v) received, logging", u)
 
 				var status PaymentStatus
 				switch u.Status {
-				case router.InsufficientFunds:
+				case lightning.InsufficientFunds:
 					status = PaymentStatus_unsufficient_funds
-				case router.Successful:
+				case lightning.Successful:
 					status = PaymentStatus_success
-				case router.ExternalFail:
+				case lightning.ExternalFail:
 					status = PaymentStatus_external_fail
-				case router.UserLocalFail:
+				case lightning.UserLocalFail:
 					status = PaymentStatus_user_local_fail
 				default:
 					fail(errChan, "unknown status: %v", u.Status)
@@ -287,13 +287,14 @@ func UpdateLogFileGoroutine(r router.Router, path string, errChan chan error) {
 			}
 
 			// After the any log update we have to dump the state of the
-			// router
+			// lightning node.
 			triggerStateWrite()
 
 		case <-needWriteState:
-			log.Info("Synchronise state of the router and write state in the log")
+			log.Info("Synchronise state of the lightning node and write state" +
+				" in the log")
 
-			logEntry, err = getState(r)
+			logEntry, err = getState(client)
 			if err != nil {
 				fail(errChan, "unable to get state: %v", err)
 				return

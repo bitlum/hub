@@ -1,4 +1,4 @@
-package router
+package lightning
 
 import (
 	"github.com/go-errors/errors"

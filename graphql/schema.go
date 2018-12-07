@@ -1,8 +1,8 @@
 package graphql
 
 import (
+	"github.com/bitlum/hub/lightning"
 	"github.com/graphql-go/graphql"
-	"github.com/bitlum/hub/manager/router"
 )
 
 var typeNeutrinoInfo = graphql.NewObject(graphql.ObjectConfig{
@@ -14,7 +14,7 @@ var typeNeutrinoInfo = graphql.NewObject(graphql.ObjectConfig{
 				" blockchain network",
 			Type: graphql.NewNonNull(graphql.String),
 			Resolve: func(rp graphql.ResolveParams) (interface{}, error) {
-				return rp.Source.(*router.NeutrinoInfo).Host, nil
+				return rp.Source.(*lightning.NeutrinoInfo).Host, nil
 			},
 		},
 		"port": &graphql.Field{
@@ -23,7 +23,7 @@ var typeNeutrinoInfo = graphql.NewObject(graphql.ObjectConfig{
 				" connect to service directly",
 			Type: graphql.NewNonNull(graphql.String),
 			Resolve: func(rp graphql.ResolveParams) (interface{}, error) {
-				return rp.Source.(*router.NeutrinoInfo).Port, nil
+				return rp.Source.(*lightning.NeutrinoInfo).Port, nil
 			},
 		},
 	},
@@ -38,7 +38,7 @@ var typeNodeInfo = graphql.NewObject(graphql.ObjectConfig{
 				" blockchain network",
 			Type: graphql.NewNonNull(graphql.String),
 			Resolve: func(rp graphql.ResolveParams) (interface{}, error) {
-				return rp.Source.(*router.NodeInfo).Host, nil
+				return rp.Source.(*lightning.NodeInfo).Host, nil
 			},
 		},
 		"port": &graphql.Field{
@@ -47,7 +47,7 @@ var typeNodeInfo = graphql.NewObject(graphql.ObjectConfig{
 				" connect to service directly",
 			Type: graphql.NewNonNull(graphql.String),
 			Resolve: func(rp graphql.ResolveParams) (interface{}, error) {
-				return rp.Source.(*router.NodeInfo).Port, nil
+				return rp.Source.(*lightning.NodeInfo).Port, nil
 			},
 		},
 		"identityPubkey": &graphql.Field{
@@ -58,7 +58,7 @@ var typeNodeInfo = graphql.NewObject(graphql.ObjectConfig{
 				" node",
 			Type: graphql.NewNonNull(graphql.String),
 			Resolve: func(rp graphql.ResolveParams) (interface{}, error) {
-				return rp.Source.(*router.NodeInfo).IdentityPubKey, nil
+				return rp.Source.(*lightning.NodeInfo).IdentityPubKey, nil
 			},
 		},
 		"alias": &graphql.Field{
@@ -69,7 +69,7 @@ var typeNodeInfo = graphql.NewObject(graphql.ObjectConfig{
 				"so it shouldn't be used as identification",
 			Type: graphql.NewNonNull(graphql.String),
 			Resolve: func(rp graphql.ResolveParams) (interface{}, error) {
-				return rp.Source.(*router.NodeInfo).Alias, nil
+				return rp.Source.(*lightning.NodeInfo).Alias, nil
 			},
 		},
 	},
@@ -84,14 +84,14 @@ var typeInfo = graphql.NewObject(graphql.ObjectConfig{
 				" blockchain network",
 			Type: graphql.NewNonNull(graphql.String),
 			Resolve: func(rp graphql.ResolveParams) (interface{}, error) {
-				return rp.Source.(*router.Info).Network, nil
+				return rp.Source.(*lightning.Info).Network, nil
 			},
 		},
 		"version": &graphql.Field{
 			Description: "Version is version of lightning network daemon",
 			Type:        graphql.NewNonNull(graphql.String),
 			Resolve: func(rp graphql.ResolveParams) (interface{}, error) {
-				return rp.Source.(*router.Info).Version, nil
+				return rp.Source.(*lightning.Info).Version, nil
 			},
 		},
 		"blockHeight": &graphql.Field{
@@ -99,7 +99,7 @@ var typeInfo = graphql.NewObject(graphql.ObjectConfig{
 				" current view of the height of chain",
 			Type: graphql.NewNonNull(graphql.String),
 			Resolve: func(rp graphql.ResolveParams) (interface{}, error) {
-				return rp.Source.(*router.Info).BlockHeight, nil
+				return rp.Source.(*lightning.Info).BlockHeight, nil
 			},
 		},
 		"blockHash": &graphql.Field{
@@ -107,7 +107,7 @@ var typeInfo = graphql.NewObject(graphql.ObjectConfig{
 				" current view of the hash of the best block",
 			Type: graphql.NewNonNull(graphql.String),
 			Resolve: func(rp graphql.ResolveParams) (interface{}, error) {
-				return rp.Source.(*router.Info).BlockHash, nil
+				return rp.Source.(*lightning.Info).BlockHash, nil
 			},
 		},
 
@@ -116,7 +116,7 @@ var typeInfo = graphql.NewObject(graphql.ObjectConfig{
 				" connect to the neutrino node",
 			Type: graphql.NewNonNull(typeNeutrinoInfo),
 			Resolve: func(rp graphql.ResolveParams) (interface{}, error) {
-				return rp.Source.(*router.Info).NeutrinoInfo, nil
+				return rp.Source.(*lightning.Info).NeutrinoInfo, nil
 			},
 		},
 		"nodeInfo": &graphql.Field{
@@ -124,7 +124,7 @@ var typeInfo = graphql.NewObject(graphql.ObjectConfig{
 				" connect or find lightning network node",
 			Type: graphql.NewNonNull(typeNodeInfo),
 			Resolve: func(rp graphql.ResolveParams) (interface{}, error) {
-				return rp.Source.(*router.Info).NodeInfo, nil
+				return rp.Source.(*lightning.Info).NodeInfo, nil
 			},
 		},
 	},
@@ -138,21 +138,21 @@ var typePeer = graphql.NewObject(graphql.ObjectConfig{
 			Description: "",
 			Type:        graphql.NewNonNull(graphql.String),
 			Resolve: func(rp graphql.ResolveParams) (interface{}, error) {
-				return rp.Source.(*router.User).Alias, nil
+				return rp.Source.(*lightning.User).Alias, nil
 			},
 		},
 		"lockedByPeer": &graphql.Field{
 			Description: "",
 			Type:        graphql.NewNonNull(graphql.Int),
 			Resolve: func(rp graphql.ResolveParams) (interface{}, error) {
-				return int64(rp.Source.(*router.User).LockedByUser), nil
+				return int64(rp.Source.(*lightning.User).LockedByUser), nil
 			},
 		},
 		"lockedByHub": &graphql.Field{
 			Description: "",
 			Type:        graphql.NewNonNull(graphql.Int),
 			Resolve: func(rp graphql.ResolveParams) (interface{}, error) {
-				return int64(rp.Source.(*router.User).LockedByHub), nil
+				return int64(rp.Source.(*lightning.User).LockedByHub), nil
 			},
 		},
 	},
@@ -166,42 +166,42 @@ var typePayment = graphql.NewObject(graphql.ObjectConfig{
 			Description: "",
 			Type:        graphql.NewNonNull(graphql.String),
 			Resolve: func(rp graphql.ResolveParams) (interface{}, error) {
-				return rp.Source.(*router.Payment).FromAlias, nil
+				return rp.Source.(*lightning.Payment).FromAlias, nil
 			},
 		},
 		"toPeer": &graphql.Field{
 			Description: "",
 			Type:        graphql.NewNonNull(graphql.String),
 			Resolve: func(rp graphql.ResolveParams) (interface{}, error) {
-				return rp.Source.(*router.Payment).ToAlias, nil
+				return rp.Source.(*lightning.Payment).ToAlias, nil
 			},
 		},
 		"amount": &graphql.Field{
 			Description: "",
 			Type:        graphql.NewNonNull(graphql.Int),
 			Resolve: func(rp graphql.ResolveParams) (interface{}, error) {
-				return int64(rp.Source.(*router.Payment).Amount), nil
+				return int64(rp.Source.(*lightning.Payment).Amount), nil
 			},
 		},
 		"status": &graphql.Field{
 			Description: "",
 			Type:        graphql.NewNonNull(graphql.String),
 			Resolve: func(rp graphql.ResolveParams) (interface{}, error) {
-				return string(rp.Source.(*router.Payment).Status), nil
+				return string(rp.Source.(*lightning.Payment).Status), nil
 			},
 		},
 		"time": &graphql.Field{
 			Description: "",
 			Type:        graphql.NewNonNull(graphql.Int),
 			Resolve: func(rp graphql.ResolveParams) (interface{}, error) {
-				return rp.Source.(*router.Payment).Time, nil
+				return rp.Source.(*lightning.Payment).Time, nil
 			},
 		},
 		"type": &graphql.Field{
 			Description: "",
 			Type:        graphql.NewNonNull(graphql.String),
 			Resolve: func(rp graphql.ResolveParams) (interface{}, error) {
-				return string(rp.Source.(*router.Payment).Type), nil
+				return string(rp.Source.(*lightning.Payment).Type), nil
 			},
 		},
 	},

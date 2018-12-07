@@ -15,8 +15,8 @@ type Channel struct {
 	ID     string `gorm:"primary_key"`
 	UserID string
 
-	UserBalance   int64
-	RouterBalance int64
+	RemoteBalance int64
+	LocalBalance  int64
 
 	// Initiator side which initiated open of the channel.
 	Initiator string

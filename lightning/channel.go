@@ -1,9 +1,9 @@
-package router
+package lightning
 
 import (
-	"time"
-	"github.com/bitlum/hub/manager/common/broadcast"
+	"github.com/bitlum/hub/common/broadcast"
 	"github.com/go-errors/errors"
+	"time"
 )
 
 // ChannelID uniquely identifies the channel in the lightning network.
@@ -57,12 +57,12 @@ type PaymentStatus string
 const (
 	Successful PaymentStatus = "successful"
 
-	// InsufficientFunds means that router haven't posses/locked enough funds
-	// with receiver user to route through the payment.
+	// InsufficientFunds means that lightning node haven't posses/locked enough
+	// funds with receiver peer to route through the payment.
 	InsufficientFunds PaymentStatus = "insufficient_funds"
 
-	// UserNotFound means that router wasn't able to forward payment because
-	// of the receiver peer not being connected.
+	// UserNotFound means that lightning node wasn't able to forward payment
+	// because of the receiver peer not being connected.
 	UserNotFound PaymentStatus = "user_not_found"
 
 	// ExternalFail means that receiver failed to receive payment because of
@@ -78,32 +78,33 @@ const (
 type PaymentType string
 
 const (
-	// Outgoing is the payment which was sent from the router.
+	// Outgoing is the payment which was sent from the lightning node.
 	Outgoing PaymentType = "outgoing"
 
-	// Incoming is the payment which was sent from user to router.
+	// Incoming is the payment which was sent from remote peer to lighting node.
 	Incoming PaymentType = "incoming"
 
-	// Forward is the payment which was send from uer to user.
+	// Forward is the payment which was send from random node in the network to
+	// another random node in the network.
 	Forward PaymentType = "forward"
 )
 
 type ChannelInitiator string
 
 const (
-	// UserInitiator is used when close or update or open was initiated from
-	// the user side.
-	UserInitiator ChannelInitiator = "user"
+	// RemoteInitiator is used when close or update or open was initiated from
+	// the remote side.
+	RemoteInitiator ChannelInitiator = "remote"
 
-	// RouterInitiator is used when channel close or update or open was
-	// initiated by the router side.
-	RouterInitiator ChannelInitiator = "router"
+	// LocalInitiator is used when channel close or update or open was
+	// initiated by the local side.
+	LocalInitiator ChannelInitiator = "local"
 )
 
 // ChannelConfig contains all external replaceable subsystems.
 type ChannelConfig struct {
 	// Broadcast is used to by the channel to send channel notifications updates
-	// to it, usually it is populated by the router broadcaster.
+	// to it, usually it is populated by the lightning client broadcaster.
 	Broadcaster *broadcast.Broadcaster
 
 	// Storage is used by channel to keep important data persistent.
@@ -127,8 +128,8 @@ type Channel struct {
 	ChannelID ChannelID
 	UserID    UserID
 
-	UserBalance   BalanceUnit
-	RouterBalance BalanceUnit
+	RemoteBalance BalanceUnit
+	LocalBalance  BalanceUnit
 
 	// Initiator side which initiated open of the channel.
 	Initiator ChannelInitiator
@@ -153,16 +154,16 @@ type Channel struct {
 	cfg *ChannelConfig
 }
 
-func NewChannel(channelID ChannelID, userID UserID, openFee, userBalance,
-routerBalance, closeFee BalanceUnit, initiator ChannelInitiator,
+func NewChannel(channelID ChannelID, userID UserID, openFee, remoteBalance,
+localBalance, closeFee BalanceUnit, initiator ChannelInitiator,
 	cfg *ChannelConfig) (*Channel, error) {
 
 	c := &Channel{
 		ChannelID:     channelID,
 		UserID:        userID,
 		OpenFee:       openFee,
-		UserBalance:   userBalance,
-		RouterBalance: routerBalance,
+		RemoteBalance: remoteBalance,
+		LocalBalance:  localBalance,
 		Initiator:     initiator,
 		CloseFee:      closeFee,
 	}
@@ -199,8 +200,8 @@ func (c *Channel) SetOpeningState() error {
 	c.cfg.Broadcaster.Write(&UpdateChannelOpening{
 		UserID:        c.UserID,
 		ChannelID:     c.ChannelID,
-		UserBalance:   c.UserBalance,
-		RouterBalance: c.RouterBalance,
+		RemoteBalance: c.RemoteBalance,
+		LocalBalance:  c.LocalBalance,
 		Fee:           c.FundingFee(),
 	})
 
@@ -224,8 +225,8 @@ func (c *Channel) SetOpenedState() error {
 	c.cfg.Broadcaster.Write(&UpdateChannelOpened{
 		UserID:        c.UserID,
 		ChannelID:     c.ChannelID,
-		UserBalance:   c.UserBalance,
-		RouterBalance: c.RouterBalance,
+		RemoteBalance: c.RemoteBalance,
+		LocalBalance:  c.LocalBalance,
 		Fee:           c.FundingFee(),
 		Duration:      time.Now().UnixNano() - lastStateTime,
 	})
@@ -251,8 +252,8 @@ func (c *Channel) SetUpdatingState(fee BalanceUnit) error {
 	c.cfg.Broadcaster.Write(&UpdateChannelUpdating{
 		UserID:        c.UserID,
 		ChannelID:     c.ChannelID,
-		UserBalance:   c.UserBalance,
-		RouterBalance: c.RouterBalance,
+		RemoteBalance: c.RemoteBalance,
+		LocalBalance:  c.LocalBalance,
 		Fee:           fee,
 	})
 
@@ -277,8 +278,8 @@ func (c *Channel) SetUpdatedState(fee BalanceUnit) error {
 	c.cfg.Broadcaster.Write(&UpdateChannelUpdated{
 		UserID:        c.UserID,
 		ChannelID:     c.ChannelID,
-		UserBalance:   c.UserBalance,
-		RouterBalance: c.RouterBalance,
+		RemoteBalance: c.RemoteBalance,
+		LocalBalance:  c.LocalBalance,
 		Fee:           fee,
 		Duration:      time.Now().UnixNano() - lastStateTime,
 	})
@@ -354,7 +355,7 @@ func (c *Channel) IsActive() bool {
 
 // FundingFee is the amount of money which was spent to open this channel.
 func (c *Channel) FundingFee() BalanceUnit {
-	if c.Initiator == RouterInitiator {
+	if c.Initiator == LocalInitiator {
 		return c.OpenFee
 	}
 

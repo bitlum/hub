@@ -1,4 +1,4 @@
-package router
+package lightning
 
 type Payment struct {
 	FromUser UserID

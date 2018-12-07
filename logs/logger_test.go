@@ -1,10 +1,10 @@
 package logs
 
 import (
-	"testing"
-	"time"
 	"bytes"
 	"reflect"
+	"testing"
+	"time"
 )
 
 func TestEncodeDecode(t *testing.T) {
@@ -12,17 +12,17 @@ func TestEncodeDecode(t *testing.T) {
 		{
 			Time: time.Now().UnixNano(),
 			Data: &Log_State{
-				&RouterState{
+				&NodeState{
 					Channels: []*Channel{
 						{
 							UserId:        "1",
-							UserBalance:   1,
-							RouterBalance: 1,
+							RemoteBalance: 1,
+							LocalBalance:  1,
 						},
 						{
 							UserId:        "2",
-							UserBalance:   2,
-							RouterBalance: 2,
+							RemoteBalance: 2,
+							LocalBalance:  2,
 						},
 					},
 					FreeBalance: 10,

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/bitlum/hub/manager/router/emulation"
+	"github.com/bitlum/hub/lightning/emulation"
 	"google.golang.org/grpc"
 	"os"
 	"context"
@@ -11,9 +11,9 @@ import (
 )
 
 func main() {
-	r := emulation.NewRouter(100, 200*time.Millisecond)
-	r.Start("localhost", "3333")
-	defer r.Stop()
+	client := emulation.NewClient(100, 200*time.Millisecond)
+	client.Start("localhost", "3333")
+	defer client.Stop()
 
 	ops := []grpc.DialOption{
 		grpc.WithInsecure(),
@@ -25,8 +25,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	client := emulation.NewEmulatorClient(conn)
-	if _, err := client.OpenChannel(context.Background(),
+	rpcClient := emulation.NewEmulatorClient(conn)
+	if _, err := rpcClient.OpenChannel(context.Background(),
 		&emulation.OpenChannelRequest{
 			UserId:       "1",
 			LockedByUser: 10,
@@ -35,7 +35,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	n, err := r.Channels()
+	n, err := client.Channels()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)

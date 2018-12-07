@@ -1,7 +1,7 @@
 package sqlite
 
 import (
-	"github.com/bitlum/hub/manager/router"
+	"github.com/bitlum/hub/lightning"
 	"reflect"
 	"testing"
 )
@@ -13,15 +13,15 @@ func TestDB_AddChannel(t *testing.T) {
 	}
 	defer clear()
 
-	channel1 := &router.Channel{
+	channel1 := &lightning.Channel{
 		ChannelID:     "1asdasd1",
 		UserID:        "1",
 		OpenFee:       1,
-		UserBalance:   1,
-		RouterBalance: 1,
+		RemoteBalance: 1,
+		LocalBalance:  1,
 		Initiator:     "i",
 		CloseFee:      1,
-		States:        []*router.ChannelState{},
+		States:        []*lightning.ChannelState{},
 	}
 
 	if err := db.UpdateChannel(channel1); err != nil {
@@ -37,7 +37,7 @@ func TestDB_AddChannel(t *testing.T) {
 		t.Fatal("state are different")
 	}
 
-	state := &router.ChannelState{
+	state := &lightning.ChannelState{
 		Time: 123,
 		Name: "opening",
 	}
@@ -69,7 +69,7 @@ func TestDB_AddChannelState(t *testing.T) {
 
 	// Ensure that states will be returned in reversed order,
 	// last states should be first.
-	states := []*router.ChannelState{
+	states := []*lightning.ChannelState{
 		{
 			Time: 123,
 			Name: "opening",
@@ -80,7 +80,7 @@ func TestDB_AddChannelState(t *testing.T) {
 		},
 	}
 
-	anotherState := &router.ChannelState{
+	anotherState := &lightning.ChannelState{
 		Time: 123,
 		Name: "opening",
 	}

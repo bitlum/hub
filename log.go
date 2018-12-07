@@ -10,11 +10,11 @@ import (
 
 	"github.com/btcsuite/btclog"
 	"github.com/jrick/logrotate/rotator"
-	"github.com/bitlum/hub/manager/router/emulation"
-	"github.com/bitlum/hub/manager/router/lnd"
-	"github.com/bitlum/hub/manager/processing"
-	"github.com/bitlum/hub/manager/optimisation"
-	"github.com/bitlum/hub/manager/logs"
+	"github.com/bitlum/hub/lightning/emulation"
+	"github.com/bitlum/hub/lightning/lnd"
+	"github.com/bitlum/hub/processing"
+	"github.com/bitlum/hub/optimisation"
+	"github.com/bitlum/hub/logs"
 )
 
 // logWriter implements an io.Writer that outputs to both standard output and

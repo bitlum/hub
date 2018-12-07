@@ -1,7 +1,7 @@
 package sqlite
 
 import (
-	"github.com/bitlum/hub/manager/router/lnd"
+	"github.com/bitlum/hub/lightning/lnd"
 )
 
 // Runtime check to ensure that DB implements lnd.SyncStorage interface.

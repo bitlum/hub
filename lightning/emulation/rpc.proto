@@ -8,17 +8,17 @@ package emulation;
 service Emulator {
     //
     // SendPayment is used to emulate the activity of one user sending payment
-    // to another within the local router network.
+    // to another within the local network of our lightning node.
     rpc SendPayment (SendPaymentRequest) returns (SendPaymentResponse);
 
     //
     // OpenChannel is used to emulate that user has opened the channel with the
-    // router.
+    // our lightning node.
     rpc OpenChannel (OpenChannelRequest) returns (OpenChannelResponse);
 
     //
     // CloseChannel is used to emulate that user has closed the channel with the
-    // router.
+    // our lightning node.
     rpc CloseChannel (CloseChannelRequest) returns (CloseChannelResponse);
 
     //
@@ -44,11 +44,11 @@ message SendPaymentRequest {
     string id = 1;
 
     // Sender is the id of user which sends the payment. If equals zero than we
-    // believe that router is the sender.
+    // believe that our lightning node is the sender.
     string sender = 2;
 
     // Receiver is the id of user who receive the payment. If equals zero than we
-    // believe that router is the receiver.
+    // believe that our lightning node is the receiver.
     string receiver = 3;
 
     int64 amount = 4;

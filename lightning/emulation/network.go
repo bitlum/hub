@@ -1,7 +1,7 @@
 package emulation
 
 import (
-	"github.com/bitlum/hub/manager/router"
+	"github.com/bitlum/hub/lightning"
 
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -10,22 +10,22 @@ import (
 	"sync"
 	"time"
 	"strconv"
-	"github.com/bitlum/hub/manager/common/broadcast"
+	"github.com/bitlum/hub/common/broadcast"
 )
 
-// emulationNetwork is used to emulate activity of users in router local
+// emulationNetwork is used to emulate activity of users in client local
 // lightning network. This structure is an implementation of gRPC service, it
 // was done in order to be able to emulate activity by third-party subsystems.
 type emulationNetwork struct {
 	sync.Mutex
 
-	channels     map[router.ChannelID]*router.Channel
-	users        map[router.UserID]*router.Channel
+	channels     map[lightning.ChannelID]*lightning.Channel
+	users        map[lightning.UserID]*lightning.Channel
 	broadcaster  *broadcast.Broadcaster
 	channelIndex uint64
 	grpcServer   *grpc.Server
 	errChan      chan error
-	router       *RouterEmulation
+	client       *Client
 
 	blockNotifier   *blockNotifier
 	blockGeneration time.Duration
@@ -35,8 +35,8 @@ type emulationNetwork struct {
 func newEmulationNetwork(blockGeneration time.Duration) *emulationNetwork {
 	grpcServer := grpc.NewServer([]grpc.ServerOption{}...)
 	network := &emulationNetwork{
-		channels:        make(map[router.ChannelID]*router.Channel),
-		users:           make(map[router.UserID]*router.Channel),
+		channels:        make(map[lightning.ChannelID]*lightning.Channel),
+		users:           make(map[lightning.UserID]*lightning.Channel),
 		broadcaster:     broadcast.NewBroadcaster(),
 		errChan:         make(chan error),
 		grpcServer:      grpcServer,
@@ -49,7 +49,7 @@ func newEmulationNetwork(blockGeneration time.Duration) *emulationNetwork {
 	return network
 }
 
-// Runtime check that RouterEmulation implements EmulatorServer interface.
+// Runtime check that Client implements EmulatorServer interface.
 var _ EmulatorServer = (*emulationNetwork)(nil)
 
 // start...
@@ -88,7 +88,7 @@ func (n *emulationNetwork) done() chan error {
 }
 
 // SendPayment is used to emulate the activity of one user sending payment to
-// another within the local router network.
+// another within the local client network.
 //
 // NOTE: Part of the EmulatorServer interface.
 func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentRequest) (
@@ -109,38 +109,38 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 
 	var incomingAmount int64
 	var outgoingAmount int64
-	var routerFee int64
+	var nodeFee int64
 	var transferedAmount int64
 
 	if req.Sender == "0" {
-		// In this case sender is router (outgoing payment), so incoming
+		// In this case sender is client (outgoing payment), so incoming
 		// amount - amount which is received from user is zero.
 		incomingAmount = 0
 		outgoingAmount = req.Amount
 		transferedAmount = outgoingAmount
 	} else if req.Receiver == "0" {
-		// In this case receiver is router (incoming payment), so outgoing
-		// amount - amount which is send from router to user is zero.
+		// In this case receiver is client (incoming payment), so outgoing
+		// amount - amount which is send from client to user is zero.
 		incomingAmount = req.Amount
 		outgoingAmount = 0
 		transferedAmount = incomingAmount
 	} else {
 		// In the case sender and receiver are users (forward payment).
-		// Calculate router fee which it takes for making the forwarding payment.
-		routerFee = calculateForwardingFee(req.Amount, n.router.feeBase,
-			n.router.feeProportion)
+		// Calculate client fee which it takes for making the forwarding payment.
+		nodeFee = calculateForwardingFee(req.Amount, n.client.feeBase,
+			n.client.feeProportion)
 		incomingAmount = req.Amount
-		outgoingAmount = req.Amount - routerFee
+		outgoingAmount = req.Amount - nodeFee
 		transferedAmount = outgoingAmount
 
 		if outgoingAmount <= 0 {
-			n.broadcaster.Write(&router.UpdatePayment{
+			n.broadcaster.Write(&lightning.UpdatePayment{
 				ID:       req.Id,
-				Type:     router.Incoming,
-				Status:   router.UserLocalFail,
-				Sender:   router.UserID(req.Sender),
-				Receiver: router.UserID(req.Receiver),
-				Amount:   router.BalanceUnit(transferedAmount),
+				Type:     lightning.Incoming,
+				Status:   lightning.UserLocalFail,
+				Sender:   lightning.UserID(req.Sender),
+				Receiver: lightning.UserID(req.Receiver),
+				Amount:   lightning.BalanceUnit(transferedAmount),
 			})
 
 			return &SendPaymentResponse{}, errors.Errorf("fee is greater than amount")
@@ -149,56 +149,56 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 
 	if req.Sender != "0" {
 		// TODO(andrew.shvv) add multiple channels support
-		channel, ok := n.users[router.UserID(req.Sender)]
+		channel, ok := n.users[lightning.UserID(req.Sender)]
 		if !ok {
 			paymentFailed = true
 
-			n.broadcaster.Write(&router.UpdatePayment{
+			n.broadcaster.Write(&lightning.UpdatePayment{
 				ID:       req.Id,
-				Type:     router.Incoming,
-				Status:   router.UserLocalFail,
-				Sender:   router.UserID(req.Sender),
-				Receiver: router.UserID(req.Receiver),
-				Amount:   router.BalanceUnit(transferedAmount),
+				Type:     lightning.Incoming,
+				Status:   lightning.UserLocalFail,
+				Sender:   lightning.UserID(req.Sender),
+				Receiver: lightning.UserID(req.Receiver),
+				Amount:   lightning.BalanceUnit(transferedAmount),
 			})
 
 			return &SendPaymentResponse{}, errors.Errorf("unable to find sender with %v id",
 				req.Sender)
 		} else if channel.IsPending() {
 			paymentFailed = true
-			n.broadcaster.Write(&router.UpdatePayment{
+			n.broadcaster.Write(&lightning.UpdatePayment{
 				ID:       req.Id,
-				Type:     router.Incoming,
-				Status:   router.UserLocalFail,
-				Sender:   router.UserID(req.Sender),
-				Receiver: router.UserID(req.Receiver),
-				Amount:   router.BalanceUnit(transferedAmount),
+				Type:     lightning.Incoming,
+				Status:   lightning.UserLocalFail,
+				Sender:   lightning.UserID(req.Sender),
+				Receiver: lightning.UserID(req.Receiver),
+				Amount:   lightning.BalanceUnit(transferedAmount),
 			})
 
 			return &SendPaymentResponse{}, nil
 		}
 
-		channel.UserBalance -= router.BalanceUnit(incomingAmount)
-		channel.RouterBalance += router.BalanceUnit(incomingAmount)
+		channel.RemoteBalance -= lightning.BalanceUnit(incomingAmount)
+		channel.LocalBalance += lightning.BalanceUnit(incomingAmount)
 		defer func() {
 			if paymentFailed {
-				channel.UserBalance += router.BalanceUnit(incomingAmount)
-				channel.RouterBalance -= router.BalanceUnit(incomingAmount)
+				channel.RemoteBalance += lightning.BalanceUnit(incomingAmount)
+				channel.LocalBalance -= lightning.BalanceUnit(incomingAmount)
 			}
 		}()
 
-		if channel.UserBalance < 0 {
+		if channel.RemoteBalance < 0 {
 			paymentFailed = true
 
 			// In the case of real system such information wouldn't be
 			// accessible to us.
-			n.broadcaster.Write(&router.UpdatePayment{
+			n.broadcaster.Write(&lightning.UpdatePayment{
 				ID:       req.Id,
-				Type:     router.Incoming,
-				Status:   router.UserLocalFail,
-				Sender:   router.UserID(req.Sender),
-				Receiver: router.UserID(req.Receiver),
-				Amount:   router.BalanceUnit(transferedAmount),
+				Type:     lightning.Incoming,
+				Status:   lightning.UserLocalFail,
+				Sender:   lightning.UserID(req.Sender),
+				Receiver: lightning.UserID(req.Receiver),
+				Amount:   lightning.BalanceUnit(transferedAmount),
 			})
 
 			return &SendPaymentResponse{}, nil
@@ -207,17 +207,17 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 
 	if req.Receiver != "0" {
 		// TODO(andrew.shvv) add multiple channels support
-		channel, ok := n.users[router.UserID(req.Receiver)]
+		channel, ok := n.users[lightning.UserID(req.Receiver)]
 		if !ok {
 			paymentFailed = true
 
-			n.broadcaster.Write(&router.UpdatePayment{
+			n.broadcaster.Write(&lightning.UpdatePayment{
 				ID:       req.Id,
-				Type:     router.Incoming,
-				Status:   router.UserLocalFail,
-				Sender:   router.UserID(req.Sender),
-				Receiver: router.UserID(req.Receiver),
-				Amount:   router.BalanceUnit(transferedAmount),
+				Type:     lightning.Incoming,
+				Status:   lightning.UserLocalFail,
+				Sender:   lightning.UserID(req.Sender),
+				Receiver: lightning.UserID(req.Receiver),
+				Amount:   lightning.BalanceUnit(transferedAmount),
 			})
 
 			return nil, errors.Errorf("unable to find receiver with %v id",
@@ -225,62 +225,62 @@ func (n *emulationNetwork) SendPayment(_ context.Context, req *SendPaymentReques
 		} else if channel.IsPending() {
 			paymentFailed = true
 
-			n.broadcaster.Write(&router.UpdatePayment{
+			n.broadcaster.Write(&lightning.UpdatePayment{
 				ID:       req.Id,
-				Type:     router.Incoming,
-				Status:   router.UserLocalFail,
-				Sender:   router.UserID(req.Sender),
-				Receiver: router.UserID(req.Receiver),
-				Amount:   router.BalanceUnit(transferedAmount),
+				Type:     lightning.Incoming,
+				Status:   lightning.UserLocalFail,
+				Sender:   lightning.UserID(req.Sender),
+				Receiver: lightning.UserID(req.Receiver),
+				Amount:   lightning.BalanceUnit(transferedAmount),
 			})
 
 			return nil, errors.Errorf("channel %v is locked",
 				channel.ChannelID)
 		}
 
-		channel.RouterBalance -= router.BalanceUnit(outgoingAmount)
-		channel.UserBalance += router.BalanceUnit(outgoingAmount)
+		channel.LocalBalance -= lightning.BalanceUnit(outgoingAmount)
+		channel.RemoteBalance += lightning.BalanceUnit(outgoingAmount)
 		defer func() {
 			if paymentFailed {
-				channel.RouterBalance += router.BalanceUnit(outgoingAmount)
-				channel.UserBalance -= router.BalanceUnit(outgoingAmount)
+				channel.LocalBalance += lightning.BalanceUnit(outgoingAmount)
+				channel.RemoteBalance -= lightning.BalanceUnit(outgoingAmount)
 			}
 		}()
 
-		if channel.RouterBalance < 0 {
+		if channel.LocalBalance < 0 {
 			paymentFailed = true
 
 			// As far as this is emulation we shouldn't return error,
 			// but instead notify another subsystem about error,
 			// so that it might be written in log for example an later examined.
-			n.broadcaster.Write(&router.UpdatePayment{
+			n.broadcaster.Write(&lightning.UpdatePayment{
 				ID:       req.Id,
-				Type:     router.Incoming,
-				Status:   router.InsufficientFunds,
-				Sender:   router.UserID(req.Sender),
-				Receiver: router.UserID(req.Receiver),
-				Amount:   router.BalanceUnit(transferedAmount),
+				Type:     lightning.Incoming,
+				Status:   lightning.InsufficientFunds,
+				Sender:   lightning.UserID(req.Sender),
+				Receiver: lightning.UserID(req.Receiver),
+				Amount:   lightning.BalanceUnit(transferedAmount),
 			})
 
 			return &SendPaymentResponse{}, nil
 		}
 	}
 
-	n.broadcaster.Write(&router.UpdatePayment{
+	n.broadcaster.Write(&lightning.UpdatePayment{
 		ID:       req.Id,
-		Type:     router.Incoming,
-		Status:   router.Successful,
-		Sender:   router.UserID(req.Sender),
-		Receiver: router.UserID(req.Receiver),
-		Amount:   router.BalanceUnit(transferedAmount),
-		Earned:   router.BalanceUnit(routerFee),
+		Type:     lightning.Incoming,
+		Status:   lightning.Successful,
+		Sender:   lightning.UserID(req.Sender),
+		Receiver: lightning.UserID(req.Receiver),
+		Amount:   lightning.BalanceUnit(transferedAmount),
+		Earned:   lightning.BalanceUnit(nodeFee),
 	})
 
 	return &SendPaymentResponse{}, nil
 }
 
 // OpenChannel is used to emulate that user has opened the channel with the
-// router.
+// lightning.
 //
 // NOTE: Part of the EmulatorServer interface.
 func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelRequest) (
@@ -291,8 +291,8 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 
 	n.channelIndex++
 	id := strconv.FormatUint(n.channelIndex, 10)
-	chanID := router.ChannelID(id)
-	userID := router.UserID(req.UserId)
+	chanID := lightning.ChannelID(id)
+	userID := lightning.UserID(req.UserId)
 
 	if _, ok := n.users[userID]; ok {
 		// TODO(andrew.shvv) add multiple channels support
@@ -312,18 +312,18 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 	// Take fee for opening and closing the channel, from channel initiator,
 	// and save close fee so that we could use it later for paying the
 	// blockchain.
-	openChannelFee := router.BalanceUnit(n.blockchainFee)
-	closeChannelFee := router.BalanceUnit(n.blockchainFee)
-	userBalance := router.BalanceUnit(req.LockedByUser) - openChannelFee - closeChannelFee
-	fundingAmount := router.BalanceUnit(req.LockedByUser)
+	openChannelFee := lightning.BalanceUnit(n.blockchainFee)
+	closeChannelFee := lightning.BalanceUnit(n.blockchainFee)
+	userBalance := lightning.BalanceUnit(req.LockedByUser) - openChannelFee - closeChannelFee
+	fundingAmount := lightning.BalanceUnit(req.LockedByUser)
 
-	cfg := &router.ChannelConfig{
+	cfg := &lightning.ChannelConfig{
 		Broadcaster: n.broadcaster,
 		Storage:     &StubChannelStorage{},
 	}
 
-	channel, err := router.NewChannel(chanID, userID, fundingAmount,
-		userBalance, 0, closeChannelFee, router.UserInitiator, cfg)
+	channel, err := lightning.NewChannel(chanID, userID, fundingAmount,
+		userBalance, 0, closeChannelFee, lightning.RemoteInitiator, cfg)
 	if err != nil {
 		return nil, errors.Errorf("unable create channel: %v", err)
 	}
@@ -336,7 +336,7 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 		return nil, errors.Errorf("unable set opening channel state: %v", err)
 	}
 
-	log.Tracef("User(%v) opened channel(%v) with router", userID, chanID)
+	log.Tracef("User(%v) opened channel(%v) with client", userID, chanID)
 
 	// Subscribe on block notification and update channel when block is
 	// generated.
@@ -366,7 +366,7 @@ func (n *emulationNetwork) OpenChannel(_ context.Context, req *OpenChannelReques
 }
 
 // CloseChannel is used to emulate that user has closed the channel with the
-// router.
+// lightning.
 //
 // NOTE: Part of the EmulatorServer interface.
 func (n *emulationNetwork) CloseChannel(_ context.Context, req *CloseChannelRequest) (
@@ -375,7 +375,7 @@ func (n *emulationNetwork) CloseChannel(_ context.Context, req *CloseChannelRequ
 	n.Lock()
 	defer n.Unlock()
 
-	chanID := router.ChannelID(req.ChannelId)
+	chanID := lightning.ChannelID(req.ChannelId)
 	channel, ok := n.channels[chanID]
 	if !ok {
 		return nil, errors.Errorf("unable to find the channel with %v id", chanID)
@@ -385,7 +385,7 @@ func (n *emulationNetwork) CloseChannel(_ context.Context, req *CloseChannelRequ
 	}
 
 	// Increase the pending balance till block is generated.
-	n.router.pendingBalance += channel.RouterBalance
+	n.client.pendingBalance += channel.LocalBalance
 
 	if err := channel.SetClosingState(); err != nil {
 		return nil, errors.Errorf("unable set closing channel state: %v", err)
@@ -397,8 +397,8 @@ func (n *emulationNetwork) CloseChannel(_ context.Context, req *CloseChannelRequ
 	// generated.
 	l := n.blockNotifier.Subscribe()
 
-	// Update router free balance only after block is mined and increase
-	// router balance on amount which we locked on our side in this channel.
+	// Update client free balance only after block is mined and increase
+	// client balance on amount which we locked on our side in this channel.
 	go func() {
 		defer l.Stop()
 		<-l.Read()
@@ -414,11 +414,11 @@ func (n *emulationNetwork) CloseChannel(_ context.Context, req *CloseChannelRequ
 		delete(n.channels, chanID)
 		delete(n.users, channel.UserID)
 
-		n.router.pendingBalance -= channel.RouterBalance
-		n.router.freeBalance += channel.RouterBalance
+		n.client.pendingBalance -= channel.LocalBalance
+		n.client.freeBalance += channel.LocalBalance
 
-		log.Tracef("Router received %v money previously locked in"+
-			" channel(%v)", channel.RouterBalance, channel.ChannelID)
+		log.Tracef("Client received %v money previously locked in"+
+			" channel(%v)", channel.LocalBalance, channel.ChannelID)
 	}()
 
 	return &CloseChannelResponse{}, nil
@@ -467,7 +467,7 @@ func (n *emulationNetwork) SetUserConnected(_ context.Context,
 	defer n.Unlock()
 
 	// TODO(andrew.shvv) add multi channel support
-	channel, ok := n.users[router.UserID(req.UserId)]
+	channel, ok := n.users[lightning.UserID(req.UserId)]
 	if !ok {
 		return nil, errors.Errorf("unable to find user %v",
 			req.UserId)
@@ -476,8 +476,8 @@ func (n *emulationNetwork) SetUserConnected(_ context.Context,
 	if channel.IsUserConnected != req.IsOnline {
 		channel.SetUserConnected(req.IsOnline)
 
-		n.broadcaster.Write(&router.UpdateUserConnected{
-			User:        router.UserID(req.UserId),
+		n.broadcaster.Write(&lightning.UpdateUserConnected{
+			User:        lightning.UserID(req.UserId),
 			IsConnected: req.IsOnline,
 		})
 	}

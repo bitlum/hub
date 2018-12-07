@@ -56,11 +56,11 @@ var (
 type config struct {
 	ShowVersion bool `long:"version" description:"Display version information and exit"`
 
-	UpdateLogFile string `long:"updateslog" description:"Path to log file in which manager will direct router network updates output"`
+	UpdateLogFile string `long:"updateslog" description:"Path to log file in which manager will direct lightning node network updates output"`
 
-	Backend  string               `long:"backend" description:"Type of router backend used" choice:"emulator" choice:"lnd"`
-	Emulator *emulateRouterConfig `group:"Emulator" namespace:"emulator"`
-	LND      *lndRouterConfig     `group:"Lnd" namespace:"lnd"`
+	Backend  string               `long:"backend" description:"Type of lightning client backend used" choice:"emulator" choice:"lnd"`
+	Emulator *emulateClientConfig `group:"Emulator" namespace:"emulator"`
+	LND      *lndClientConfig     `group:"Lnd" namespace:"lnd"`
 
 	Prometheus *prometheusConfig `group:"Prometheus" namespace:"prometheus"`
 	Hub        *hubConfig        `group:"Hub" namespace:"hub"`
@@ -72,22 +72,23 @@ type config struct {
 }
 
 // hubConfig defines the parameters for gRPC endpoint of hub management,
-// with this third-party optimisation programs could send router equilinrium
-// state.
+// with this third-party optimisation programs could send lightning
+// node channels equilibrium state.
 type hubConfig struct {
 	Port string `long:"port" description:"Port on which GRPC hub manager is working"`
 	Host string `long:"host" description:"Host on which GRPC hub manager is working"`
 }
 
-// emulateRouterConfig defines the gRPC parameters for emulate router,
-// with this interface third-party service could send the emulation network
-// activity.
-type emulateRouterConfig struct {
-	ListenPort string `long:"listenport" description:"Port on which GRPC emulator "`
-	ListenHost string `long:"listenhost" description:"Host on which GRPC emulator router should listen for incoming requests"`
+// emulateClientConfig defines the gRPC parameters for emulation lightning
+// client, with this interface third-party service could send the emulation
+// network activity.
+type emulateClientConfig struct {
+	ListenPort string `long:"listenport" description:"Port on which GRPC emulator lightning client should listen for incoming requests"`
+	ListenHost string `long:"listenhost" description:"Host on which GRPC emulator lightning client should listen for incoming requests"`
+
 }
 
-type lndRouterConfig struct {
+type lndClientConfig struct {
 	Network         string            `long:"network" description:"Blockchain network which should be used" choice:"simnet" choice:"testnet" choice:"mainnet"`
 	DataDir         string            `long:"dbpath" description:"Path to dir where BoltDB will be stored"`
 	TlsCertPath     string            `long:"tlscertpath" description:"Path to the LND certificate"`
@@ -124,7 +125,7 @@ func getDefaultConfig() config {
 			ListenPort: defaultPrometheusPort,
 		},
 
-		LND: &lndRouterConfig{
+		LND: &lndClientConfig{
 			Network: defaultNet,
 			DataDir: defaultDbPath,
 		},
@@ -135,7 +136,7 @@ func getDefaultConfig() config {
 			SecureListenPort: defaultGraphQLSecurePort,
 		},
 		Backend: "emulator",
-		Emulator: &emulateRouterConfig{
+		Emulator: &emulateClientConfig{
 			ListenPort: defaultEmulateNetworkPort,
 			ListenHost: defaultEmulateNetworkHost,
 		},

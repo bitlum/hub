@@ -1,7 +1,7 @@
 package sqlite
 
 import (
-	"github.com/bitlum/hub/manager/router"
+	"github.com/bitlum/hub/lightning"
 	"reflect"
 	"testing"
 )
@@ -13,7 +13,7 @@ func TestPaymentsStorage(t *testing.T) {
 	}
 	defer clear()
 
-	paymentsBefore := []*router.Payment{
+	paymentsBefore := []*lightning.Payment{
 		{
 			FromUser:  "a",
 			ToUser:    "b",

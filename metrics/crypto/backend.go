@@ -5,7 +5,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/go-errors/errors"
-	"github.com/bitlum/hub/manager/metrics"
+	"github.com/bitlum/hub/metrics"
 )
 
 const (

@@ -47,10 +47,10 @@ type SendPaymentRequest struct {
 	// ID is unique identificator of the payment.
 	Id string `protobuf:"bytes,1,opt,name=id" json:"id,omitempty"`
 	// Sender is the id of user which sends the payment. If equals zero than we
-	// believe that router is the sender.
+	// believe that our lightning node is the sender.
 	Sender string `protobuf:"bytes,2,opt,name=sender" json:"sender,omitempty"`
 	// Receiver is the id of user who receive the payment. If equals zero than we
-	// believe that router is the receiver.
+	// believe that our lightning node is the receiver.
 	Receiver string `protobuf:"bytes,3,opt,name=receiver" json:"receiver,omitempty"`
 	Amount   int64  `protobuf:"varint,4,opt,name=amount" json:"amount,omitempty"`
 }
@@ -274,15 +274,15 @@ const _ = grpc.SupportPackageIsVersion4
 type EmulatorClient interface {
 	//
 	// SendPayment is used to emulate the activity of one user sending payment
-	// to another within the local router network.
+	// to another within the local network of our lightning node.
 	SendPayment(ctx context.Context, in *SendPaymentRequest, opts ...grpc.CallOption) (*SendPaymentResponse, error)
 	//
 	// OpenChannel is used to emulate that user has opened the channel with the
-	// router.
+	// our lightning node.
 	OpenChannel(ctx context.Context, in *OpenChannelRequest, opts ...grpc.CallOption) (*OpenChannelResponse, error)
 	//
 	// CloseChannel is used to emulate that user has closed the channel with the
-	// router.
+	// our lightning node.
 	CloseChannel(ctx context.Context, in *CloseChannelRequest, opts ...grpc.CallOption) (*CloseChannelResponse, error)
 	//
 	// SetUserConnected set user being offline or online, which means that all his
@@ -367,15 +367,15 @@ func (c *emulatorClient) SetBlockchainFee(ctx context.Context, in *SetBlockchain
 type EmulatorServer interface {
 	//
 	// SendPayment is used to emulate the activity of one user sending payment
-	// to another within the local router network.
+	// to another within the local network of our lightning node.
 	SendPayment(context.Context, *SendPaymentRequest) (*SendPaymentResponse, error)
 	//
 	// OpenChannel is used to emulate that user has opened the channel with the
-	// router.
+	// our lightning node.
 	OpenChannel(context.Context, *OpenChannelRequest) (*OpenChannelResponse, error)
 	//
 	// CloseChannel is used to emulate that user has closed the channel with the
-	// router.
+	// our lightning node.
 	CloseChannel(context.Context, *CloseChannelRequest) (*CloseChannelResponse, error)
 	//
 	// SetUserConnected set user being offline or online, which means that all his

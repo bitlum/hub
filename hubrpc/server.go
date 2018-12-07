@@ -1,24 +1,24 @@
 package hubrpc
 
 import (
-	"golang.org/x/net/context"
-	"github.com/bitlum/hub/manager/router"
+	"github.com/bitlum/hub/lightning"
+	"github.com/bitlum/hub/optimisation"
 	"github.com/go-errors/errors"
-	"github.com/bitlum/hub/manager/optimisation"
+	"golang.org/x/net/context"
 )
 
 // Hub is an implementation of gRPC server which receive the message from
 // external optimisation subsystem and apply those changes to the local
-// router accordingly with initialised re-balancing strategy.
+// lightning node accordingly with initialised re-balancing strategy.
 type Hub struct {
-	router   router.Router
-	strategy optimisation.RouterStateStrategy
+	client   lightning.Client
+	strategy optimisation.NodeStateStrategy
 }
 
 // NewHub creates new instance of the Hub.
-func NewHub(r router.Router, s optimisation.RouterStateStrategy) *Hub {
+func NewHub(client lightning.Client, s optimisation.NodeStateStrategy) *Hub {
 	return &Hub{
-		router:   r,
+		client:   client,
 		strategy: s,
 	}
 }
@@ -26,29 +26,29 @@ func NewHub(r router.Router, s optimisation.RouterStateStrategy) *Hub {
 // Runtime check that Hub implements the hubrpc.ManagerServer interface.
 var _ ManagerServer = (*Hub)(nil)
 
-// UpdateLink is used to update router link in accordance with givein
+// UpdateLink is used to update client link in accordance with givein
 // request. Link might just one channel, or might be the set of
-// channels between user and router. This hook is used by third-parties
+// channels between user and lightning. This hook is used by third-parties
 // to put new equilibrium state.
 func (h *Hub) UpdateLink(_ context.Context,
 	req *UpdateLinkRequest) (*UpdateLinkResponse, error) {
 
-	currentNetwork, err := h.router.Channels()
+	currentNetwork, err := h.client.Channels()
 	if err != nil {
-		return nil, errors.Errorf("unable to get router topology: %v", err)
+		return nil, errors.Errorf("unable to get client topology: %v", err)
 	}
 
 	// TODO(andrew.shvv) Remove that because we switched to the UpdateChannel
-	equilibriumNetwork := make([]*router.Channel, len(currentNetwork))
+	equilibriumNetwork := make([]*lightning.Channel, len(currentNetwork))
 	for i, c := range currentNetwork {
 
 		// TODO(andrew.shvv) Add work with multiple channels
-		if c.UserID == router.UserID(req.UserId) {
-			equilibriumNetwork[i] = &router.Channel{
-				ChannelID:     router.ChannelID(c.ChannelID),
-				UserID:        router.UserID(req.UserId),
-				RouterBalance: router.BalanceUnit(req.RouterBalance),
-				UserBalance:   router.BalanceUnit(c.UserBalance),
+		if c.UserID == lightning.UserID(req.UserId) {
+			equilibriumNetwork[i] = &lightning.Channel{
+				ChannelID:     lightning.ChannelID(c.ChannelID),
+				UserID:        lightning.UserID(req.UserId),
+				LocalBalance:  lightning.BalanceUnit(req.LocalBalance),
+				RemoteBalance: lightning.BalanceUnit(c.RemoteBalance),
 			}
 		} else {
 			equilibriumNetwork[i] = c
@@ -57,9 +57,9 @@ func (h *Hub) UpdateLink(_ context.Context,
 
 	actions := h.strategy.GenerateActions(currentNetwork, equilibriumNetwork)
 	for _, changeState := range actions {
-		if err := changeState(h.router); err != nil {
+		if err := changeState(h.client); err != nil {
 			return nil, errors.Errorf("unable to apply change state "+
-				"function to the router: %v", err)
+				"function to the client: %v", err)
 
 		}
 	}
@@ -72,7 +72,7 @@ func (h *Hub) UpdateLink(_ context.Context,
 // Bitcoin) which will be taken for every payment forwarding.
 func (h *Hub) SetPaymentFeeBase(_ context.Context,
 	req *SetPaymentFeeBaseRequest) (*SetPaymentFeeBaseResponse, error) {
-	err := h.router.SetFeeBase(req.PaymentFeeBase)
+	err := h.client.SetFeeBase(req.PaymentFeeBase)
 	return &SetPaymentFeeBaseResponse{}, err
 }
 
@@ -83,6 +83,6 @@ func (h *Hub) SetPaymentFeeBase(_ context.Context,
 func (h *Hub) SetPaymentFeeProportional(_ context.Context,
 	req *SetPaymentFeeProportionalRequest) (*SetPaymentFeeProportionalResponse,
 	error) {
-	err := h.router.SetFeeProportional(req.PaymentFeeProportional)
+	err := h.client.SetFeeProportional(req.PaymentFeeProportional)
 	return &SetPaymentFeeProportionalResponse{}, err
 }

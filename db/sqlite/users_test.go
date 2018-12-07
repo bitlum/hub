@@ -1,7 +1,7 @@
 package sqlite
 
 import (
-	"github.com/bitlum/hub/manager/router"
+	"github.com/bitlum/hub/lightning"
 	"reflect"
 	"testing"
 )
@@ -13,7 +13,7 @@ func TestUserStorage(t *testing.T) {
 	}
 	defer clear()
 
-	userBefore := &router.User{
+	userBefore := &lightning.User{
 		UserID:       "1",
 		Alias:        "a",
 		LockedByUser: 1,

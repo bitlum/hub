@@ -4,7 +4,7 @@ import (
 	"time"
 	"runtime/debug"
 	"strings"
-	"github.com/bitlum/hub/manager/metrics"
+	"github.com/bitlum/hub/metrics"
 )
 
 // Metric is an enhancement of Metric backend, which is more suited for this

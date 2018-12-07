@@ -1,29 +1,29 @@
 package lnd
 
 import (
-	"time"
-	"github.com/lightningnetwork/lnd/lnrpc"
-	"sync"
+	"github.com/bitlum/hub/common/broadcast"
+	"github.com/bitlum/hub/lightning"
+	"github.com/bitlum/hub/metrics"
+	"github.com/bitlum/hub/metrics/crypto"
+	"github.com/bitlum/hub/registry"
 	"github.com/go-errors/errors"
-	"google.golang.org/grpc"
-	"sync/atomic"
-	"google.golang.org/grpc/credentials"
-	"strconv"
-	"net"
-	"strings"
-	"github.com/bitlum/hub/manager/metrics/crypto"
-	"github.com/bitlum/hub/manager/metrics"
-	"github.com/bitlum/hub/manager/router"
-	"github.com/bitlum/hub/manager/common/broadcast"
-	"github.com/bitlum/hub/manager/router/registry"
-	"io/ioutil"
+	"github.com/lightningnetwork/lnd/lnrpc"
 	"github.com/lightningnetwork/lnd/macaroons"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"gopkg.in/macaroon.v2"
+	"io/ioutil"
+	"net"
+	"strconv"
+	"strings"
+	"sync"
+	"sync/atomic"
+	"time"
 )
 
 // Config is a connector config.
 type Config struct {
-	// Asset name of the asset with which operates the router.
+	// Asset name of the asset with which operates the lightning.
 	Asset string
 
 	// Port is gRPC port of lnd daemon.
@@ -43,10 +43,10 @@ type Config struct {
 	// Storage is used to store all data which needs to be persistent,
 	// exact implementation of database backend is unknown for the hub,
 	// in the simplest case it might be in-memory storage.
-	Storage RouterStorage
+	Storage ClientStorage
 
 	// MetricsBackend is used to send metrics about internal state of the
-	// router, and act on errors accordingly.
+	// lightning client, and act on errors accordingly.
 	MetricsBackend crypto.MetricsBackend
 
 	// Net is the blockchain network which hub should operate on,
@@ -110,9 +110,9 @@ func (c *Config) validate() error {
 	return nil
 }
 
-// Router is the lightning network daemon gRPC client wrapper which makes it
-// compatible with our internal router interface.
-type Router struct {
+// Client is the lightning network daemon gRPC client wrapper which makes it
+// compatible with our internal lightning client interface.
+type Client struct {
 	started  int32
 	shutdown int32
 	wg       sync.WaitGroup
@@ -121,24 +121,25 @@ type Router struct {
 	client lnrpc.LightningClient
 	conn   *grpc.ClientConn
 
-	cfg          *Config
-	routerUserID router.UserID
+	cfg                 *Config
+	lightningNodeUserID lightning.UserID
 
-	// broadcaster is used to broadcast router updates in the non-blocking
-	// manner. If one of receiver would not read te update write wouldn't stuck.
+	// broadcaster is used to broadcast lightning node updates in the
+	// non-blocking manner. If one of receiver would not read te update write
+	// wouldn't stuck.
 	broadcaster *broadcast.Broadcaster
 }
 
 // Runtime check to ensure that Connector implements common.LightningConnector
 // interface.
-var _ router.Router = (*Router)(nil)
+var _ lightning.Client = (*Client)(nil)
 
-func NewRouter(cfg *Config) (*Router, error) {
+func NewClient(cfg *Config) (*Client, error) {
 	if err := cfg.validate(); err != nil {
 		return nil, errors.Errorf("config is invalid: %v", err)
 	}
 
-	return &Router{
+	return &Client{
 		cfg:         cfg,
 		quit:        make(chan struct{}),
 		broadcaster: broadcast.NewBroadcaster(),
@@ -146,17 +147,17 @@ func NewRouter(cfg *Config) (*Router, error) {
 }
 
 // Start...
-func (r *Router) Start() error {
-	if !atomic.CompareAndSwapInt32(&r.started, 0, 1) {
-		log.Warn("Lnd router already started")
+func (client *Client) Start() error {
+	if !atomic.CompareAndSwapInt32(&client.started, 0, 1) {
+		log.Warn("Lnd client already started")
 		return nil
 	}
 
-	m := crypto.NewMetric(r.cfg.Asset, "Start",
-		r.cfg.MetricsBackend)
+	m := crypto.NewMetric(client.cfg.Asset, "Start",
+		client.cfg.MetricsBackend)
 	defer m.Finish()
 
-	creds, err := credentials.NewClientTLSFromFile(r.cfg.TlsCertPath, "")
+	creds, err := credentials.NewClientTLSFromFile(client.cfg.TlsCertPath, "")
 	if err != nil {
 		m.AddError(metrics.HighSeverity)
 		return errors.Errorf("unable to load credentials: %v", err)
@@ -166,8 +167,8 @@ func (r *Router) Start() error {
 		grpc.WithTransportCredentials(creds),
 	}
 
-	if r.cfg.MacaroonPath != "" {
-		macaroonBytes, err := ioutil.ReadFile(r.cfg.MacaroonPath)
+	if client.cfg.MacaroonPath != "" {
+		macaroonBytes, err := ioutil.ReadFile(client.cfg.MacaroonPath)
 		if err != nil {
 			return errors.Errorf("unable to read macaroon file: %v", err)
 		}
@@ -181,7 +182,7 @@ func (r *Router) Start() error {
 			grpc.WithPerRPCCredentials(macaroons.NewMacaroonCredential(mac)))
 	}
 
-	target := net.JoinHostPort(r.cfg.Host, r.cfg.Port)
+	target := net.JoinHostPort(client.cfg.Host, client.cfg.Port)
 	log.Infof("Lightning client connects to lnd: %v", target)
 
 	conn, err := grpc.Dial(target, opts...)
@@ -189,11 +190,11 @@ func (r *Router) Start() error {
 		m.AddError(metrics.HighSeverity)
 		return errors.Errorf("unable to to dial grpc: %v", err)
 	}
-	r.conn = conn
-	r.client = lnrpc.NewLightningClient(r.conn)
+	client.conn = conn
+	client.client = lnrpc.NewLightningClient(client.conn)
 
 	reqInfo := &lnrpc.GetInfoRequest{}
-	respInfo, err := r.client.GetInfo(getContext(), reqInfo)
+	respInfo, err := client.client.GetInfo(getContext(), reqInfo)
 	if err != nil {
 		m.AddError(metrics.HighSeverity)
 		return errors.Errorf("unable get lnd node info: %v", err)
@@ -206,10 +207,10 @@ func (r *Router) Start() error {
 
 	// TODO(andrew.shvv) not working for mainnet, as far response don't have
 	// a mainnet param.
-	if r.cfg.Net != "mainnet" {
-		if lndNet != r.cfg.Net {
+	if client.cfg.Net != "mainnet" {
+		if lndNet != client.cfg.Net {
 			return errors.Errorf("hub net is '%v', but config net is '%v'",
-				r.cfg.Net, lndNet)
+				client.cfg.Net, lndNet)
 		}
 
 		log.Infof("Init connector working with '%v' net", lndNet)
@@ -217,60 +218,61 @@ func (r *Router) Start() error {
 		log.Info("Init connector working with 'mainnet' net")
 	}
 
-	log.Infof("Init lnd router working with network(%v) alias(%v) ", lndNet, respInfo.Alias)
+	log.Infof("Init lnd client working with network(%v) alias(%v) ", lndNet,
+		respInfo.Alias)
 
-	r.routerUserID = router.UserID(respInfo.IdentityPubkey)
-	log.Infof("Init lnd router with pub key: %v", respInfo.IdentityPubkey)
+	client.lightningNodeUserID = lightning.UserID(respInfo.IdentityPubkey)
+	log.Infof("Init lnd client with pub key: %v", respInfo.IdentityPubkey)
 
 	// Register ZigZag us known and public lighting network node.
-	registry.AddKnownPeer(router.UserID(respInfo.IdentityPubkey), "ZigZag")
+	registry.AddKnownPeer(lightning.UserID(respInfo.IdentityPubkey), "ZigZag")
 
-	r.wg.Add(1)
-	go r.updateNodeInfo()
+	client.wg.Add(1)
+	go client.updateNodeInfo()
 
-	r.wg.Add(1)
-	go r.updateChannelStates()
+	client.wg.Add(1)
+	go client.updateChannelStates()
 
-	r.wg.Add(1)
-	go r.listenForwardingPayments()
+	client.wg.Add(1)
+	go client.listenForwardingPayments()
 
-	r.wg.Add(1)
-	go r.listenIncomingPayments()
+	client.wg.Add(1)
+	go client.listenIncomingPayments()
 
-	r.wg.Add(1)
-	go r.listenOutgoingPayments()
+	client.wg.Add(1)
+	go client.listenOutgoingPayments()
 
-	r.wg.Add(1)
-	go r.updatePeers()
+	client.wg.Add(1)
+	go client.updatePeers()
 
-	log.Info("Lnd router started")
+	log.Info("Lnd client started")
 	return nil
 }
 
 // Stop gracefully stops the connection with lnd daemon.
-func (r *Router) Stop(reason string) error {
-	if !atomic.CompareAndSwapInt32(&r.shutdown, 0, 1) {
-		log.Warn("lnd router already shutdown")
+func (client *Client) Stop(reason string) error {
+	if !atomic.CompareAndSwapInt32(&client.shutdown, 0, 1) {
+		log.Warn("lnd client already shutdown")
 		return nil
 	}
 
-	close(r.quit)
-	if err := r.conn.Close(); err != nil {
+	close(client.quit)
+	if err := client.conn.Close(); err != nil {
 		return errors.Errorf("unable to close connection to lnd: %v", err)
 	}
 
-	r.wg.Wait()
+	client.wg.Wait()
 
-	log.Infof("lnd router shutdown, reason(%v)", reason)
+	log.Infof("lnd client shutdown, reason(%v)", reason)
 	return nil
 }
 
-// SendPayment makes the payment on behalf of router. In the context of
+// SendPayment makes the payment on behalf of lightning. In the context of
 // lightning network hub manager this hook might be used for future
 // off-chain channel re-balancing tactics.
 //
-// NOTE: Part of the router.Router interface.
-func (r *Router) SendPayment(userID router.UserID, amount router.BalanceUnit) error {
+// NOTE: Part of the lightning.Client interface.
+func (client *Client) SendPayment(userID lightning.UserID, amount lightning.BalanceUnit) error {
 	// TODO(andrew.shvv) Add implementation when rebalancing strategy will be
 	// needed.
 	return nil
@@ -278,10 +280,10 @@ func (r *Router) SendPayment(userID router.UserID, amount router.BalanceUnit) er
 
 // OpenChannel opens the channel with the given user.
 //
-// NOTE: Part of the router.Router interface.
-func (r *Router) OpenChannel(id router.UserID, funds router.BalanceUnit) error {
-	m := crypto.NewMetric(r.cfg.Asset, "OpenChannel",
-		r.cfg.MetricsBackend)
+// NOTE: Part of the lightning.Client interface.
+func (client *Client) OpenChannel(id lightning.UserID, funds lightning.BalanceUnit) error {
+	m := crypto.NewMetric(client.cfg.Asset, "OpenChannel",
+		client.cfg.MetricsBackend)
 	defer m.Finish()
 
 	req := &lnrpc.OpenChannelRequest{
@@ -299,7 +301,7 @@ func (r *Router) OpenChannel(id router.UserID, funds router.BalanceUnit) error {
 		Private: false,
 	}
 
-	_, err := r.client.OpenChannelSync(getContext(), req)
+	_, err := client.client.OpenChannelSync(getContext(), req)
 	if err != nil {
 		m.AddError(metrics.HighSeverity)
 		return err
@@ -310,10 +312,10 @@ func (r *Router) OpenChannel(id router.UserID, funds router.BalanceUnit) error {
 
 // CloseChannel closes the specified channel.
 //
-// NOTE: Part of the router.Router interface.
-func (r *Router) CloseChannel(id router.ChannelID) error {
-	m := crypto.NewMetric(r.cfg.Asset, "CloseChannel",
-		r.cfg.MetricsBackend)
+// NOTE: Part of the lightning.Client interface.
+func (client *Client) CloseChannel(id lightning.ChannelID) error {
+	m := crypto.NewMetric(client.cfg.Asset, "CloseChannel",
+		client.cfg.MetricsBackend)
 	defer m.Finish()
 
 	parts := strings.Split(string(id), ":")
@@ -343,7 +345,7 @@ func (r *Router) CloseChannel(id router.ChannelID) error {
 		Force: false,
 	}
 
-	if _, err = r.client.CloseChannel(getContext(), req); err != nil {
+	if _, err = client.client.CloseChannel(getContext(), req); err != nil {
 		m.AddError(metrics.HighSeverity)
 		log.Errorf("unable close the channel: %v", err)
 		return err
@@ -355,9 +357,9 @@ func (r *Router) CloseChannel(id router.ChannelID) error {
 // UpdateChannel updates the number of locked funds in the specified
 // channel.
 //
-// NOTE: Part of the router.Router interface.
-func (r *Router) UpdateChannel(id router.ChannelID,
-	funds router.BalanceUnit) error {
+// NOTE: Part of the lightning.Client interface.
+func (client *Client) UpdateChannel(id lightning.ChannelID,
+	funds lightning.BalanceUnit) error {
 
 	// TODO(andrew.shvv) Implement
 	// This hook would require splice-out splice-in mechanism to be
@@ -366,47 +368,47 @@ func (r *Router) UpdateChannel(id router.ChannelID,
 	return nil
 }
 
-// RegisterOnUpdates returns updates about router local network topology
+// RegisterOnUpdates returns updates about lightning node local network topology
 // changes, about attempts of propagating the payment through the
-// router, about fee changes etc.
+// lightning node, about fee changes etc.
 //
-// NOTE: Part of the router.Router interface.
-func (r *Router) RegisterOnUpdates() *broadcast.Receiver {
-	return r.broadcaster.Subscribe()
+// NOTE: Part of the lightning.Client interface.
+func (client *Client) RegisterOnUpdates() *broadcast.Receiver {
+	return client.broadcaster.Subscribe()
 }
 
-// Network returns the information about the current local network router
-// topology.
+// Network returns the information about the current local topology of
+// our lightning node.
 //
-// NOTE: Part of the router.Router interface.
-func (r *Router) Channels() ([]*router.Channel, error) {
-	m := crypto.NewMetric(r.cfg.Asset, "Channels", r.cfg.MetricsBackend)
+// NOTE: Part of the lightning.Client interface.
+func (client *Client) Channels() ([]*lightning.Channel, error) {
+	m := crypto.NewMetric(client.cfg.Asset, "Channels", client.cfg.MetricsBackend)
 	defer m.Finish()
 
-	channels, err := r.cfg.Storage.Channels()
+	channels, err := client.cfg.Storage.Channels()
 	if err != nil {
 		m.AddError(metrics.HighSeverity)
 		log.Errorf("unable to fetch channels from sync storage: %v", err)
 		return nil, err
 	}
 
-	// Initialise channels with router broadcaster so that channel
-	// notification will be sent to every router subscribers.
+	// Initialise channels with lightning client broadcaster so that channel
+	// notification will be sent to every lightning client subscribers.
 	for _, channel := range channels {
-		channel.SetConfig(&router.ChannelConfig{
-			Broadcaster: r.broadcaster,
-			Storage:     r.cfg.Storage,
+		channel.SetConfig(&lightning.ChannelConfig{
+			Broadcaster: client.broadcaster,
+			Storage:     client.cfg.Storage,
 		})
 	}
 
 	return channels, nil
 }
 
-func (r *Router) Users() ([]*router.User, error) {
-	m := crypto.NewMetric(r.cfg.Asset, "Users", r.cfg.MetricsBackend)
+func (client *Client) Users() ([]*lightning.User, error) {
+	m := crypto.NewMetric(client.cfg.Asset, "Users", client.cfg.MetricsBackend)
 	defer m.Finish()
 
-	users, err := r.cfg.Storage.Users()
+	users, err := client.cfg.Storage.Users()
 	if err != nil {
 		m.AddError(metrics.HighSeverity)
 		log.Errorf("unable to fetch users from sync storage: %v", err)
@@ -414,56 +416,56 @@ func (r *Router) Users() ([]*router.User, error) {
 	}
 
 	for _, user := range users {
-		user.SetConfig(&router.UserConfig{
-			Storage: r.cfg.Storage,
+		user.SetConfig(&lightning.UserConfig{
+			Storage: client.cfg.Storage,
 		})
 	}
 
 	return users, nil
 }
 
-// FreeBalance returns the amount of funds at router disposal.
+// FreeBalance returns the amount of funds at lightning node disposal.
 //
-// NOTE: Part of the router.Router interface.
-func (r *Router) FreeBalance() (router.BalanceUnit, error) {
-	m := crypto.NewMetric(r.cfg.Asset, "FreeBalance", r.cfg.MetricsBackend)
+// NOTE: Part of the lightning.Client interface.
+func (client *Client) FreeBalance() (lightning.BalanceUnit, error) {
+	m := crypto.NewMetric(client.cfg.Asset, "FreeBalance", client.cfg.MetricsBackend)
 	defer m.Finish()
 
 	req := &lnrpc.WalletBalanceRequest{}
-	resp, err := r.client.WalletBalance(getContext(), req)
+	resp, err := client.client.WalletBalance(getContext(), req)
 	if err != nil {
 		m.AddError(metrics.HighSeverity)
 		log.Errorf("unable to get wallet balance channels: %v", err)
 		return 0, err
 	}
 
-	return router.BalanceUnit(resp.ConfirmedBalance), nil
+	return lightning.BalanceUnit(resp.ConfirmedBalance), nil
 }
 
 // PendingBalance returns the amount of funds which in the process of
 // being accepted by blockchain.
 //
-// NOTE: Part of the router.Router interface.
-func (r *Router) PendingBalance() (router.BalanceUnit, error) {
-	m := crypto.NewMetric(r.cfg.Asset, "PendingBalance", r.cfg.MetricsBackend)
+// NOTE: Part of the lightning.Client interface.
+func (client *Client) PendingBalance() (lightning.BalanceUnit, error) {
+	m := crypto.NewMetric(client.cfg.Asset, "PendingBalance", client.cfg.MetricsBackend)
 	defer m.Finish()
 
 	req := &lnrpc.PendingChannelsRequest{}
-	resp, err := r.client.PendingChannels(getContext(), req)
+	resp, err := client.client.PendingChannels(getContext(), req)
 	if err != nil {
 		m.AddError(metrics.HighSeverity)
 		log.Errorf("unable to fetch pending channels: %v", err)
 		return 0, err
 	}
 
-	return router.BalanceUnit(resp.TotalLimboBalance), nil
+	return lightning.BalanceUnit(resp.TotalLimboBalance), nil
 }
 
 // AverageChangeUpdateDuration average time which is needed the change of
 // state to ba updated over blockchain.
 //
-// NOTE: Part of the router.Router interface.
-func (r *Router) AverageChangeUpdateDuration() (time.Duration, error) {
+// NOTE: Part of the lightning.Client interface.
+func (client *Client) AverageChangeUpdateDuration() (time.Duration, error) {
 	// TODO(andrew.shvv) Implement
 	// This hook would require us to make some channel update registry,
 	// probably this would require to write data in some persistent storage.
@@ -471,25 +473,25 @@ func (r *Router) AverageChangeUpdateDuration() (time.Duration, error) {
 	return 0, nil
 }
 
-// Done returns error if router stopped working for some reason,
+// Done returns error if lightning client stopped working for some reason,
 // and nil if it was stopped.
 //
-// NOTE: Part of the router.Router interface.
-func (r *Router) Done() chan error {
+// NOTE: Part of the lightning.Client interface.
+func (client *Client) Done() chan error {
 	// TODO(andrew.shvv) Implement
 	return nil
 }
 
-// Asset returns asset with which corresponds to this router.
+// Asset returns asset with which corresponds to this lightning.
 //
-// NOTE: Part of the router.Router interface.
-func (r *Router) Asset() string {
-	return r.cfg.Asset
+// NOTE: Part of the lightning.Client interface.
+func (client *Client) Asset() string {
+	return client.cfg.Asset
 }
 
 // SetFeeBase sets base number of milli units (i.e milli satoshis in
 // Bitcoin) which will be taken for every forwarding payment.
-func (r *Router) SetFeeBase(feeBase int64) error {
+func (client *Client) SetFeeBase(feeBase int64) error {
 	// TODO(andrew.shvv) Implement
 	return nil
 }
@@ -497,7 +499,7 @@ func (r *Router) SetFeeBase(feeBase int64) error {
 // SetFeeProportional sets the number of milli units (i.e milli
 // satoshis in Bitcoin) which will be taken for every killo-unit of
 // forwarding payment amount as a forwarding fee.
-func (r *Router) SetFeeProportional(feeProportional int64) error {
+func (client *Client) SetFeeProportional(feeProportional int64) error {
 	// TODO(andrew.shvv) Implement
 	return nil
 }

@@ -1,9 +1,9 @@
 package network
 
 import (
-	"github.com/prometheus/client_golang/prometheus"
+	"github.com/bitlum/hub/metrics"
 	"github.com/go-errors/errors"
-	"github.com/bitlum/hub/manager/metrics"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 const (
@@ -23,7 +23,8 @@ const (
 	// i.e. active, inactive.
 	channelStateLabel = "channel_state"
 
-	// sideLabel is used to distinguish different sides, i.e. router, user.
+	// sideLabel is used to distinguish different sides, i.e. local node,
+	// remote peer.
 	sideLabel = "side"
 )
 
@@ -38,20 +39,20 @@ type MetricsBackend interface {
 	// payment channels.
 	TotalUsers(asset string, users int)
 
-	// TotalFundsLockedByUser accept accumulative number of funds locked with
+	// TotalFundsLockedRemotely accept accumulative number of funds locked with
 	// us from user side.
-	TotalFundsLockedByUser(asset string, funds uint64)
+	TotalFundsLockedRemotely(asset string, funds uint64)
 
-	// TotalFundsLockedByRouter accept accumulative number of funds locked by
-	// us, aka router.
-	TotalFundsLockedByRouter(asset string, funds uint64)
+	// TotalFundsLockedLocally accept accumulative number of funds locked by
+	// us, i.e our lightning network node.
+	TotalFundsLockedLocally(asset string, funds uint64)
 
-	// TotalFreeFunds accept total number of funds free and under router
-	// control.
+	// TotalFreeFunds accept total number of funds free and under our
+	// lightning node control.
 	TotalFreeFunds(asset string, funds uint64)
 
 	// AddSuccessfulForwardingPayment increment number of successful transition
-	// payments through our router.
+	// payments through our lightning network node.
 	AddSuccessfulForwardingPayment(asset string)
 
 	// AddEarnedFunds increment number of funds which we earned by forwarding
@@ -104,32 +105,32 @@ func (m PrometheusBackend) TotalUsers(asset string, users int) {
 	}).Set(float64(users))
 }
 
-// TotalFundsLockedByUser accept accumulative number of funds locked with
+// TotalFundsLockedRemotely accept accumulative number of funds locked with
 // us from user side.
 //
 // NOTE: Non-pointer receiver made by intent to avoid conflict in the system
 // with parallel metrics report.
-func (m PrometheusBackend) TotalFundsLockedByUser(asset string, funds uint64) {
+func (m PrometheusBackend) TotalFundsLockedRemotely(asset string, funds uint64) {
 	m.lockedFundsCurrent.With(prometheus.Labels{
 		assetLabel: asset,
-		sideLabel:  "user",
+		sideLabel:  "remote",
 	}).Set(float64(funds))
 }
 
-// TotalFundsLockedByRouter accept accumulative number of funds locked by
-// us, aka router.
+// TotalFundsLockedLocally accept accumulative number of funds locked by
+// us, i.e. lightning network node.
 //
 // NOTE: Non-pointer receiver made by intent to avoid conflict in the system
 // with parallel metrics report.
-func (m PrometheusBackend) TotalFundsLockedByRouter(asset string, funds uint64) {
+func (m PrometheusBackend) TotalFundsLockedLocally(asset string, funds uint64) {
 	m.lockedFundsCurrent.With(prometheus.Labels{
 		assetLabel: asset,
-		sideLabel:  "router",
+		sideLabel:  "local",
 	}).Set(float64(funds))
 }
 
-// TotalFreeFunds accept total number of funds free and under router
-// control.
+// TotalFreeFunds accept total number of funds free and under our lightning
+// network node control.
 //
 // NOTE: Non-pointer receiver made by intent to avoid conflict in the system
 // with parallel metrics report.
@@ -140,7 +141,7 @@ func (m PrometheusBackend) TotalFreeFunds(asset string, funds uint64) {
 }
 
 // AddSuccessfulForwardingPayment increment number of successful transition
-// payments through our router.
+// payments through our lightning network node.
 //
 // NOTE: Non-pointer receiver made by intent to avoid conflict in the system
 // with parallel metrics report.
@@ -172,7 +173,8 @@ func InitMetricsBackend(net string) (MetricsBackend, error) {
 			Namespace: metrics.Namespace,
 			Subsystem: subsystem,
 			Name:      "channels_current",
-			Help:      "Current channels connected to router",
+			Help:      "Current channels connected to our lightning network" +
+				" node",
 			ConstLabels: prometheus.Labels{
 				metrics.NetLabel: net,
 			},
@@ -196,7 +198,7 @@ func InitMetricsBackend(net string) (MetricsBackend, error) {
 			Namespace: metrics.Namespace,
 			Subsystem: subsystem,
 			Name:      "users_current",
-			Help:      "Current users connected to router",
+			Help:      "Current users connected to our lightning network node",
 			ConstLabels: prometheus.Labels{
 				metrics.NetLabel: net,
 			},
@@ -218,7 +220,8 @@ func InitMetricsBackend(net string) (MetricsBackend, error) {
 			Namespace: metrics.Namespace,
 			Subsystem: subsystem,
 			Name:      "locked_funds_current",
-			Help:      "Current funds locked in local network of router",
+			Help:      "Current funds locked in local network of our" +
+				" lightning network node",
 			ConstLabels: prometheus.Labels{
 				metrics.NetLabel: net,
 			},
@@ -240,7 +243,8 @@ func InitMetricsBackend(net string) (MetricsBackend, error) {
 			Namespace: metrics.Namespace,
 			Subsystem: subsystem,
 			Name:      "free_funds_current",
-			Help:      "Current funds free under control of router",
+			Help:      "Current funds free under control of our lightning" +
+				" network node",
 			ConstLabels: prometheus.Labels{
 				metrics.NetLabel: net,
 			},
@@ -261,7 +265,8 @@ func InitMetricsBackend(net string) (MetricsBackend, error) {
 			Namespace: metrics.Namespace,
 			Subsystem: subsystem,
 			Name:      "earned_total",
-			Help:      "Total funds earned under control of router",
+			Help:      "Total funds earned under control of our lightning" +
+				" network node",
 			ConstLabels: prometheus.Labels{
 				metrics.NetLabel: net,
 			},
@@ -282,7 +287,8 @@ func InitMetricsBackend(net string) (MetricsBackend, error) {
 			Namespace: metrics.Namespace,
 			Subsystem: subsystem,
 			Name:      "forwards_total",
-			Help:      "Total payments forwarded through the router",
+			Help:      "Total payments forwarded through the our lightning" +
+				" network node",
 			ConstLabels: prometheus.Labels{
 				metrics.NetLabel: net,
 			},

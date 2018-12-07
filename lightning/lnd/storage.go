@@ -1,20 +1,20 @@
 package lnd
 
-import "github.com/bitlum/hub/manager/router"
+import "github.com/bitlum/hub/lightning"
 
-// RouterStorage is the storage which is needed for keeping the info about hub
-// synchronisation state.
-type RouterStorage interface {
-	router.ChannelStorage
-	router.UserStorage
-	router.PaymentStorage
-	router.InfoStorage
+// ClientStorage is the storage which is needed for keeping the info about
+// lightning client synchronisation state.
+type ClientStorage interface {
+	lightning.ChannelStorage
+	lightning.UserStorage
+	lightning.PaymentStorage
+	lightning.InfoStorage
 
 	IndexesStorage
 	SyncStorage
 
 	// GetUserIDByChannelID returns user id by channel id, i.e. channel point.
-	GetUserIDByChannelID(router.ChannelID) (router.UserID, error)
+	GetUserIDByChannelID(lightning.ChannelID) (lightning.UserID, error)
 }
 
 type SyncStorage interface {
@@ -51,20 +51,20 @@ type SyncStorage interface {
 type IndexesStorage interface {
 	// GetUserIDByShortChanID returns user id by the given lightning network
 	// specification channel id.
-	GetUserIDByShortChanID(shortChanID uint64) (router.UserID, error)
+	GetUserIDByShortChanID(shortChanID uint64) (lightning.UserID, error)
 
 	// AddUserIDToShortChanIDIndex ads pubkey <> short_channel_id mapping
 	// in storage, so that it could be later retrieved without making
 	// requests to the lnd daemon.
-	AddUserIDToShortChanIDIndex(userID router.UserID,
+	AddUserIDToShortChanIDIndex(userID lightning.UserID,
 		shortChanID uint64) error
 
 	// GetChannelPointByShortChanID returns out internal channel
 	// identification i.e. channel point by the given lnd short channel id.
-	GetChannelPointByShortChanID(shortChanID uint64) (router.ChannelID, error)
+	GetChannelPointByShortChanID(shortChanID uint64) (lightning.ChannelID, error)
 
 	// AddChannelPointToShortChanIDIndex add index channel_point
 	// <> short_chan_id mapping.
-	AddChannelPointToShortChanIDIndex(channelID router.ChannelID,
+	AddChannelPointToShortChanIDIndex(channelID lightning.ChannelID,
 		shortChanID uint64) error
 }

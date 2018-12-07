@@ -5,26 +5,26 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/jessevdk/go-flags"
-	"path/filepath"
-	"github.com/bitlum/hub/manager/router/emulation"
+	"context"
+	"github.com/bitlum/hub/db/sqlite"
+	"github.com/bitlum/hub/graphql"
+	"github.com/bitlum/hub/hubrpc"
+	"github.com/bitlum/hub/lightning"
+	"github.com/bitlum/hub/lightning/emulation"
+	"github.com/bitlum/hub/lightning/lnd"
+	"github.com/bitlum/hub/logs"
+	"github.com/bitlum/hub/metrics"
+	"github.com/bitlum/hub/metrics/crypto"
+	"github.com/bitlum/hub/metrics/network"
+	"github.com/bitlum/hub/optimisation"
+	"github.com/bitlum/hub/processing"
+	"github.com/bitlum/hub/registry"
 	"github.com/go-errors/errors"
-	"github.com/bitlum/hub/manager/router"
-	"github.com/bitlum/hub/manager/hubrpc"
+	"github.com/jessevdk/go-flags"
 	"google.golang.org/grpc"
 	"net"
+	"path/filepath"
 	"time"
-	"github.com/bitlum/hub/manager/router/lnd"
-	"github.com/bitlum/hub/manager/metrics"
-	"context"
-	"github.com/bitlum/hub/manager/metrics/crypto"
-	"github.com/bitlum/hub/manager/metrics/network"
-	"github.com/bitlum/hub/manager/db/sqlite"
-	"github.com/bitlum/hub/manager/graphql"
-	"github.com/bitlum/hub/manager/router/registry"
-	"github.com/bitlum/hub/manager/processing"
-	"github.com/bitlum/hub/manager/optimisation"
-	"github.com/bitlum/hub/manager/logs"
 )
 
 var (
@@ -46,8 +46,8 @@ func backendMain() error {
 	closeRotator := initLogRotator(logFile)
 	defer closeRotator()
 
-	// Get log file path from config, which will be used for pushing router
-	// topology updates in it.
+	// Get log file path from config, which will be used for pushing lightning
+	// node topology updates in it.
 	if config.UpdateLogFile == "" {
 		return errors.Errorf("update log file should be specified")
 	}
@@ -59,20 +59,20 @@ func backendMain() error {
 	addr := net.JoinHostPort(config.Prometheus.ListenHost, config.Prometheus.ListenPort)
 	server := metrics.StartServer(addr)
 
-	// Create router and connect to emulation or real network,
+	// Create lightning client and connect to emulation or real network,
 	// and subscribe on topology updates which will transformed and written
 	// in the file, so that third-party optimisation program could read it
 	// and make optimisation decisions.
 	errChan := make(chan error)
 
-	var r router.Router
+	var client lightning.Client
 	switch config.Backend {
 	case "emulator":
-		mainLog.Infof("Initialise emulator router...")
-		emulationRouter := emulation.NewRouter(1E+6, 200*time.Millisecond)
-		emulationRouter.Start(config.Emulator.ListenHost, config.Emulator.ListenPort)
-		defer emulationRouter.Stop()
-		r = emulationRouter
+		mainLog.Infof("Initialise emulator lightning client...")
+		emulationClient := emulation.NewClient(1E+6, 200*time.Millisecond)
+		emulationClient.Start(config.Emulator.ListenHost, config.Emulator.ListenPort)
+		defer emulationClient.Stop()
+		client = emulationClient
 	case "lnd":
 		// Create or open database file to host the last state of
 		// synchronization.
@@ -107,7 +107,7 @@ func backendMain() error {
 				"", err)
 		}
 
-		mainLog.Infof("Initialise lnd router...")
+		mainLog.Infof("Initialise lnd lightning client...")
 		lndConfig := &lnd.Config{
 			Asset:          "BTC",
 			Host:           config.LND.GRPCHost,
@@ -126,12 +126,12 @@ func backendMain() error {
 		for alias, pubKey := range config.LND.KnownPeers {
 			mainLog.Infof("Add known public node alias(%v) pubkey(%v)",
 				alias, pubKey)
-			registry.AddKnownPeer(router.UserID(pubKey), alias)
+			registry.AddKnownPeer(lightning.UserID(pubKey), alias)
 		}
 
-		lndRouter, err := lnd.NewRouter(lndConfig)
+		lndClient, err := lnd.NewClient(lndConfig)
 		if err != nil {
-			return errors.Errorf("unable to init lnd router: %v", err)
+			return errors.Errorf("unable to init lnd lightning client: %v", err)
 		}
 
 		statsBackend, err := network.InitMetricsBackend(config.LND.Network)
@@ -142,7 +142,7 @@ func backendMain() error {
 
 		gathererConf := &processing.Config{
 			Storage:        database,
-			Router:         lndRouter,
+			Client:         lndClient,
 			MetricsBackend: statsBackend,
 		}
 
@@ -150,18 +150,19 @@ func backendMain() error {
 		statsGatherer.Start()
 		defer statsGatherer.Stop()
 
-		// Start router after the stats gatherer so that if lnd has any new
-		// payment updates stats gatherer wouldn't lost them,
-		// because of the late notification subscription.
-		if err := lndRouter.Start(); err != nil {
-			return errors.Errorf("unable to start lnd router: %v", err)
+		// Start lightning client after the stats gatherer so that if lnd has
+		// any new payment updates stats gatherer wouldn't lost them, because
+		// of the late notification subscription.
+		if err := lndClient.Start(); err != nil {
+			return errors.Errorf("unable to start lnd lightning client: %v",
+				err)
 		}
-		defer lndRouter.Stop("shutdown")
-		r = lndRouter
+		defer lndClient.Stop("shutdown")
+		client = lndClient
 
 		if config.LND.BalancerEnabled {
 			// Start maintaining the balance of funds locked with users.
-			balancer := optimisation.NewBalancer(lndRouter, 0.2, time.Second*10)
+			balancer := optimisation.NewBalancer(lndClient, 0.2, time.Second*10)
 			balancer.Start()
 			defer balancer.Stop()
 		}
@@ -170,15 +171,15 @@ func backendMain() error {
 		return errors.Errorf("unhandled backend name: '%v'", config.Backend)
 	}
 
-	go logs.UpdateLogFileGoroutine(r, config.UpdateLogFile, errChan)
+	go logs.UpdateLogFileGoroutine(client, config.UpdateLogFile, errChan)
 
 	// Setup gRPC endpoint to receive the management commands, and initialise
 	// optimisation strategy which will dictate us how to convert from one
-	// router state to another.
+	// lightning network node state to another.
 	grpcServer := grpc.NewServer([]grpc.ServerOption{}...)
 
 	s := optimisation.NewChannelUpdateStrategy()
-	hub := hubrpc.NewHub(r, s)
+	hub := hubrpc.NewHub(client, s)
 	hubrpc.RegisterManagerServer(grpcServer, hub)
 
 	go func() {
@@ -212,9 +213,9 @@ func backendMain() error {
 			mainLog.Error("exit program because of: %v", err)
 			return err
 		}
-	case err := <-r.Done():
+	case err := <-client.Done():
 		if err != nil {
-			mainLog.Error("emulator router stopped working: %v", err)
+			mainLog.Error("emulator lightning client stopped working: %v", err)
 			return err
 		}
 	case <-shutdownChannel:

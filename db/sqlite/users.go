@@ -1,13 +1,13 @@
 package sqlite
 
-import "github.com/bitlum/hub/manager/router"
+import "github.com/bitlum/hub/lightning"
 
-// Runtime check to ensure that DB implements router.UserStorage interface.
-var _ router.UserStorage = (*DB)(nil)
+// Runtime check to ensure that DB implements lightning.UserStorage interface.
+var _ lightning.UserStorage = (*DB)(nil)
 
 // UpdateUser updates information about set of online and peers
 // connected to the hub.
-func (d *DB) UpdateUser(user *router.User) error {
+func (d *DB) UpdateUser(user *lightning.User) error {
 	return d.Save(&User{
 		ID:           string(user.UserID),
 		Alias:        user.Alias,
@@ -18,21 +18,21 @@ func (d *DB) UpdateUser(user *router.User) error {
 }
 
 // Users loads all users which are related to the hub.
-func (d *DB) Users() ([]*router.User, error) {
+func (d *DB) Users() ([]*lightning.User, error) {
 	var users []User
 	db := d.Find(&users)
 	if err := db.Error; err != nil {
 		return nil, err
 	}
 
-	prs := make([]*router.User, len(users))
+	prs := make([]*lightning.User, len(users))
 	for i, user := range users {
-		prs[i] = &router.User{
-			UserID:       router.UserID(user.ID),
+		prs[i] = &lightning.User{
+			UserID:       lightning.UserID(user.ID),
 			IsConnected:  user.IsConnected,
 			Alias:        user.Alias,
-			LockedByUser: router.BalanceUnit(user.LockedByUser),
-			LockedByHub:  router.BalanceUnit(user.LockedByHub),
+			LockedByUser: lightning.BalanceUnit(user.LockedByUser),
+			LockedByHub:  lightning.BalanceUnit(user.LockedByHub),
 		}
 	}
 

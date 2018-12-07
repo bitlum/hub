@@ -1,21 +1,21 @@
 package registry
 
 import (
-	"sync"
-	"time"
-	"github.com/bitlum/hub/manager/router"
+	"github.com/bitlum/hub/lightning"
 	"math/rand"
 	"strings"
+	"sync"
+	"time"
 )
 
 // knownPeers this map is used to put peers which are initially publicly
 // known, and which names might be reveal. Later when more payments are made,
 // we populate it with peer random pseudonyms.
-var knownPeers = make(map[router.UserID]string)
+var knownPeers = make(map[lightning.UserID]string)
 var knownPeersMutex sync.Mutex
 
 // AddKnownPeer is used to add known peer's alias dynamically.
-func AddKnownPeer(id router.UserID, alias string) {
+func AddKnownPeer(id lightning.UserID, alias string) {
 	knownPeersMutex.Lock()
 	defer knownPeersMutex.Unlock()
 	knownPeers[id] = alias
@@ -30,7 +30,7 @@ func getRandomPseudonym() string {
 
 // GetAlias return the alias by the given public key of the receiver/server,
 // if node is not in the public list, than we obscure the name.
-func GetAlias(userID router.UserID) string {
+func GetAlias(userID lightning.UserID) string {
 	knownPeersMutex.Lock()
 	defer knownPeersMutex.Unlock()
 

@@ -1,4 +1,4 @@
-package router
+package lightning
 
 type UpdateChannelClosing struct {
 	UserID    UserID
@@ -42,8 +42,8 @@ type UpdateChannelUpdating struct {
 	UserID    UserID
 	ChannelID ChannelID
 
-	UserBalance   BalanceUnit
-	RouterBalance BalanceUnit
+	RemoteBalance BalanceUnit
+	LocalBalance  BalanceUnit
 
 	// Fee which was taken by blockchain decentralised computer / mainers or
 	// some other form of smart contract manager from initiator of the
@@ -65,8 +65,8 @@ type UpdateChannelUpdated struct {
 	UserID    UserID
 	ChannelID ChannelID
 
-	UserBalance   BalanceUnit
-	RouterBalance BalanceUnit
+	RemoteBalance BalanceUnit
+	LocalBalance  BalanceUnit
 
 	// Fee which was taken by blockchain decentralised computer / mainers or
 	// some other form of smart contract manager from initiator of the
@@ -82,13 +82,13 @@ func (u *UpdateChannelUpdated) String() string {
 	return "channel_updated"
 }
 
-// UpdateChannelOpening is used as notifications from router or network that
-// channel started to opening, and wait for blockchain confirmation.
+// UpdateChannelOpening is used as notifications from lightning client or
+// network that channel started to opening, and wait for blockchain confirmation.
 type UpdateChannelOpening struct {
 	UserID        UserID
 	ChannelID     ChannelID
-	UserBalance   BalanceUnit
-	RouterBalance BalanceUnit
+	RemoteBalance BalanceUnit
+	LocalBalance  BalanceUnit
 
 	// Fee which was taken by blockchain decentralised computer / mainers or
 	// some other form of smart contract manager from initiator of the
@@ -100,14 +100,14 @@ func (u *UpdateChannelOpening) String() string {
 	return "channel_opening"
 }
 
-// UpdateChannelOpened is used as notifications from router or network that
-// channel has been opened.
+// UpdateChannelOpened is used as notifications from lightning client or network
+// that channel has been opened.
 type UpdateChannelOpened struct {
 	UserID    UserID
 	ChannelID ChannelID
 
-	UserBalance   BalanceUnit
-	RouterBalance BalanceUnit
+	RemoteBalance BalanceUnit
+	LocalBalance  BalanceUnit
 
 	// Fee which was taken by blockchain decentralised computer / mainers or
 	// some other form of smart contract manager from initiator of the
@@ -134,9 +134,10 @@ type UpdatePayment struct {
 
 	Amount BalanceUnit
 
-	// Earned is the number of funds which router earned by making this payment.
-	// In case of re-balancing router will pay the fee, for that reason this
-	// number will be negative.
+	// Earned is the number of funds which lightning node earned by making
+	// this payment. In case of re-balancing lightning node will pay the fee,
+	// for that
+	// reason this number will be negative.
 	Earned BalanceUnit
 }
 

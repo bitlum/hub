@@ -1,28 +1,28 @@
 package graphql
 
 import (
+	"github.com/bitlum/hub/lightning"
 	"github.com/graphql-go/graphql"
-	"github.com/bitlum/hub/manager/router"
 )
 
-func getInfoResolver(storage router.InfoStorage) graphql.FieldResolveFn {
+func getInfoResolver(storage lightning.InfoStorage) graphql.FieldResolveFn {
 	return func(rp graphql.ResolveParams) (
 		interface{}, error) {
 		return storage.Info()
 	}
 }
 
-func getPaymentsResolver(storage router.PaymentStorage) graphql.FieldResolveFn {
+func getPaymentsResolver(storage lightning.PaymentStorage) graphql.FieldResolveFn {
 	return func(rp graphql.ResolveParams) (
 		interface{}, error) {
 		return storage.Payments()
 	}
 }
 
-func getPeersResolver(storage router.UserStorage) graphql.FieldResolveFn {
+func getPeersResolver(storage lightning.UserStorage) graphql.FieldResolveFn {
 	return func(rp graphql.ResolveParams) (
 		interface{}, error) {
-		var users []*router.User
+		var users []*lightning.User
 
 		allUsers, err := storage.Users()
 		if err != nil {

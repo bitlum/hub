@@ -6,9 +6,9 @@ package hubrpc;
 // subsystem to send the equilibrium state.
 service Manager {
     //
-    // UpdateLink is used to update router link in accordance with givein
-    // request. Link might just one channel, or might be the set of
-    // channels betwwen user and router. This hook is used by third-parties
+    // UpdateLink is used to update lightning node link in accordance with
+    // givein request. Link might just one channel, or might be the set of
+    // channels betwen remote node and our. This hook is used by third-parties
     // to put new equilibritum state.
     rpc UpdateLink (UpdateLinkRequest) returns (UpdateLinkResponse);
 
@@ -26,14 +26,14 @@ service Manager {
 }
 
 message UpdateLinkRequest {
-    // Time of the last sync with state of the router.
+    // Time of the last sync with state of the lightning node.
     uint64 time = 1;
     string user_id = 2;
-    int64 router_balance = 4;
+    int64 local_balance = 4;
 }
 
 message UpdateLinkResponse {
-    // TODO(andrew.shvv) Do we have to return how much it would cost router
+    // TODO(andrew.shvv) Do we have to return how much it would cost node
     // to apply desired update?
 }
 

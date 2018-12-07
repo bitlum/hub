@@ -1,17 +1,17 @@
 package processing
 
 import (
-	"time"
+	"github.com/bitlum/hub/common/broadcast"
+	"github.com/bitlum/hub/lightning"
+	"github.com/bitlum/hub/metrics/network"
 	"sync"
-	"github.com/bitlum/hub/manager/metrics/network"
-	"github.com/bitlum/hub/manager/router"
-	"github.com/bitlum/hub/manager/common/broadcast"
+	"time"
 )
 
 type Config struct {
-	// Router is the entity which gives us glimpse of information about
+	// Client is the entity which gives us glimpse of information about
 	// lightning network.
-	Router router.Router
+	Client lightning.Client
 
 	// MetricsBackend is used to send metrics about state of hub in the
 	// monitoring subsystem.
@@ -19,11 +19,11 @@ type Config struct {
 
 	// Storage is a place where stats gatherer could offload calculated info
 	// for farther retrieval.
-	Storage router.UserStorage
+	Storage lightning.UserStorage
 }
 
 // Stats is an entity which is used for gathering the statistic
-// about the router and it local network state, and
+// about the out lighting network node and it local network state, and
 type Stats struct {
 	cfg  *Config
 	quit chan struct{}
@@ -44,7 +44,7 @@ func NewStats(cfg *Config) *Stats {
 func (s *Stats) Start() {
 	s.wg.Add(1)
 
-	go s.scrapeRouterInfo()
+	go s.scrapeNodeInfo()
 }
 
 func (s *Stats) Stop() {
@@ -53,27 +53,27 @@ func (s *Stats) Stop() {
 	s.wg.Wait()
 }
 
-// scrapeRouterInfo subscribes on router updates and scrapes some additional
-// topology information in order to place in monitoring subsystem.
+// scrapeNodeInfo subscribes on lightning client updates and scrapes some
+// additional topology information in order to place in monitoring subsystem.
 //
 // NOTE: Should run as goroutine.
-func (s *Stats) scrapeRouterInfo() {
+func (s *Stats) scrapeNodeInfo() {
 	defer func() {
 		s.wg.Done()
-		log.Info("Router network metrics gatherer goroutine stopped")
+		log.Info("Client network metrics gatherer goroutine stopped")
 	}()
 
-	log.Info("Router network metrics gatherer goroutine started")
+	log.Info("Client network metrics gatherer goroutine started")
 
-	receiver := s.cfg.Router.RegisterOnUpdates()
+	receiver := s.cfg.Client.RegisterOnUpdates()
 	defer receiver.Stop()
 
 	for {
 		select {
 		case <-s.metricsTicker.C:
-			asset := s.cfg.Router.Asset()
+			asset := s.cfg.Client.Asset()
 
-			channels, err := s.cfg.Router.Channels()
+			channels, err := s.cfg.Client.Channels()
 			if err != nil {
 				log.Errorf("unable to fetch network: %v", err)
 				continue
@@ -105,15 +105,15 @@ func (s *Stats) scrapeRouterInfo() {
 			log.Debugf("Total open inactive channels: %v", numNonActiveChannels)
 			s.cfg.MetricsBackend.TotalChannels(asset, "opened", "inactive", numNonActiveChannels)
 
-			// TODO(andrew.shvv) Remove when router would return users
+			// TODO(andrew.shvv) Remove when lightning client would return users
 			users, err := s.cfg.Storage.Users()
 			if err != nil {
 				log.Errorf("unable to fetch users: %v", err)
 				continue
 			}
 
-			totalLockedByUsers := router.BalanceUnit(0)
-			totalLockedByRouter := router.BalanceUnit(0)
+			totalLockedRemotely := lightning.BalanceUnit(0)
+			totalLockedLocally := lightning.BalanceUnit(0)
 
 			activeUsers := 0
 			for _, user := range users {
@@ -121,20 +121,20 @@ func (s *Stats) scrapeRouterInfo() {
 					activeUsers += 1
 				}
 
-				totalLockedByUsers += user.LockedByUser
-				totalLockedByRouter += user.LockedByHub
+				totalLockedRemotely += user.LockedByUser
+				totalLockedLocally += user.LockedByHub
 			}
 
 			log.Debugf("Total connected users: %v", activeUsers)
 			s.cfg.MetricsBackend.TotalUsers(asset, activeUsers)
 
-			log.Debugf("Funds locked by users: %v", totalLockedByUsers)
-			s.cfg.MetricsBackend.TotalFundsLockedByUser(asset, uint64(totalLockedByUsers))
+			log.Debugf("Funds locked remotely: %v", totalLockedRemotely)
+			s.cfg.MetricsBackend.TotalFundsLockedRemotely(asset, uint64(totalLockedRemotely))
 
-			log.Debugf("Funds locked by router: %v", totalLockedByRouter)
-			s.cfg.MetricsBackend.TotalFundsLockedByRouter(asset, uint64(totalLockedByRouter))
+			log.Debugf("Funds locked locally: %v", totalLockedLocally)
+			s.cfg.MetricsBackend.TotalFundsLockedLocally(asset, uint64(totalLockedLocally))
 
-			freeBalance, err := s.cfg.Router.FreeBalance()
+			freeBalance, err := s.cfg.Client.FreeBalance()
 			if err != nil {
 				log.Errorf("unable to fetch free balance: %v", err)
 				continue
@@ -145,9 +145,9 @@ func (s *Stats) scrapeRouterInfo() {
 
 		case update := <-receiver.Read():
 			switch u := update.(type) {
-			case *router.UpdatePayment:
-				if u.Type == router.Forward {
-					asset := s.cfg.Router.Asset()
+			case *lightning.UpdatePayment:
+				if u.Type == lightning.Forward {
+					asset := s.cfg.Client.Asset()
 					s.cfg.MetricsBackend.AddSuccessfulForwardingPayment(asset)
 					s.cfg.MetricsBackend.AddEarnedFunds(asset, uint64(u.Earned))
 				}

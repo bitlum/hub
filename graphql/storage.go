@@ -1,9 +1,9 @@
 package graphql
 
-import "github.com/bitlum/hub/manager/router"
+import "github.com/bitlum/hub/lightning"
 
 type GraphQLStorage interface {
-	router.InfoStorage
-	router.PaymentStorage
-	router.UserStorage
+	lightning.InfoStorage
+	lightning.PaymentStorage
+	lightning.UserStorage
 }

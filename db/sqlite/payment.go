@@ -1,14 +1,14 @@
 package sqlite
 
 import (
-	"github.com/bitlum/hub/manager/router"
+	"github.com/bitlum/hub/lightning"
 )
 
-// Runtime check to ensure that DB implements router.PaymentStorage interface.
-var _ router.PaymentStorage = (*DB)(nil)
+// Runtime check to ensure that DB implements lightning.PaymentStorage interface.
+var _ lightning.PaymentStorage = (*DB)(nil)
 
 // StorePayment saves the payment.
-func (d *DB) StorePayment(p *router.Payment) error {
+func (d *DB) StorePayment(p *lightning.Payment) error {
 	payment := &Payment{
 		FromUser:  string(p.FromUser),
 		ToUser:    string(p.ToUser),
@@ -24,7 +24,7 @@ func (d *DB) StorePayment(p *router.Payment) error {
 }
 
 // Payments returns the payments happening inside the hub local network,
-func (d *DB) Payments() ([]*router.Payment, error) {
+func (d *DB) Payments() ([]*lightning.Payment, error) {
 	var payments []Payment
 	err := d.Model(&Payment{}).
 		Order("time DESC").
@@ -33,16 +33,16 @@ func (d *DB) Payments() ([]*router.Payment, error) {
 		return nil, err
 	}
 
-	pmts := make([]*router.Payment, len(payments))
+	pmts := make([]*lightning.Payment, len(payments))
 	for i, p := range payments {
-		pmts[i] = &router.Payment{
-			FromUser:  router.UserID(p.FromUser),
-			ToUser:    router.UserID(p.ToUser),
+		pmts[i] = &lightning.Payment{
+			FromUser:  lightning.UserID(p.FromUser),
+			ToUser:    lightning.UserID(p.ToUser),
 			FromAlias: p.FromAlias,
 			ToAlias:   p.ToAlias,
-			Amount:    router.BalanceUnit(p.Amount),
-			Status:    router.PaymentStatus(p.Status),
-			Type:      router.PaymentType(p.Type),
+			Amount:    lightning.BalanceUnit(p.Amount),
+			Status:    lightning.PaymentStatus(p.Status),
+			Type:      lightning.PaymentType(p.Type),
 			Time:      p.Time,
 		}
 	}

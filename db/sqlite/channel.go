@@ -1,22 +1,22 @@
 package sqlite
 
 import (
-	"github.com/bitlum/hub/manager/router"
+	"github.com/bitlum/hub/lightning"
 )
 
-// Runtime check to ensure that DB implements router.ChannelStorage interface.
-var _ router.ChannelStorage = (*DB)(nil)
+// Runtime check to ensure that DB implements lightning.ChannelStorage interface.
+var _ lightning.ChannelStorage = (*DB)(nil)
 
 // UpdateChannel saves channel without saving its states.
 //
-// NOTE: Part the the router.ChannelStorage interface
-func (d *DB) UpdateChannel(channel *router.Channel) error {
+// NOTE: Part the the lightning.ChannelStorage interface
+func (d *DB) UpdateChannel(channel *lightning.Channel) error {
 	return d.Save(&Channel{
 		ID:              string(channel.ChannelID),
 		UserID:          string(channel.UserID),
 		OpenFee:         int64(channel.OpenFee),
-		UserBalance:     int64(channel.UserBalance),
-		RouterBalance:   int64(channel.RouterBalance),
+		RemoteBalance:   int64(channel.RemoteBalance),
+		LocalBalance:    int64(channel.LocalBalance),
 		Initiator:       string(channel.Initiator),
 		IsUserConnected: channel.IsUserConnected,
 		CloseFee:        int64(channel.CloseFee),
@@ -25,8 +25,8 @@ func (d *DB) UpdateChannel(channel *router.Channel) error {
 
 // RemoveChannel removes the channel and associated with it states.
 //
-// NOTE: Part the the router.ChannelStorage interface
-func (d *DB) RemoveChannel(channel *router.Channel) (err error) {
+// NOTE: Part the the lightning.ChannelStorage interface
+func (d *DB) RemoveChannel(channel *lightning.Channel) (err error) {
 	tx := d.Begin()
 	defer func() {
 		if err != nil {
@@ -55,16 +55,16 @@ func (d *DB) RemoveChannel(channel *router.Channel) (err error) {
 }
 
 // Channels is used to return previously saved local topology of the
-// router.
+// lightning.
 //
-// NOTE: Part the the router.ChannelStorage interface
-func (d *DB) Channels() ([]*router.Channel, error) {
+// NOTE: Part the the lightning.ChannelStorage interface
+func (d *DB) Channels() ([]*lightning.Channel, error) {
 	var channels []Channel
 	if err := d.Find(&channels).Error; err != nil {
 		return nil, err
 	}
 
-	routerChannels := make([]*router.Channel, len(channels))
+	nodeChannels := make([]*lightning.Channel, len(channels))
 
 	for i, channel := range channels {
 		var states []State
@@ -75,37 +75,37 @@ func (d *DB) Channels() ([]*router.Channel, error) {
 			return nil, err
 		}
 
-		routerStates := make([]*router.ChannelState, len(states))
+		channelStates := make([]*lightning.ChannelState, len(states))
 		for i, state := range states {
-			routerStates[i] = &router.ChannelState{
+			channelStates[i] = &lightning.ChannelState{
 				Time: state.Time,
-				Name: router.ChannelStateName(state.Name),
+				Name: lightning.ChannelStateName(state.Name),
 			}
 		}
 
-		routerChannels[i] = &router.Channel{
-			ChannelID:       router.ChannelID(channel.ID),
-			UserID:          router.UserID(channel.UserID),
-			OpenFee:         router.BalanceUnit(channel.OpenFee),
-			UserBalance:     router.BalanceUnit(channel.UserBalance),
-			RouterBalance:   router.BalanceUnit(channel.RouterBalance),
-			Initiator:       router.ChannelInitiator(channel.Initiator),
-			CloseFee:        router.BalanceUnit(channel.CloseFee),
+		nodeChannels[i] = &lightning.Channel{
+			ChannelID:       lightning.ChannelID(channel.ID),
+			UserID:          lightning.UserID(channel.UserID),
+			OpenFee:         lightning.BalanceUnit(channel.OpenFee),
+			RemoteBalance:   lightning.BalanceUnit(channel.RemoteBalance),
+			LocalBalance:    lightning.BalanceUnit(channel.LocalBalance),
+			Initiator:       lightning.ChannelInitiator(channel.Initiator),
+			CloseFee:        lightning.BalanceUnit(channel.CloseFee),
 			IsUserConnected: channel.IsUserConnected,
-			States:          routerStates,
+			States:          channelStates,
 		}
 	}
 
-	return routerChannels, nil
+	return nodeChannels, nil
 }
 
 // AddChannelState adds state to the channel's state array. State array
 // should be initialised in the Channel object on the stage of getting
 // channels.
 //
-// NOTE: Part the the router.ChannelStorage interface
-func (d *DB) AddChannelState(chanID router.ChannelID,
-	state *router.ChannelState) error {
+// NOTE: Part the the lightning.ChannelStorage interface
+func (d *DB) AddChannelState(chanID lightning.ChannelID,
+	state *lightning.ChannelState) error {
 	channel := &Channel{ID: string(chanID)}
 	return d.Model(channel).Association("States").Append(&State{
 		ChannelID: string(chanID),

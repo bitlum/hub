@@ -1,4 +1,4 @@
-package router
+package lightning
 
 // ChannelStorage contains all necessary hooks to store channel object.
 type ChannelStorage interface {

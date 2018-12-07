@@ -1,17 +1,17 @@
 package lnd
 
 import (
-	"time"
-	"github.com/lightningnetwork/lnd/lnrpc"
 	"context"
-	"github.com/bitlum/hub/manager/router"
-	"github.com/bitlum/hub/manager/metrics/crypto"
-	"github.com/bitlum/hub/manager/metrics"
+	"github.com/bitlum/btcutil"
+	"github.com/bitlum/hub/common/broadcast"
+	"github.com/bitlum/hub/lightning"
+	"github.com/bitlum/hub/metrics"
+	"github.com/bitlum/hub/metrics/crypto"
+	"github.com/bitlum/hub/registry"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/go-errors/errors"
-	"github.com/bitlum/btcutil"
-	"github.com/bitlum/hub/manager/common/broadcast"
-	"github.com/bitlum/hub/manager/router/registry"
+	"github.com/lightningnetwork/lnd/lnrpc"
+	"time"
 )
 
 // updateNodeInfo updates information about last synced version of the
@@ -19,10 +19,10 @@ import (
 // we need to know that.
 //
 // NOTE: Should run as goroutine.
-func (r *Router) updateNodeInfo() {
+func (client *Client) updateNodeInfo() {
 	defer func() {
 		log.Info("Stopped lightning node info updates goroutine")
-		r.wg.Done()
+		client.wg.Done()
 	}()
 
 	log.Info("Started lightning node info updates goroutine")
@@ -30,12 +30,12 @@ func (r *Router) updateNodeInfo() {
 	for {
 		select {
 		case <-time.After(time.Second * 25):
-		case <-r.quit:
+		case <-client.quit:
 			return
 		}
 
-		m := crypto.NewMetric(r.cfg.Asset, "UpdateNodeInfo", r.cfg.MetricsBackend)
-		nodeInfo, err := fetchNodeInfo(r.client)
+		m := crypto.NewMetric(client.cfg.Asset, "UpdateNodeInfo", client.cfg.MetricsBackend)
+		nodeInfo, err := fetchNodeInfo(client.client)
 		if err != nil {
 			m.AddError(metrics.MiddleSeverity)
 			m.Finish()
@@ -45,20 +45,20 @@ func (r *Router) updateNodeInfo() {
 		}
 		m.Finish()
 
-		if err := r.cfg.Storage.UpdateInfo(&router.Info{
+		if err := client.cfg.Storage.UpdateInfo(&lightning.Info{
 			Version:     nodeInfo.Version,
-			Network:     r.cfg.Net,
+			Network:     client.cfg.Net,
 			BlockHeight: nodeInfo.BlockHeight,
 			BlockHash:   nodeInfo.BlockHash,
-			NodeInfo: &router.NodeInfo{
+			NodeInfo: &lightning.NodeInfo{
 				Alias:          nodeInfo.Alias,
-				Host:           r.cfg.PeerHost,
-				Port:           r.cfg.PeerPort,
+				Host:           client.cfg.PeerHost,
+				Port:           client.cfg.PeerPort,
 				IdentityPubKey: nodeInfo.IdentityPubkey,
 			},
-			NeutrinoInfo: &router.NeutrinoInfo{
-				Host: r.cfg.NeutrinoHost,
-				Port: r.cfg.NeutrinoPort,
+			NeutrinoInfo: &lightning.NeutrinoInfo{
+				Host: client.cfg.NeutrinoHost,
+				Port: client.cfg.NeutrinoPort,
 			},
 		}); err != nil {
 			log.Errorf("unable to save lightning node info: %v", err)
@@ -70,10 +70,10 @@ func (r *Router) updateNodeInfo() {
 // and sends notifications accordingly when transition has happened.
 //
 // NOTE: Should run as goroutine.
-func (r *Router) updateChannelStates() {
+func (client *Client) updateChannelStates() {
 	defer func() {
 		log.Info("Stopped local topology updates goroutine")
-		r.wg.Done()
+		client.wg.Done()
 	}()
 
 	log.Info("Started local topology updates goroutine")
@@ -81,15 +81,15 @@ func (r *Router) updateChannelStates() {
 	for {
 		select {
 		case <-time.After(time.Second * 5):
-		case <-r.quit:
+		case <-client.quit:
 			return
 		}
 
-		m := crypto.NewMetric(r.cfg.Asset, "UpdateChannelStates", r.cfg.MetricsBackend)
+		m := crypto.NewMetric(client.cfg.Asset, "UpdateChannelStates", client.cfg.MetricsBackend)
 
 		// TODO(andrew.shvv) track waiting closing channels
 		openChannels, pendingOpenChannels, pendingClosingChannels,
-		pendingForceClosingChannels, _, err := fetchChannels(r.client)
+		pendingForceClosingChannels, _, err := fetchChannels(client.client)
 		if err != nil {
 			m.AddError(metrics.MiddleSeverity)
 			m.Finish()
@@ -103,7 +103,7 @@ func (r *Router) updateChannelStates() {
 		// corresponds to the old/previous channel state.
 		log.Debugf("(topology updates) Fetching channel state from db...")
 
-		routerChannels, err := r.Channels()
+		nodeChannels, err := client.Channels()
 		if err != nil {
 			m.AddError(metrics.MiddleSeverity)
 			m.Finish()
@@ -114,8 +114,8 @@ func (r *Router) updateChannelStates() {
 		}
 
 		if err := syncChannelStates(openChannels, pendingOpenChannels,
-			pendingClosingChannels, pendingForceClosingChannels, r.broadcaster,
-			r.cfg.Storage, r.cfg.Storage, routerChannels); err != nil {
+			pendingClosingChannels, pendingForceClosingChannels, client.broadcaster,
+			client.cfg.Storage, client.cfg.Storage, nodeChannels); err != nil {
 			m.AddError(metrics.MiddleSeverity)
 			m.Finish()
 
@@ -135,65 +135,65 @@ func syncChannelStates(
 	pendingClosingChannels []*lnrpc.PendingChannelsResponse_ClosedChannel,
 	pendingForceClosingChannels []*lnrpc.PendingChannelsResponse_ForceClosedChannel,
 	broadcaster *broadcast.Broadcaster,
-	channelStorage router.ChannelStorage,
+	channelStorage lightning.ChannelStorage,
 	indexStorage IndexesStorage,
-	routerState []*router.Channel) error {
+	nodeState []*lightning.Channel) error {
 
-	routerChannelMap := make(map[router.ChannelID]*router.Channel)
-	for _, c := range routerState {
-		routerChannelMap[c.ChannelID] = c
+	nodeChannelMap := make(map[lightning.ChannelID]*lightning.Channel)
+	for _, c := range nodeState {
+		nodeChannelMap[c.ChannelID] = c
 	}
 
 	// Keep new channel ids to detect channel closes at later point.
-	newChannelIDs := make(map[router.ChannelID]struct{}, 0)
+	newChannelIDs := make(map[lightning.ChannelID]struct{}, 0)
 
 	for _, newChannel := range pendingOpenChannels {
-		chanID := router.ChannelID(newChannel.Channel.ChannelPoint)
+		chanID := lightning.ChannelID(newChannel.Channel.ChannelPoint)
 		newChannelIDs[chanID] = struct{}{}
 
-		state := router.ChannelStateName("not exist")
-		channel, ok := routerChannelMap[router.ChannelID(newChannel.Channel.ChannelPoint)]
+		state := lightning.ChannelStateName("not exist")
+		channel, ok := nodeChannelMap[lightning.ChannelID(newChannel.Channel.ChannelPoint)]
 		if ok {
 			state = channel.CurrentState().Name
 		}
 
 		switch state {
-		case router.ChannelOpening:
+		case lightning.ChannelOpening:
 			// Nothing has changed
-		case router.ChannelOpened:
+		case lightning.ChannelOpened:
 			// Previous channel state was opened, and now it is again
 			// opening, something wrong has happened.
 			return errors.Errorf("impossible channel("+
-				"%v) change state %v => %v", chanID, router.ChannelOpened,
-				router.ChannelOpening)
+				"%v) change state %v => %v", chanID, lightning.ChannelOpened,
+				lightning.ChannelOpening)
 
-		case router.ChannelClosing:
+		case lightning.ChannelClosing:
 			// Previous channel state was closing, and now it is
 			// opening, we couldn't  re-open, closing channel.
 			return errors.Errorf("impossible channel("+
-				"%v) change state %v => %v", chanID, router.ChannelClosing,
-				router.ChannelOpening)
+				"%v) change state %v => %v", chanID, lightning.ChannelClosing,
+				lightning.ChannelOpening)
 
-		case router.ChannelClosed:
+		case lightning.ChannelClosed:
 			// Previous channel state was closing, and now it is
 			// opening, we couldn't  re-open, closing channel.
 			return errors.Errorf("impossible channel("+
-				"%v) change state %v => %v", chanID, router.ChannelClosed,
-				router.ChannelOpening)
+				"%v) change state %v => %v", chanID, lightning.ChannelClosed,
+				lightning.ChannelOpening)
 
 		case "not exist":
-			cfg := &router.ChannelConfig{
+			cfg := &lightning.ChannelConfig{
 				Broadcaster: broadcaster,
 				Storage:     channelStorage,
 			}
 
-			channel, err := router.NewChannel(
-				router.ChannelID(newChannel.Channel.ChannelPoint),
-				router.UserID(newChannel.Channel.RemoteNodePub),
-				router.BalanceUnit(newChannel.Channel.Capacity),
-				router.BalanceUnit(newChannel.Channel.RemoteBalance),
-				router.BalanceUnit(newChannel.Channel.LocalBalance),
-				router.BalanceUnit(newChannel.CommitFee),
+			channel, err := lightning.NewChannel(
+				lightning.ChannelID(newChannel.Channel.ChannelPoint),
+				lightning.UserID(newChannel.Channel.RemoteNodePub),
+				lightning.BalanceUnit(newChannel.Channel.Capacity),
+				lightning.BalanceUnit(newChannel.Channel.RemoteBalance),
+				lightning.BalanceUnit(newChannel.Channel.LocalBalance),
+				lightning.BalanceUnit(newChannel.CommitFee),
 				getInitiator(newChannel.Channel.LocalBalance),
 				cfg,
 			)
@@ -223,17 +223,17 @@ func syncChannelStates(
 	}
 
 	for _, newChannel := range pendingClosingChannels {
-		chanID := router.ChannelID(newChannel.Channel.ChannelPoint)
+		chanID := lightning.ChannelID(newChannel.Channel.ChannelPoint)
 		newChannelIDs[chanID] = struct{}{}
 
-		channel, ok := routerChannelMap[router.ChannelID(newChannel.Channel.ChannelPoint)]
-		state := router.ChannelStateName("not exist")
+		channel, ok := nodeChannelMap[lightning.ChannelID(newChannel.Channel.ChannelPoint)]
+		state := lightning.ChannelStateName("not exist")
 		if ok {
 			state = channel.CurrentState().Name
 		}
 
 		switch state {
-		case router.ChannelOpening:
+		case lightning.ChannelOpening:
 			// Previously channel was opening, it seems that because of the
 			// delayed scrape we missed some of state changes.
 
@@ -253,34 +253,34 @@ func syncChannelStates(
 			log.Infof("Set state(%v) for channel(%v)",
 				channel.CurrentState(), channel.ChannelID)
 
-		case router.ChannelOpened:
+		case lightning.ChannelOpened:
 			if err := channel.SetClosingState(); err != nil {
 				return errors.Errorf("unable to set closing state"+
 					"for channel(%v): %v", chanID, err)
 			}
-		case router.ChannelClosing:
+		case lightning.ChannelClosing:
 			// Nothing has changed
-		case router.ChannelClosed:
+		case lightning.ChannelClosed:
 			// Previous channel state was closed, and now it is
 			// closing, we couldn't  re-close, closed channel.
 			return errors.Errorf("impossible channel("+
-				"%v) change state %v => %v", chanID, router.ChannelClosed,
-				router.ChannelClosing)
+				"%v) change state %v => %v", chanID, lightning.ChannelClosed,
+				lightning.ChannelClosing)
 
 		case "not exist":
 			// Previously channel not existed, it seems that because of the
 			// delayed scrape we missed some of state changes.
-			cfg := &router.ChannelConfig{
+			cfg := &lightning.ChannelConfig{
 				Broadcaster: broadcaster,
 				Storage:     channelStorage,
 			}
 
-			channel, err := router.NewChannel(
-				router.ChannelID(newChannel.Channel.ChannelPoint),
-				router.UserID(newChannel.Channel.RemoteNodePub),
-				router.BalanceUnit(newChannel.Channel.Capacity),
-				router.BalanceUnit(newChannel.Channel.RemoteBalance),
-				router.BalanceUnit(newChannel.Channel.LocalBalance),
+			channel, err := lightning.NewChannel(
+				lightning.ChannelID(newChannel.Channel.ChannelPoint),
+				lightning.UserID(newChannel.Channel.RemoteNodePub),
+				lightning.BalanceUnit(newChannel.Channel.Capacity),
+				lightning.BalanceUnit(newChannel.Channel.RemoteBalance),
+				lightning.BalanceUnit(newChannel.Channel.LocalBalance),
 				0,
 				getInitiator(newChannel.Channel.LocalBalance),
 				cfg,
@@ -326,17 +326,17 @@ func syncChannelStates(
 	}
 
 	for _, newChannel := range pendingForceClosingChannels {
-		chanID := router.ChannelID(newChannel.Channel.ChannelPoint)
+		chanID := lightning.ChannelID(newChannel.Channel.ChannelPoint)
 		newChannelIDs[chanID] = struct{}{}
 
-		state := router.ChannelStateName("not exist")
-		channel, ok := routerChannelMap[router.ChannelID(newChannel.Channel.ChannelPoint)]
+		state := lightning.ChannelStateName("not exist")
+		channel, ok := nodeChannelMap[lightning.ChannelID(newChannel.Channel.ChannelPoint)]
 		if ok {
 			state = channel.CurrentState().Name
 		}
 
 		switch state {
-		case router.ChannelOpening:
+		case lightning.ChannelOpening:
 			// Previously channel was opening, it seems that because of the
 			// delayed scrape we missed some of state changes.
 
@@ -364,7 +364,7 @@ func syncChannelStates(
 			log.Infof("Set state(%v) for channel(%v)",
 				channel.CurrentState(), channel.ChannelID)
 
-		case router.ChannelOpened:
+		case lightning.ChannelOpened:
 			if err := channel.SetClosingState(); err != nil {
 				return errors.Errorf("unable to set closing state"+
 					"for channel(%v): %v", chanID, err)
@@ -373,29 +373,29 @@ func syncChannelStates(
 			log.Infof("Set state(%v) for channel(%v)",
 				channel.CurrentState(), channel.ChannelID)
 
-		case router.ChannelClosing:
+		case lightning.ChannelClosing:
 			// Nothing has changed
-		case router.ChannelClosed:
+		case lightning.ChannelClosed:
 			// Previous channel state was closed, and now it is
 			// closing, we couldn't  re-close, closed channel.
 			return errors.Errorf("impossible channel("+
-				"%v) change state %v => %v", chanID, router.ChannelClosed,
-				router.ChannelClosing)
+				"%v) change state %v => %v", chanID, lightning.ChannelClosed,
+				lightning.ChannelClosing)
 
 		case "not exist":
 			// Previously channel not existed, it seems that because of the
 			// delayed scrape we missed some of state changes.
-			cfg := &router.ChannelConfig{
+			cfg := &lightning.ChannelConfig{
 				Broadcaster: broadcaster,
 				Storage:     channelStorage,
 			}
 
-			channel, err := router.NewChannel(
-				router.ChannelID(newChannel.Channel.ChannelPoint),
-				router.UserID(newChannel.Channel.RemoteNodePub),
-				router.BalanceUnit(newChannel.Channel.Capacity),
-				router.BalanceUnit(newChannel.Channel.RemoteBalance),
-				router.BalanceUnit(newChannel.Channel.LocalBalance),
+			channel, err := lightning.NewChannel(
+				lightning.ChannelID(newChannel.Channel.ChannelPoint),
+				lightning.UserID(newChannel.Channel.RemoteNodePub),
+				lightning.BalanceUnit(newChannel.Channel.Capacity),
+				lightning.BalanceUnit(newChannel.Channel.RemoteBalance),
+				lightning.BalanceUnit(newChannel.Channel.LocalBalance),
 				0,
 				getInitiator(newChannel.Channel.LocalBalance, ),
 				cfg,
@@ -440,13 +440,13 @@ func syncChannelStates(
 	}
 
 	for _, newChannel := range openChannels {
-		chanID := router.ChannelID(newChannel.ChannelPoint)
+		chanID := lightning.ChannelID(newChannel.ChannelPoint)
 		newChannelIDs[chanID] = struct{}{}
 
 		// Save user id <> short channel id index in order to retrieve it
 		// later on payment notifications without query lightning network
 		// daemon.
-		userID := router.UserID(newChannel.RemotePubkey)
+		userID := lightning.UserID(newChannel.RemotePubkey)
 		if err := indexStorage.AddUserIDToShortChanIDIndex(userID,
 			newChannel.ChanId); err != nil {
 			return errors.Errorf("unable to add user_id("+
@@ -464,14 +464,14 @@ func syncChannelStates(
 				newChannel.ChanId, err)
 		}
 
-		channel, ok := routerChannelMap[router.ChannelID(newChannel.ChannelPoint)]
-		state := router.ChannelStateName("not exist")
+		channel, ok := nodeChannelMap[lightning.ChannelID(newChannel.ChannelPoint)]
+		state := lightning.ChannelStateName("not exist")
 		if ok {
 			state = channel.CurrentState().Name
 		}
 
 		switch state {
-		case router.ChannelOpening:
+		case lightning.ChannelOpening:
 			if err := channel.SetOpenedState(); err != nil {
 				return errors.Errorf("unable set channel state"+
 					" opened for channel(%v): %v", chanID, err)
@@ -480,35 +480,35 @@ func syncChannelStates(
 			log.Infof("Set state(%v) for channel(%v)",
 				channel.CurrentState(), channel.ChannelID)
 
-		case router.ChannelOpened:
+		case lightning.ChannelOpened:
 			// Nothing has changed
-		case router.ChannelClosing:
+		case lightning.ChannelClosing:
 			// Previous channel state was closing, but now it is
 			// opened, close couldn't be canceled.
 			return errors.Errorf("impossible channel("+
-				"%v) change state %v => %v", chanID, router.ChannelClosing,
-				router.ChannelOpened)
+				"%v) change state %v => %v", chanID, lightning.ChannelClosing,
+				lightning.ChannelOpened)
 
-		case router.ChannelClosed:
+		case lightning.ChannelClosed:
 			// Previous channel state was closed, but now it is
 			// opened, close couldn't be canceled.
 			return errors.Errorf("impossible channel("+
-				"%v) change state %v => %v", chanID, router.ChannelClosed,
-				router.ChannelOpened)
+				"%v) change state %v => %v", chanID, lightning.ChannelClosed,
+				lightning.ChannelOpened)
 
 		case "not exist":
-			cfg := &router.ChannelConfig{
+			cfg := &lightning.ChannelConfig{
 				Broadcaster: broadcaster,
 				Storage:     channelStorage,
 			}
 
-			channel, err := router.NewChannel(
-				router.ChannelID(newChannel.ChannelPoint),
-				router.UserID(newChannel.RemotePubkey),
-				router.BalanceUnit(newChannel.Capacity),
-				router.BalanceUnit(newChannel.RemoteBalance),
-				router.BalanceUnit(newChannel.LocalBalance),
-				router.BalanceUnit(newChannel.CommitFee),
+			channel, err := lightning.NewChannel(
+				lightning.ChannelID(newChannel.ChannelPoint),
+				lightning.UserID(newChannel.RemotePubkey),
+				lightning.BalanceUnit(newChannel.Capacity),
+				lightning.BalanceUnit(newChannel.RemoteBalance),
+				lightning.BalanceUnit(newChannel.LocalBalance),
+				lightning.BalanceUnit(newChannel.CommitFee),
 				getInitiator(newChannel.LocalBalance),
 				cfg,
 			)
@@ -543,7 +543,7 @@ func syncChannelStates(
 		}
 	}
 
-	for chanID, channel := range routerChannelMap {
+	for chanID, channel := range nodeChannelMap {
 		_, ok := newChannelIDs[chanID]
 		if ok {
 			// It was already handled previously
@@ -552,7 +552,7 @@ func syncChannelStates(
 
 		state := channel.CurrentState().Name
 		switch state {
-		case router.ChannelOpening:
+		case lightning.ChannelOpening:
 			if err := channel.SetOpenedState(); err != nil {
 				return errors.Errorf("unable to set opened state"+
 					"for channel(%v): %v", chanID, err)
@@ -577,7 +577,7 @@ func syncChannelStates(
 			log.Infof("Set state(%v) for channel(%v)",
 				channel.CurrentState(), channel.ChannelID)
 
-		case router.ChannelOpened:
+		case lightning.ChannelOpened:
 			if err := channel.SetClosingState(); err != nil {
 				return errors.Errorf("(topology updates) unable to set channel closing"+
 					"for channel(%v): %v", chanID, err)
@@ -594,7 +594,7 @@ func syncChannelStates(
 			log.Infof("Set state(%v) for channel(%v)",
 				channel.CurrentState(), channel.ChannelID)
 
-		case router.ChannelClosing:
+		case lightning.ChannelClosing:
 			if err := channel.SetClosedState(); err != nil {
 				return errors.Errorf("unable set closed channel"+
 					" state for channel(%v): %v", chanID, err)
@@ -603,7 +603,7 @@ func syncChannelStates(
 			log.Infof("Set state(%v) for channel(%v)",
 				channel.CurrentState(), channel.ChannelID)
 
-		case router.ChannelClosed:
+		case lightning.ChannelClosed:
 			// Nothing to do
 		default:
 			return errors.Errorf("unhandled state: %v", state)
@@ -618,10 +618,10 @@ func syncChannelStates(
 // new payment has been found.
 //
 // NOTE: Should run as goroutine.
-func (r *Router) listenForwardingPayments() {
+func (client *Client) listenForwardingPayments() {
 	defer func() {
 		log.Info("Stopped sync forwarding payments goroutine")
-		r.wg.Done()
+		client.wg.Done()
 	}()
 
 	log.Info("Started sync forwarding payments goroutine")
@@ -629,37 +629,37 @@ func (r *Router) listenForwardingPayments() {
 	for {
 		select {
 		case <-time.After(time.Second * 5):
-		case <-r.quit:
+		case <-client.quit:
 			return
 		}
 
-		r.syncForwardingUpdate(r.cfg.Storage)
+		client.syncForwardingUpdate(client.cfg.Storage)
 	}
 }
 
 // syncForwardingUpdate is used as wrapper for fetching and syncing forwarding
 // updates. Main purpose of creating distinct method was usage of defer, which
 // is needed mainly for metric gathering usage.
-func (r *Router) syncForwardingUpdate(storage IndexesStorage) {
+func (client *Client) syncForwardingUpdate(storage IndexesStorage) {
 	defer panicRecovering()
 
 	var lastIndex uint32
 	var err error
 
-	m := crypto.NewMetric(r.cfg.Asset, "ListenForwardingPayments",
-		r.cfg.MetricsBackend)
+	m := crypto.NewMetric(client.cfg.Asset, "ListenForwardingPayments",
+		client.cfg.MetricsBackend)
 	defer m.Finish()
 
 	// Try to fetch last index, and if fails than try after yet again after
 	// some time.
 	for {
-		lastIndex, err = r.cfg.Storage.LastForwardingIndex()
+		lastIndex, err = client.cfg.Storage.LastForwardingIndex()
 		if err != nil {
 			m.AddError(metrics.HighSeverity)
 			log.Errorf("(forwarding updates) unable to get last"+
 				" forwarding index: %v", err)
 			select {
-			case <-r.quit:
+			case <-client.quit:
 				return
 			case <-time.After(time.Second * 5):
 				continue
@@ -671,7 +671,7 @@ func (r *Router) syncForwardingUpdate(storage IndexesStorage) {
 		break
 	}
 
-	events, err := fetchForwardingPayments(r.client, lastIndex)
+	events, err := fetchForwardingPayments(client.client, lastIndex)
 	if err != nil {
 		m.AddError(metrics.HighSeverity)
 		log.Errorf("(forwarding updates) unable to get forwarding"+
@@ -705,15 +705,15 @@ func (r *Router) syncForwardingUpdate(storage IndexesStorage) {
 		}
 
 		// TODO(andrew.shvv) Add fail attempts
-		status := router.Successful
+		status := lightning.Successful
 
-		if err := r.cfg.Storage.StorePayment(&router.Payment{
+		if err := client.cfg.Storage.StorePayment(&lightning.Payment{
 			FromUser:  sender,
 			ToUser:    receiver,
 			FromAlias: registry.GetAlias(sender),
 			ToAlias:   registry.GetAlias(receiver),
-			Amount:    router.BalanceUnit(event.AmtOut),
-			Type:      router.Forward,
+			Amount:    lightning.BalanceUnit(event.AmtOut),
+			Type:      lightning.Forward,
 			Status:    status,
 			Time:      time.Now().Unix(),
 		}); err != nil {
@@ -721,19 +721,19 @@ func (r *Router) syncForwardingUpdate(storage IndexesStorage) {
 			continue
 		}
 
-		update := &router.UpdatePayment{
-			Type:     router.Forward,
+		update := &lightning.UpdatePayment{
+			Type:     lightning.Forward,
 			Status:   status,
 			Sender:   sender,
 			Receiver: receiver,
-			Amount:   router.BalanceUnit(event.AmtOut),
-			Earned:   router.BalanceUnit(event.Fee),
+			Amount:   lightning.BalanceUnit(event.AmtOut),
+			Earned:   lightning.BalanceUnit(event.Fee),
 		}
 
 		// Send update notification to all listeners.
 		log.Debugf("(forwarding updates) Send forwarding update: %v"+
 			"", spew.Sdump(update))
-		r.broadcaster.Write(update)
+		client.broadcaster.Write(update)
 	}
 
 	lastIndex += uint32(len(events))
@@ -743,13 +743,13 @@ func (r *Router) syncForwardingUpdate(storage IndexesStorage) {
 	for {
 		log.Debugf("(forwarding updates) Save last forwarding index"+
 			" %v...", lastIndex)
-		if err := r.cfg.Storage.PutLastForwardingIndex(lastIndex); err != nil {
+		if err := client.cfg.Storage.PutLastForwardingIndex(lastIndex); err != nil {
 			m.AddError(metrics.HighSeverity)
 			log.Errorf("(forwarding updates) unable to get last"+
 				" forwarding index: %v", err)
 
 			select {
-			case <-r.quit:
+			case <-client.quit:
 				return
 			case <-time.After(time.Second * 5):
 				continue
@@ -763,24 +763,24 @@ func (r *Router) syncForwardingUpdate(storage IndexesStorage) {
 // listenIncomingPayments listener of the incoming lightning payments.
 //
 // NOTE: Should run as goroutine.
-func (r *Router) listenIncomingPayments() {
+func (client *Client) listenIncomingPayments() {
 	defer func() {
 		panicRecovering()
 		log.Info("Stopped sync incoming payments goroutine")
-		r.wg.Done()
+		client.wg.Done()
 	}()
 
 	log.Info("Started sync incoming payments goroutine")
 
-	m := crypto.NewMetric(r.cfg.Asset, "ListenIncomingPayments",
-		r.cfg.MetricsBackend)
+	m := crypto.NewMetric(client.cfg.Asset, "ListenIncomingPayments",
+		client.cfg.MetricsBackend)
 
 	var invoiceSubsc lnrpc.Lightning_SubscribeInvoicesClient
 	var err error
 
 	for {
 		select {
-		case <-r.quit:
+		case <-client.quit:
 			return
 		default:
 		}
@@ -792,7 +792,7 @@ func (r *Router) listenIncomingPayments() {
 			log.Info("(payments updates) Trying to subscribe on payment" +
 				" updates...")
 
-			invoiceSubsc, err = r.client.SubscribeInvoices(context.Background(),
+			invoiceSubsc, err = client.client.SubscribeInvoices(context.Background(),
 				&lnrpc.InvoiceSubscription{})
 			if err != nil {
 				m.AddError(metrics.HighSeverity)
@@ -824,39 +824,39 @@ func (r *Router) listenIncomingPayments() {
 			continue
 		}
 
-		userID := router.UserID("unknown")
+		userID := lightning.UserID("unknown")
 
 		amount := btcutil.Amount(invoiceUpdate.Value)
-		if err := r.cfg.Storage.StorePayment(&router.Payment{
+		if err := client.cfg.Storage.StorePayment(&lightning.Payment{
 			FromUser:  userID,
-			ToUser:    r.routerUserID,
+			ToUser:    client.lightningNodeUserID,
 			FromAlias: registry.GetAlias(userID),
-			ToAlias:   registry.GetAlias(r.routerUserID),
-			Amount:    router.BalanceUnit(amount),
-			Type:      router.Incoming,
-			Status:    router.Successful,
+			ToAlias:   registry.GetAlias(client.lightningNodeUserID),
+			Amount:    lightning.BalanceUnit(amount),
+			Type:      lightning.Incoming,
+			Status:    lightning.Successful,
 			Time:      time.Now().Unix(),
 		}); err != nil {
 			log.Errorf("unable to save the payment: %v", err)
 			continue
 		}
 
-		// Send update notification to all router updates listeners.
-		r.broadcaster.Write(&router.UpdatePayment{
-			Type:     router.Incoming,
-			Status:   router.Successful,
+		// Send update notification to all lightning client updates listeners.
+		client.broadcaster.Write(&lightning.UpdatePayment{
+			Type:     lightning.Incoming,
+			Status:   lightning.Successful,
 			Sender:   userID,
-			Receiver: r.routerUserID,
-			Amount:   router.BalanceUnit(amount),
+			Receiver: client.lightningNodeUserID,
+			Amount:   lightning.BalanceUnit(amount),
 			Earned:   0,
 		})
 	}
 }
 
-func (r *Router) updatePeers() {
+func (client *Client) updatePeers() {
 	defer func() {
 		log.Info("Stopped peer updates goroutine")
-		r.wg.Done()
+		client.wg.Done()
 	}()
 
 	log.Info("Started peer updates goroutine")
@@ -864,14 +864,14 @@ func (r *Router) updatePeers() {
 	for {
 		select {
 		case <-time.After(time.Second * 5):
-		case <-r.quit:
+		case <-client.quit:
 			return
 		}
 
-		m := crypto.NewMetric(r.cfg.Asset, "UpdatePeers", r.cfg.MetricsBackend)
+		m := crypto.NewMetric(client.cfg.Asset, "UpdatePeers", client.cfg.MetricsBackend)
 
 		// Fetch users who are connected to us with tcp/ip connection
-		connectedPeers, err := fetchUsers(r.client)
+		connectedPeers, err := fetchUsers(client.client)
 		if err != nil {
 			m.AddError(metrics.MiddleSeverity)
 			m.Finish()
@@ -883,7 +883,7 @@ func (r *Router) updatePeers() {
 		// Fetch channels and filters only those peers who are connected to us
 		// with payment channels, also specify is the peer active or not.
 		openChannels, pendingOpenChannels, pendingClosingChannels,
-		pendingForceClosingChannels, pendingWaitingCloseChannels, err := fetchChannels(r.client)
+		pendingForceClosingChannels, pendingWaitingCloseChannels, err := fetchChannels(client.client)
 		if err != nil {
 			m.AddError(metrics.MiddleSeverity)
 			m.Finish()
@@ -892,29 +892,30 @@ func (r *Router) updatePeers() {
 			continue
 		}
 
-		hubUsers, err := r.Users()
+		hubUsers, err := client.Users()
 		if err != nil {
 			m.AddError(metrics.MiddleSeverity)
 			m.Finish()
 
-			log.Errorf("(peer updates) unable to fetch router users: %v", err)
+			log.Errorf("(peer updates) unable to fetch lightning node "+
+				"users: %v", err)
 			continue
 		}
 
-		hubChannels, err := r.Channels()
+		hubChannels, err := client.Channels()
 		if err != nil {
 			m.AddError(metrics.MiddleSeverity)
 			m.Finish()
 
-			log.Errorf("(peer updates) unable to fetch router channels: %v",
-				err)
+			log.Errorf("(peer updates) unable to fetch lightning node"+
+				" channels: %v", err)
 			continue
 		}
 
-		if err := syncPeers(r.cfg.Storage, hubUsers, hubChannels,
+		if err := syncPeers(client.cfg.Storage, hubUsers, hubChannels,
 			connectedPeers, openChannels, pendingOpenChannels, pendingClosingChannels,
 			pendingForceClosingChannels, pendingWaitingCloseChannels,
-			r.broadcaster);
+			client.broadcaster);
 			err != nil {
 
 			m.AddError(metrics.HighSeverity)
@@ -929,19 +930,19 @@ func (r *Router) updatePeers() {
 }
 
 type lndUser struct {
-	userID       router.UserID
-	isConnected  bool
-	lockedByUser router.BalanceUnit
-	lockedByHub  router.BalanceUnit
+	userID           lightning.UserID
+	isConnected      bool
+	lockedWithRemote lightning.BalanceUnit
+	lockedLocally    lightning.BalanceUnit
 }
 
 // syncPeers sync information about is the user who is connected to us with
 // payment channel now active i.e has tcp/ip connection with us.
 // With this we could track what percentage of overall time users are
 // connected to our hub.
-func syncPeers(userStorage router.UserStorage,
-	hubUsers []*router.User,
-	hubChannels []*router.Channel,
+func syncPeers(userStorage lightning.UserStorage,
+	hubUsers []*lightning.User,
+	hubChannels []*lightning.Channel,
 	connectedPeers []*lnrpc.Peer,
 	openChannels []*lnrpc.Channel,
 	pendingOpenChannels []*lnrpc.PendingChannelsResponse_PendingOpenChannel,
@@ -955,160 +956,160 @@ func syncPeers(userStorage router.UserStorage,
 	}
 
 	// Create map of peers so that easily check presence of user with given id.
-	connectedPeersMap := make(map[router.UserID]*lnrpc.Peer)
+	connectedPeersMap := make(map[lightning.UserID]*lnrpc.Peer)
 	for _, peer := range connectedPeers {
-		connectedPeersMap[router.UserID(peer.PubKey)] = peer
+		connectedPeersMap[lightning.UserID(peer.PubKey)] = peer
 	}
 
-	hubChannelView := make(map[router.ChannelID]*router.Channel)
+	hubChannelView := make(map[lightning.ChannelID]*lightning.Channel)
 	for _, channel := range hubChannels {
 		hubChannelView[channel.ChannelID] = channel
 	}
 
 	// This is map of users who are connected to us with payment channels.
-	lndPeersView := make(map[router.UserID]*lndUser)
+	lndPeersView := make(map[lightning.UserID]*lndUser)
 
 	for _, c := range openChannels {
-		userID := router.UserID(c.RemotePubkey)
+		userID := lightning.UserID(c.RemotePubkey)
 		_, isConnected := connectedPeersMap[userID]
 
 		// If channel already exist from hub point of view,
 		// than we need mark.
 		// TODO(andrew.shvv) remove when channel would contain users
-		hubChannel, ok := hubChannelView[router.ChannelID(c.ChannelPoint)]
+		hubChannel, ok := hubChannelView[lightning.ChannelID(c.ChannelPoint)]
 		if ok {
 			hubChannel.SetUserConnected(isConnected)
 		}
 
-		lockedByUser := router.BalanceUnit(c.RemoteBalance)
-		lockedByHub := router.BalanceUnit(c.LocalBalance)
+		lockedByUser := lightning.BalanceUnit(c.RemoteBalance)
+		lockedByHub := lightning.BalanceUnit(c.LocalBalance)
 
 		if user, ok := lndPeersView[userID]; ok {
-			user.lockedByUser += lockedByUser
-			user.lockedByHub += lockedByHub
+			user.lockedWithRemote += lockedByUser
+			user.lockedLocally += lockedByHub
 		} else {
 			lndPeersView[userID] = &lndUser{
-				userID:       userID,
-				isConnected:  isConnected,
-				lockedByHub:  lockedByHub,
-				lockedByUser: lockedByUser,
+				userID:           userID,
+				isConnected:      isConnected,
+				lockedLocally:    lockedByHub,
+				lockedWithRemote: lockedByUser,
 			}
 		}
 	}
 
 	for _, c := range pendingOpenChannels {
-		userID := router.UserID(c.Channel.RemoteNodePub)
+		userID := lightning.UserID(c.Channel.RemoteNodePub)
 		_, isConnected := connectedPeersMap[userID]
 
 		// If channel already exist from hub point of view,
 		// than we need mark.
 		// TODO(andrew.shvv) remove when channel would contain users
-		hubChannel, ok := hubChannelView[router.ChannelID(c.Channel.ChannelPoint)]
+		hubChannel, ok := hubChannelView[lightning.ChannelID(c.Channel.ChannelPoint)]
 		if ok {
 			hubChannel.SetUserConnected(isConnected)
 		}
 
-		lockedByUser := router.BalanceUnit(c.Channel.RemoteBalance)
-		lockedByHub := router.BalanceUnit(c.Channel.LocalBalance)
+		lockedByUser := lightning.BalanceUnit(c.Channel.RemoteBalance)
+		lockedByHub := lightning.BalanceUnit(c.Channel.LocalBalance)
 
 		if user, ok := lndPeersView[userID]; ok {
-			user.lockedByUser += lockedByUser
-			user.lockedByHub += lockedByHub
+			user.lockedWithRemote += lockedByUser
+			user.lockedLocally += lockedByHub
 		} else {
 			lndPeersView[userID] = &lndUser{
-				userID:       userID,
-				isConnected:  isConnected,
-				lockedByHub:  lockedByHub,
-				lockedByUser: lockedByUser,
+				userID:           userID,
+				isConnected:      isConnected,
+				lockedLocally:    lockedByHub,
+				lockedWithRemote: lockedByUser,
 			}
 		}
 	}
 
 	for _, c := range pendingClosingChannels {
-		userID := router.UserID(c.Channel.RemoteNodePub)
+		userID := lightning.UserID(c.Channel.RemoteNodePub)
 		_, isConnected := connectedPeersMap[userID]
 
 		// If channel already exist from hub point of view,
 		// than we need mark.
 		// TODO(andrew.shvv) remove when channel would contain users
-		hubChannel, ok := hubChannelView[router.ChannelID(c.Channel.ChannelPoint)]
+		hubChannel, ok := hubChannelView[lightning.ChannelID(c.Channel.ChannelPoint)]
 		if ok {
 			hubChannel.SetUserConnected(isConnected)
 		}
 
-		lockedByUser := router.BalanceUnit(c.Channel.RemoteBalance)
-		lockedByHub := router.BalanceUnit(c.Channel.LocalBalance)
+		lockedByUser := lightning.BalanceUnit(c.Channel.RemoteBalance)
+		lockedByHub := lightning.BalanceUnit(c.Channel.LocalBalance)
 
 		if user, ok := lndPeersView[userID]; ok {
-			user.lockedByUser += lockedByUser
-			user.lockedByHub += lockedByHub
+			user.lockedWithRemote += lockedByUser
+			user.lockedLocally += lockedByHub
 		} else {
 			lndPeersView[userID] = &lndUser{
-				userID:       userID,
-				isConnected:  isConnected,
-				lockedByHub:  lockedByHub,
-				lockedByUser: lockedByUser,
+				userID:           userID,
+				isConnected:      isConnected,
+				lockedLocally:    lockedByHub,
+				lockedWithRemote: lockedByUser,
 			}
 		}
 	}
 
 	for _, c := range pendingForceClosingChannels {
-		userID := router.UserID(c.Channel.RemoteNodePub)
+		userID := lightning.UserID(c.Channel.RemoteNodePub)
 		_, isConnected := connectedPeersMap[userID]
 
 		// If channel already exist from hub point of view,
 		// than we need mark.
 		// TODO(andrew.shvv) remove when channel would contain users
-		hubChannel, ok := hubChannelView[router.ChannelID(c.Channel.ChannelPoint)]
+		hubChannel, ok := hubChannelView[lightning.ChannelID(c.Channel.ChannelPoint)]
 		if ok {
 			hubChannel.SetUserConnected(isConnected)
 		}
 
-		lockedByUser := router.BalanceUnit(c.Channel.RemoteBalance)
-		lockedByHub := router.BalanceUnit(c.Channel.LocalBalance)
+		lockedByUser := lightning.BalanceUnit(c.Channel.RemoteBalance)
+		lockedByHub := lightning.BalanceUnit(c.Channel.LocalBalance)
 
 		if user, ok := lndPeersView[userID]; ok {
-			user.lockedByUser += lockedByUser
-			user.lockedByHub += lockedByHub
+			user.lockedWithRemote += lockedByUser
+			user.lockedLocally += lockedByHub
 		} else {
 			lndPeersView[userID] = &lndUser{
-				userID:       userID,
-				isConnected:  isConnected,
-				lockedByHub:  lockedByHub,
-				lockedByUser: lockedByUser,
+				userID:           userID,
+				isConnected:      isConnected,
+				lockedLocally:    lockedByHub,
+				lockedWithRemote: lockedByUser,
 			}
 		}
 	}
 
 	for _, c := range pendingWaitingCloseChannels {
-		userID := router.UserID(c.Channel.RemoteNodePub)
+		userID := lightning.UserID(c.Channel.RemoteNodePub)
 		_, isConnected := connectedPeersMap[userID]
 
 		// If channel already exist from hub point of view,
 		// than we need mark.
 		// TODO(andrew.shvv) remove when channel would contain users
-		hubChannel, ok := hubChannelView[router.ChannelID(c.Channel.ChannelPoint)]
+		hubChannel, ok := hubChannelView[lightning.ChannelID(c.Channel.ChannelPoint)]
 		if ok {
 			hubChannel.SetUserConnected(isConnected)
 		}
 
-		lockedByUser := router.BalanceUnit(c.Channel.RemoteBalance)
-		lockedByHub := router.BalanceUnit(c.Channel.LocalBalance)
+		lockedByUser := lightning.BalanceUnit(c.Channel.RemoteBalance)
+		lockedByHub := lightning.BalanceUnit(c.Channel.LocalBalance)
 
 		if user, ok := lndPeersView[userID]; ok {
-			user.lockedByUser += lockedByUser
-			user.lockedByHub += lockedByHub
+			user.lockedWithRemote += lockedByUser
+			user.lockedLocally += lockedByHub
 		} else {
 			lndPeersView[userID] = &lndUser{
-				userID:       userID,
-				isConnected:  isConnected,
-				lockedByHub:  lockedByHub,
-				lockedByUser: lockedByUser,
+				userID:           userID,
+				isConnected:      isConnected,
+				lockedLocally:    lockedByHub,
+				lockedWithRemote: lockedByUser,
 			}
 		}
 	}
 
-	hubPeersView := make(map[router.UserID]*router.User)
+	hubPeersView := make(map[lightning.UserID]*lightning.User)
 	for _, user := range hubUsers {
 		hubPeersView[user.UserID] = user
 	}
@@ -1122,12 +1123,12 @@ func syncPeers(userStorage router.UserStorage,
 			// and we need update information about him,
 			// and also if his connection status has changed,
 			// than we need to sen update.
-			hubUser.LockedByUser = lndUser.lockedByUser
-			hubUser.LockedByHub = lndUser.lockedByHub
+			hubUser.LockedByUser = lndUser.lockedWithRemote
+			hubUser.LockedByHub = lndUser.lockedLocally
 
 			if hubUser.IsConnected != lndUser.isConnected {
 				hubUser.IsConnected = lndUser.isConnected
-				broadcaster.Write(&router.UpdateUserConnected{
+				broadcaster.Write(&lightning.UpdateUserConnected{
 					User:        userID,
 					IsConnected: hubUser.IsConnected,
 				})
@@ -1137,9 +1138,9 @@ func syncPeers(userStorage router.UserStorage,
 				return errors.Errorf("unable update user status: %v", err)
 			}
 		} else {
-			newUser, err := router.NewUser(userID, lndUser.isConnected,
-				registry.GetAlias(userID), lndUser.lockedByHub,
-				lndUser.lockedByUser, &router.UserConfig{
+			newUser, err := lightning.NewUser(userID, lndUser.isConnected,
+				registry.GetAlias(userID), lndUser.lockedLocally,
+				lndUser.lockedWithRemote, &lightning.UserConfig{
 					Storage: userStorage,
 				})
 			if err != nil {
@@ -1153,7 +1154,7 @@ func syncPeers(userStorage router.UserStorage,
 				return errors.Errorf("unable update user status: %v", err)
 			}
 
-			broadcaster.Write(&router.UpdateUserConnected{
+			broadcaster.Write(&lightning.UpdateUserConnected{
 				User:        userID,
 				IsConnected: lndUser.isConnected,
 			})
@@ -1172,7 +1173,7 @@ func syncPeers(userStorage router.UserStorage,
 		// with us, we need to mark this user as disconnected.
 		if hubUser.IsConnected {
 			hubUser.IsConnected = false
-			broadcaster.Write(&router.UpdateUserConnected{
+			broadcaster.Write(&lightning.UpdateUserConnected{
 				User:        userID,
 				IsConnected: hubUser.IsConnected,
 			})
@@ -1187,11 +1188,11 @@ func syncPeers(userStorage router.UserStorage,
 }
 
 // TODO(andrew.shvv) it will not work after dual funding, remove it
-func getInitiator(routerBalance int64) router.ChannelInitiator {
-	if routerBalance == 0 {
-		return router.UserInitiator
+func getInitiator(localBalance int64) lightning.ChannelInitiator {
+	if localBalance == 0 {
+		return lightning.RemoteInitiator
 	} else {
-		return router.RouterInitiator
+		return lightning.LocalInitiator
 	}
 }
 
@@ -1199,10 +1200,10 @@ func getInitiator(routerBalance int64) router.ChannelInitiator {
 // network node.
 //
 // NOTE: Should run as goroutine.
-func (r *Router) listenOutgoingPayments() {
+func (client *Client) listenOutgoingPayments() {
 	defer func() {
 		log.Info("Stopped sync outgoing payments goroutine")
-		r.wg.Done()
+		client.wg.Done()
 	}()
 
 	log.Info("Started sync outgoing payments goroutine")
@@ -1210,13 +1211,13 @@ func (r *Router) listenOutgoingPayments() {
 	for {
 		select {
 		case <-time.After(time.Second * 15):
-		case <-r.quit:
+		case <-client.quit:
 			return
 		}
 
-		m := crypto.NewMetric(r.cfg.Asset, "SyncOutgoingPayments", r.cfg.MetricsBackend)
+		m := crypto.NewMetric(client.cfg.Asset, "SyncOutgoingPayments", client.cfg.MetricsBackend)
 
-		payments, err := fetchOutgoingPayments(r.client)
+		payments, err := fetchOutgoingPayments(client.client)
 		if err != nil {
 			m.AddError(metrics.HighSeverity)
 			m.Finish()
@@ -1226,8 +1227,8 @@ func (r *Router) listenOutgoingPayments() {
 			continue
 		}
 
-		if err := syncOutgoing(r.routerUserID, payments, r.cfg.Storage,
-			r.cfg.Storage, r.broadcaster); err != nil {
+		if err := syncOutgoing(client.lightningNodeUserID, payments, client.cfg.Storage,
+			client.cfg.Storage, client.broadcaster); err != nil {
 			m.AddError(metrics.HighSeverity)
 			m.Finish()
 
@@ -1242,8 +1243,8 @@ func (r *Router) listenOutgoingPayments() {
 
 // syncOutgoing synchronise lightning network node view on outgoing payments
 // with out state, and send payment updates.
-func syncOutgoing(routerID router.UserID, lndPayments []*lnrpc.Payment,
-	syncStorage SyncStorage, paymentStorage router.PaymentStorage,
+func syncOutgoing(localNodeID lightning.UserID, lndPayments []*lnrpc.Payment,
+	syncStorage SyncStorage, paymentStorage lightning.PaymentStorage,
 	broadcaster *broadcast.Broadcaster) error {
 
 	lastOutgoingPaymentTime, err := syncStorage.LastOutgoingPaymentTime()
@@ -1269,32 +1270,32 @@ func syncOutgoing(routerID router.UserID, lndPayments []*lnrpc.Payment,
 			return err
 		}
 
-		sender := routerID
-		receiver := router.UserID(payment.Path[0])
-		amount := router.BalanceUnit(payment.Value)
-		fee := router.BalanceUnit(payment.Fee)
+		sender := localNodeID
+		receiver := lightning.UserID(payment.Path[0])
+		amount := lightning.BalanceUnit(payment.Value)
+		fee := lightning.BalanceUnit(payment.Fee)
 
 		log.Infof("(outgoing payments sync) Process new outgoing payment"+
 			" from(%v), to(%v), amount(%v), fee(%v), time(%v)", sender,
 			receiver, amount, fee, payment.CreationDate)
 
-		broadcaster.Write(&router.UpdatePayment{
-			Type:     router.Outgoing,
-			Status:   router.Successful,
+		broadcaster.Write(&lightning.UpdatePayment{
+			Type:     lightning.Outgoing,
+			Status:   lightning.Successful,
 			Sender:   sender,
 			Receiver: receiver,
 			Amount:   amount,
 			Earned:   -fee,
 		})
 
-		if err := paymentStorage.StorePayment(&router.Payment{
+		if err := paymentStorage.StorePayment(&lightning.Payment{
 			FromUser:  sender,
 			ToUser:    receiver,
 			FromAlias: registry.GetAlias(sender),
 			ToAlias:   registry.GetAlias(receiver),
 			Amount:    amount,
-			Type:      router.Outgoing,
-			Status:    router.Successful,
+			Type:      lightning.Outgoing,
+			Status:    lightning.Successful,
 			Time:      payment.CreationDate,
 		}); err != nil {
 			log.Errorf("unable to save the payment: %v", err)

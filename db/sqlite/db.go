@@ -1,11 +1,11 @@
 package sqlite
 
 import (
+	"github.com/bitlum/hub/lightning"
 	"github.com/jinzhu/gorm"
-	"path/filepath"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
-	"github.com/bitlum/hub/manager/router"
 	"os"
+	"path/filepath"
 )
 
 // DB is the primary datastore.
@@ -14,7 +14,7 @@ type DB struct {
 	dbPath string
 
 	// nodeInfo is a information about hub, which is stored in-memory.
-	nodeInfo *router.Info
+	nodeInfo *lightning.Info
 }
 
 // Open opens an existing db. Any necessary schemas migrations due to

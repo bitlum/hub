@@ -1,9 +1,9 @@
 package optimisation
 
-import "github.com/bitlum/hub/manager/router"
+import "github.com/bitlum/hub/lightning"
 
-func listToMap(channels []*router.Channel) map[router.ChannelID]*router.Channel {
-	channelMap := make(map[router.ChannelID]*router.Channel, len(channels))
+func listToMap(channels []*lightning.Channel) map[lightning.ChannelID]*lightning.Channel {
+	channelMap := make(map[lightning.ChannelID]*lightning.Channel, len(channels))
 	for _, c := range channels {
 		channelMap[c.ChannelID] = c
 	}

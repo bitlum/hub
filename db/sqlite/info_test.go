@@ -1,9 +1,9 @@
 package sqlite
 
 import (
-	"testing"
-	"github.com/bitlum/hub/manager/router"
+	"github.com/bitlum/hub/lightning"
 	"reflect"
+	"testing"
 )
 
 func TestNodeInfoStorage(t *testing.T) {
@@ -13,18 +13,18 @@ func TestNodeInfoStorage(t *testing.T) {
 	}
 	defer clear()
 
-	infoBefore := &router.Info{
+	infoBefore := &lightning.Info{
 		Version:     "v",
 		Network:     "n",
 		BlockHeight: 1,
 		BlockHash:   "h",
-		NodeInfo: &router.NodeInfo{
+		NodeInfo: &lightning.NodeInfo{
 			Alias:          "a",
 			Host:           "h",
 			Port:           "p",
 			IdentityPubKey: "ik",
 		},
-		NeutrinoInfo: &router.NeutrinoInfo{
+		NeutrinoInfo: &lightning.NeutrinoInfo{
 			Host: "h",
 			Port: "p",
 		},

@@ -8,21 +8,21 @@ message Log {
     int64 time = 1;
 
     oneof data {
-        RouterState state = 2;
+        NodeState state = 2;
         Payment payment = 3;
         ChannelChange channel_change = 4;
         UserChange user_change = 5;
     }
 }
 
-// RouterState is a type of log entry which describes the state/view of the
-// router local lightning network and number of free funds which exist under
-// control router.
-message RouterState {
+// NodeState is a type of log entry which describes the state/view of the
+// node local lightning network and number of free funds which exist under
+// control node.
+message NodeState {
     // Channels represent the local lightning network topology.
     repeated Channel channels = 1;
 
-    // FreeBalance it is free number of funds under router managment which
+    // FreeBalance it is free number of funds under node managment which
     // could be used to lock them in the channels.
     uint64 free_balance = 2;
 
@@ -36,8 +36,8 @@ message RouterState {
 message Channel {
     string user_id = 1;
     string channel_id = 2;
-    uint64 user_balance = 3;
-    uint64 router_balance = 4;
+    uint64 remote_balance = 3;
+    uint64 local_balance = 4;
     bool is_pending = 5;
 }
 
@@ -51,9 +51,9 @@ message Payment {
     string receiver = 4;
     uint64 amount = 5;
 
-    // Earned is the number of funds which router earned by making this payment.
-    // In case of rebalncing router will pay the fee, for that reason this
-    // number will be negative.
+    // Earned is the number of funds which lightning node earned by making this
+    // payment. In case of rebalancing node will pay the fee, for that
+    // reason this number will be negative.
     int64 earned = 6;
 }
 
@@ -63,7 +63,7 @@ enum PaymentStatus {
 
     success = 1;
 
-    // UnsufficientFunds means that router haven't posses/locked enough funds
+    // UnsufficientFunds means that node haven't posses/locked enough funds
     // with receiver user to route thouth the payment.
     unsufficient_funds = 2;
 
@@ -83,8 +83,8 @@ message ChannelChange {
     string user_id = 2;
     string channel_id = 3;
 
-    uint64 user_balance = 4;
-    uint64 router_balance = 5;
+    uint64 remote_balance = 4;
+    uint64 local_balance = 5;
 
     // Fee which was taken by blockchain decentrilized computer /
     // mainers or some other form of smart contract manager.

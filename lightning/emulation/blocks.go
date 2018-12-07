@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"errors"
-	"github.com/bitlum/hub/manager/common/broadcast"
+	"github.com/bitlum/hub/common/broadcast"
 )
 
 // blockNotifier is used to mock the block generation notifications,
