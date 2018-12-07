@@ -1,0 +1,63 @@
+version: "3.5"
+
+
+# Define network compatible with payserver network
+networks:
+  connector.testnet:
+    name: connector.testnet
+    driver: bridge
+    ipam:
+      config:
+      - subnet: 172.100.1.0/24
+
+# Default settings for all containers.
+x-defaults:
+  &defaults
+
+  logging:
+    driver: "json-file"
+    options:
+        max-size: "200m"
+        max-file: "10"
+
+  # Using automatically assigned ip address from connect.testnet network.
+  networks:
+    connector.testnet:
+
+  # Restart on exit.
+  restart: always
+
+services:
+  hub.testnet:
+    << : *defaults
+    container_name: hub.testnet
+    image: hub.testnet
+    build:
+      context: ./hub/
+      args:
+        - HUB_REVISION
+    restart: always
+    volumes:
+      - /connector/hub.testnet/:/root/.hub/
+
+      # This directory should exist on host, so connector should be deployed
+      # first, with lightning network daemon.
+      - /connector/bitcoin-lightning.testnet:/root/.lnd/:ro
+    ports:
+      # GraphQL endpoint
+      - "80:3000"
+
+      # Prometheus monitoring
+      - "19999:19999"
+
+  hubcli.testnet:
+    << : *defaults
+    container_name: hubcli.testnet
+    image: hubcli.testnet
+    build: hubcli
+    volumes:
+      - /connector/hub.testnet/:/root/.hub/
+
+      # This directory should exist on host, so payserver should be deployed
+      # first, with lightning network daemon.
+      - /connector/bitcoin-lightning.testnet:/root/.lnd/:ro

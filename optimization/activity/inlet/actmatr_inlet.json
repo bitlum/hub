@@ -1,9 +1,0 @@
-{
-    "time_period": 40,
-    "timematr_file_name": "outlet/timematr.json",
-    "amountmatr_file_name": "outlet/amountmatr.json",
-    "periodmatr_mean_file_name": "outlet/periodmatr_mean.json",
-    "periodmatr_stdev_file_name": "outlet/periodmatr_stdev.json",
-    "amountmatr_mean_file_name": "outlet/amountmatr_mean.json",
-    "amountmatr_stdev_file_name": "outlet/amountmatr_stdev.json"
-}

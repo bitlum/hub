@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package hubrpc;
+
+// Manager grpc service is used as an entry point for external optimisation
+// subsystem to send the equilibrium state.
+service Manager {
+    //
+    // UpdateLink is used to update router link in accordance with givein
+    // request. Link might just one channel, or might be the set of
+    // channels betwwen user and router. This hook is used by third-parties
+    // to put new equilibritum state.
+    rpc UpdateLink (UpdateLinkRequest) returns (UpdateLinkResponse);
+
+    //
+    // SetPaymentFeeBase sets base number of milli units (i.e milli satoshis in
+    // Bitcoin) which will be taken for every forwarding payment.
+    rpc SetPaymentFeeBase (SetPaymentFeeBaseRequest) returns (SetPaymentFeeBaseResponse);
+
+    //
+    // SetPaymentFeeProportional sets the number of milli units (i.e milli
+    // satoshis in Bitcoin) which will be taken for every killounit of
+    // payment amount.
+    rpc SetPaymentFeeProportional (SetPaymentFeeProportionalRequest) returns (SetPaymentFeeProportionalResponse);
+
+}
+
+message UpdateLinkRequest {
+    // Time of the last sync with state of the router.
+    uint64 time = 1;
+    string user_id = 2;
+    int64 router_balance = 4;
+}
+
+message UpdateLinkResponse {
+    // TODO(andrew.shvv) Do we have to return how much it would cost router
+    // to apply desired update?
+}
+
+message SetPaymentFeeBaseRequest {
+    // PaymentFeeBase number of milli units (i.e milli satoshis in
+    // Bitcoin) which will be taken for every forwarding payment.
+    int64 payment_fee_base = 1;
+}
+
+message SetPaymentFeeBaseResponse {
+}
+
+message SetPaymentFeeProportionalRequest {
+    // PaymentFeeProportional number of milli units (i.e milli
+    // satoshis in Bitcoin) which will be taken for every killounit of
+    // payment amount.
+    int64 payment_fee_proportional = 1;
+}
+
+message SetPaymentFeeProportionalResponse {
+}
