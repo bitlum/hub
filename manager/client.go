@@ -588,7 +588,7 @@ func (nm *NodeManager) GetAlias(nodeID lightning.NodeID) string {
 
 	name, ok := nm.importantNodes[nodeID]
 	if !ok {
-		name = "unknown"
+		name = "random " + getRandomPseudonym()
 	}
 
 	return strings.ToLower(name)
