@@ -28,7 +28,7 @@ RUN rm -rf /var/lib/apt/lists/*
 
 # This implies that service has been build of previos stage of dockerfile.
 COPY --from=builder go/bin/hub /usr/local/bin/hub
-COPY --from=builder go/bin/cli  /usr/local/bin/hubcli
+COPY --from=builder go/bin/hubcli  /usr/local/bin/hubcli
 
 # Default config used to initalize datadir volume at first or
 # cleaned deploy. It will be restored and used after each restart.
