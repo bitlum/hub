@@ -33,12 +33,17 @@ func (c *Client) Channels() ([]*lightning.Channel, error) {
 	pendingForceClosingChannels, waitingCloseChannels, closedChannels,
 	err := fetchChannels(c.rpc)
 	if err != nil {
+		m.AddError(metrics.HighSeverity)
+		err := errors.Errorf("unable to sync channels: %v", err)
+		log.Error(err)
 		return nil, err
 	}
 
 	// Update additional info about channels
 	if err := c.syncChannels(); err != nil {
-		return nil, err
+		m.AddError(metrics.HighSeverity)
+		err := errors.Errorf("unable to sync channels: %v", err)
+		log.Error(err)
 	}
 
 	var channels []*lightning.Channel
@@ -49,7 +54,15 @@ func (c *Client) Channels() ([]*lightning.Channel, error) {
 
 		infoFromDB, err := c.cfg.Storage.GetChannelAdditionalInfoByID(chanID)
 		if err != nil {
-			return nil, err
+			m.AddError(metrics.HighSeverity)
+			err := errors.Errorf("unable to get info of channel(%v): %v",
+				chanID, err)
+			log.Error(err)
+
+			// For some new channels, we might not see transaction yet,
+			// or it might not be broadcasted in blockchain by another party,
+			// just skip such channels.
+			continue
 		}
 
 		stateMap := make(map[lightning.ChannelStateName]interface{})
@@ -78,6 +91,10 @@ func (c *Client) Channels() ([]*lightning.Channel, error) {
 
 		infoFromDB, err := c.cfg.Storage.GetChannelAdditionalInfoByID(chanID)
 		if err != nil {
+			m.AddError(metrics.HighSeverity)
+			err := errors.Errorf("unable to get info of channel(%v): %v",
+				chanID, err)
+			log.Error(err)
 			return nil, err
 		}
 
@@ -117,6 +134,10 @@ func (c *Client) Channels() ([]*lightning.Channel, error) {
 
 		infoFromDB, err := c.cfg.Storage.GetChannelAdditionalInfoByID(chanID)
 		if err != nil {
+			m.AddError(metrics.HighSeverity)
+			err := errors.Errorf("unable to get info of channel(%v): %v",
+				chanID, err)
+			log.Error(err)
 			return nil, err
 		}
 
@@ -156,6 +177,10 @@ func (c *Client) Channels() ([]*lightning.Channel, error) {
 
 		infoFromDB, err := c.cfg.Storage.GetChannelAdditionalInfoByID(chanID)
 		if err != nil {
+			m.AddError(metrics.HighSeverity)
+			err := errors.Errorf("unable to get info of channel(%v): %v",
+				chanID, err)
+			log.Error(err)
 			return nil, err
 		}
 
@@ -204,6 +229,10 @@ func (c *Client) Channels() ([]*lightning.Channel, error) {
 
 		infoFromDB, err := c.cfg.Storage.GetChannelAdditionalInfoByID(chanID)
 		if err != nil {
+			m.AddError(metrics.HighSeverity)
+			err := errors.Errorf("unable to get info of channel(%v): %v",
+				chanID, err)
+			log.Error(err)
 			return nil, err
 		}
 
@@ -257,6 +286,10 @@ func (c *Client) Channels() ([]*lightning.Channel, error) {
 
 		infoFromDB, err := c.cfg.Storage.GetChannelAdditionalInfoByID(chanID)
 		if err != nil {
+			m.AddError(metrics.HighSeverity)
+			err := errors.Errorf("unable to get info of channel(%v): %v",
+				chanID, err)
+			log.Error(err)
 			return nil, err
 		}
 
