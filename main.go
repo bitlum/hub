@@ -1,30 +1,28 @@
-package hub
+package main
 
 import (
 	"fmt"
+	"github.com/bitlum/hub/common"
+	"github.com/bitlum/hub/db/inmemory"
+	"github.com/bitlum/hub/lightning/lnd/explorer/bitcoind"
+	"github.com/bitlum/hub/manager"
+	"github.com/bitlum/hub/metrics/rpc"
+	"math"
 	"os"
 	"runtime"
 
 	"context"
-	"github.com/bitlum/hub/db/sqlite"
 	"github.com/bitlum/hub/graphql"
 	"github.com/bitlum/hub/hubrpc"
 	"github.com/bitlum/hub/lightning"
-	"github.com/bitlum/hub/lightning/emulation"
 	"github.com/bitlum/hub/lightning/lnd"
-	"github.com/bitlum/hub/logs"
 	"github.com/bitlum/hub/metrics"
 	"github.com/bitlum/hub/metrics/crypto"
-	"github.com/bitlum/hub/metrics/network"
-	"github.com/bitlum/hub/optimisation"
-	"github.com/bitlum/hub/processing"
-	"github.com/bitlum/hub/registry"
 	"github.com/go-errors/errors"
 	"github.com/jessevdk/go-flags"
 	"google.golang.org/grpc"
 	"net"
 	"path/filepath"
-	"time"
 )
 
 var (
@@ -65,122 +63,165 @@ func backendMain() error {
 	// and make optimisation decisions.
 	errChan := make(chan error)
 
-	var client lightning.Client
-	switch config.Backend {
-	case "emulator":
-		mainLog.Infof("Initialise emulator lightning client...")
-		emulationClient := emulation.NewClient(1E+6, 200*time.Millisecond)
-		emulationClient.Start(config.Emulator.ListenHost, config.Emulator.ListenPort)
-		defer emulationClient.Stop()
-		client = emulationClient
-	case "lnd":
-		// Create or open database file to host the last state of
-		// synchronization.
-		dbName := "lnd.sqlite"
-		mainLog.Infof("Opening sqlite database, path: '%v'",
-			filepath.Join(config.LND.DataDir, dbName))
+	//// Create or open database file to host the last state of
+	//// synchronization.
+	//dbName := "lnd.sqlite"
+	//mainLog.Infof("Opening sqlite database, path: '%v'",
+	//	filepath.Join(config.LND.DataDir, dbName))
+	//
+	//database, err := sqlite.Open(config.LND.DataDir, dbName)
+	//if err != nil {
+	//	return errors.Errorf("unable to open database: %v", err)
+	//}
 
-		database, err := sqlite.Open(config.LND.DataDir, dbName)
-		if err != nil {
-			return errors.Errorf("unable to open database: %v", err)
-		}
-
-		mainLog.Infof("Start GraphQL server serving on: %v",
-			net.JoinHostPort(config.GraphQL.ListenHost, config.GraphQL.ListenPort))
-		graphQLServer, err := graphql.NewServer(graphql.Config{
-			ListenIP:         config.GraphQL.ListenHost,
-			ListenPort:       config.GraphQL.ListenPort,
-			SecureListenPort: config.GraphQL.SecureListenPort,
-			Storage:          database,
-		})
-		if err != nil {
-			return errors.New("unable to create GraphQL server: " +
-				err.Error())
-		}
-
-		graphQLServer.Start()
-		defer graphQLServer.Stop()
-
-		metricsBackend, err := crypto.InitMetricsBackend(config.LND.Network)
-		if err != nil {
-			return errors.Errorf("unable to init metrics backend for lnd: %v"+
-				"", err)
-		}
-
-		mainLog.Infof("Initialise lnd lightning client...")
-		lndConfig := &lnd.Config{
-			Asset:          "BTC",
-			Host:           config.LND.GRPCHost,
-			Port:           config.LND.GRPCPort,
-			TlsCertPath:    config.LND.TlsCertPath,
-			MacaroonPath:   config.LND.MacaroonPath,
-			Storage:        database,
-			MetricsBackend: metricsBackend,
-			Net:            config.LND.Network,
-			NeutrinoHost:   config.LND.NeutrinoHost,
-			NeutrinoPort:   config.LND.NeutrinoPort,
-			PeerHost:       config.LND.PeerHost,
-			PeerPort:       config.LND.PeerPort,
-		}
-
-		for alias, pubKey := range config.LND.KnownPeers {
-			mainLog.Infof("Add known public node alias(%v) pubkey(%v)",
-				alias, pubKey)
-			registry.AddKnownPeer(lightning.UserID(pubKey), alias)
-		}
-
-		lndClient, err := lnd.NewClient(lndConfig)
-		if err != nil {
-			return errors.Errorf("unable to init lnd lightning client: %v", err)
-		}
-
-		statsBackend, err := network.InitMetricsBackend(config.LND.Network)
-		if err != nil {
-			return errors.Errorf("unable to init metrics backend for lnd: %v"+
-				"", err)
-		}
-
-		gathererConf := &processing.Config{
-			Storage:        database,
-			Client:         lndClient,
-			MetricsBackend: statsBackend,
-		}
-
-		statsGatherer := processing.NewStats(gathererConf)
-		statsGatherer.Start()
-		defer statsGatherer.Stop()
-
-		// Start lightning client after the stats gatherer so that if lnd has
-		// any new payment updates stats gatherer wouldn't lost them, because
-		// of the late notification subscription.
-		if err := lndClient.Start(); err != nil {
-			return errors.Errorf("unable to start lnd lightning client: %v",
-				err)
-		}
-		defer lndClient.Stop("shutdown")
-		client = lndClient
-
-		if config.LND.BalancerEnabled {
-			// Start maintaining the balance of funds locked with users.
-			balancer := optimisation.NewBalancer(lndClient, 0.2, time.Second*10)
-			balancer.Start()
-			defer balancer.Stop()
-		}
-
-	default:
-		return errors.Errorf("unhandled backend name: '%v'", config.Backend)
+	metricsBackend, err := crypto.InitMetricsBackend(config.LND.Network)
+	if err != nil {
+		return errors.Errorf("unable to init metrics backend for lnd: %v"+
+			"", err)
 	}
 
-	go logs.UpdateLogFileGoroutine(client, config.UpdateLogFile, errChan)
+	rpcMetricsBackend, err := rpc.InitMetricsBackend(config.LND.Network)
+	if err != nil {
+		return errors.Errorf("unable to init metrics backend for lnd: %v"+
+			"", err)
+	}
+
+	explorer, err := bitcoind.NewExplorer(&bitcoind.Config{
+		RPCHost:  config.Bitcoind.Host,
+		RPCPort:  config.Bitcoind.Port,
+		User:     config.Bitcoind.User,
+		Password: config.Bitcoind.Pass,
+	})
+	if err != nil {
+		return errors.Errorf("unable to init bitcoin explorer: %v", err)
+	}
+
+	mainLog.Infof("Initialise lnd lightning client...")
+	lndConfig := &lnd.Config{
+		Asset:          "BTC",
+		Host:           config.LND.GRPCHost,
+		Port:           config.LND.GRPCPort,
+		TlsCertPath:    config.LND.TlsCertPath,
+		MacaroonPath:   config.LND.MacaroonPath,
+		Storage:        inmemory.NewInfoStorage(),
+		MetricsBackend: metricsBackend,
+		Net:            config.LND.Network,
+		NeutrinoHost:   config.LND.NeutrinoHost,
+		NeutrinoPort:   config.LND.NeutrinoPort,
+		PeerHost:       config.LND.PeerHost,
+		PeerPort:       config.LND.PeerPort,
+		Explorer:       explorer,
+	}
+
+	lndClient, err := lnd.NewClient(lndConfig)
+	if err != nil {
+		return errors.Errorf("unable to init lnd lightning client: %v", err)
+	}
+
+	// Start lightning client after the stats gatherer so that if lnd has
+	// any new payment updates stats gatherer wouldn't lost them, because
+	// of the late notification subscription.
+	if err := lndClient.Start(); err != nil {
+		return errors.Errorf("unable to start lnd lightning client: %v",
+			err)
+	}
+	defer func() {
+		if err := lndClient.Stop("shutdown"); err != nil {
+			mainLog.Errorf("unable to stop lnd client: %v", err)
+		}
+	}()
+	client := lndClient
+
+	// Register our lightning network node us known, and important.
+	info, err := client.Info()
+	if err != nil {
+		return errors.Errorf("unable get lightning node info: %v", err)
+	}
+
+	// Initialise and start node manager, which would ensure that we always
+	// have channels and connection to the important nodes.
+
+	managerConfig := &manager.Config{
+		Client:             client,
+		MetricsBackend:     metricsBackend,
+		GetBitcoinPriceUSD: common.GetBitcoinUSDPRice,
+		Asset:              "BTC",
+		OurName:            "bitlum.io",
+		OurNodeID:          lightning.NodeID(info.NodeInfo.IdentityPubKey),
+	}
+
+	switch config.LND.Network {
+	case "testnet", "simnet":
+		managerConfig.MaxChannelSizeUSD = math.MaxInt32
+		managerConfig.MinChannelSizeUSD = math.MaxInt32
+		managerConfig.MaxCloseSpendingPerDayUSD = math.MaxInt32
+		managerConfig.MaxOpenSpendingPerDayUSD = math.MaxInt32
+		managerConfig.MaxCommitFeeUSD = math.MaxInt32
+		managerConfig.MaxLimboUSD = math.MaxInt32
+		managerConfig.MaxStuckBalanceUSD = math.MaxInt32
+	case "mainnet":
+		managerConfig.MaxChannelSizeUSD = 400
+		managerConfig.MinChannelSizeUSD = 50
+		managerConfig.MaxCloseSpendingPerDayUSD = 1
+		managerConfig.MaxOpenSpendingPerDayUSD = 1
+		managerConfig.MaxCommitFeeUSD = 10
+		managerConfig.MaxLimboUSD = 300
+		managerConfig.MaxStuckBalanceUSD = 300
+	}
+
+	nodeManager, err := manager.NewNodeManager(managerConfig)
+	if err != nil {
+		return errors.Errorf("unable create node manager: %v", err)
+	}
+
+	nodeManager.Start()
+	defer nodeManager.Stop("stop")
+
+	mainLog.Infof("Start GraphQL server serving on: %v",
+		net.JoinHostPort(config.GraphQL.ListenHost, config.GraphQL.ListenPort))
+	graphQLServer, err := graphql.NewServer(graphql.Config{
+		ListenIP:         config.GraphQL.ListenHost,
+		ListenPort:       config.GraphQL.ListenPort,
+		SecureListenPort: config.GraphQL.SecureListenPort,
+		Client:           client,
+		GetAlias:         nodeManager.GetAlias,
+	})
+	if err != nil {
+		return errors.New("unable to create GraphQL server: " +
+			err.Error())
+	}
+
+	if err := graphQLServer.Start(); err != nil {
+		return errors.New("unable to start GraphQL server: " +
+			err.Error())
+	}
+
+	defer func() {
+		if err := graphQLServer.Stop(); err != nil {
+			mainLog.Errorf("unable to stop GraphQL server: %v", err)
+		}
+	}()
+
+	for nodeName, nodePubKey := range config.LND.KnownPeers {
+		nodeID := lightning.NodeID(nodePubKey)
+		nodeManager.AddImportantNode(nodeID, nodeName)
+	}
+
+	//paymentRouter, err := router.NewRouter(router.Config{Client: client})
+	//if err != nil {
+	//	return errors.Errorf("unable to create payment router: %v", err)
+	//}
 
 	// Setup gRPC endpoint to receive the management commands, and initialise
 	// optimisation strategy which will dictate us how to convert from one
 	// lightning network node state to another.
 	grpcServer := grpc.NewServer([]grpc.ServerOption{}...)
 
-	s := optimisation.NewChannelUpdateStrategy()
-	hub := hubrpc.NewHub(client, s)
-	hubrpc.RegisterManagerServer(grpcServer, hub)
+	hub := hubrpc.NewHub(&hubrpc.Config{
+		Client:         client,
+		MetricsBackend: rpcMetricsBackend,
+	})
+	hubrpc.RegisterHubServer(grpcServer, hub)
 
 	go func() {
 		addr := net.JoinHostPort(config.Hub.Host, config.Hub.Port)
@@ -190,7 +231,11 @@ func backendMain() error {
 			fail(errChan, "gRPC server unable to listen on %s", addr)
 			return
 		}
-		defer lis.Close()
+		defer func() {
+			if err := lis.Close(); err != nil {
+				mainLog.Errorf("unable to stop gRPC listener: %v", err)
+			}
+		}()
 
 		mainLog.Infof("Start gRPC server serving on: %v", addr)
 		if err := grpcServer.Serve(lis); err != nil {
@@ -204,18 +249,15 @@ func backendMain() error {
 	addInterruptHandler(shutdownChannel, func() {
 		close(errChan)
 		grpcServer.Stop()
-		server.Shutdown(context.Background())
+		if err := server.Shutdown(context.Background()); err != nil {
+			mainLog.Errorf("unable to shutdown metric server: %v", addr)
+		}
 	})
 
 	select {
 	case err := <-errChan:
 		if err != nil {
 			mainLog.Error("exit program because of: %v", err)
-			return err
-		}
-	case err := <-client.Done():
-		if err != nil {
-			mainLog.Error("emulator lightning client stopped working: %v", err)
 			return err
 		}
 	case <-shutdownChannel:
