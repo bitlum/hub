@@ -1,4 +1,4 @@
-package hub
+package main
 
 // Heavily inspired by https://github.com/btcsuite/btcd/blob/master/signal.go
 
