@@ -1,17 +1,16 @@
 package lnd
 
 import (
-	"github.com/lightningnetwork/lnd/lnrpc"
-	"time"
-	"context"
 	"github.com/go-errors/errors"
+	"github.com/lightningnetwork/lnd/lnrpc"
+	"math"
+	"time"
 )
 
 // fetchUsers fetches all peers connected to us with tcp/ip connection.
 func fetchUsers(c lnrpc.LightningClient) ([]*lnrpc.Peer, error) {
 	reqInfo := &lnrpc.ListPeersRequest{}
-	ctx, _ := context.WithTimeout(getContext(), time.Second*5)
-	resp, err := c.ListPeers(ctx, reqInfo)
+	resp, err := c.ListPeers(timeout(10), reqInfo)
 	if err != nil {
 		return nil, err
 	}
@@ -26,6 +25,7 @@ func fetchChannels(c lnrpc.LightningClient) (
 	[]*lnrpc.PendingChannelsResponse_ClosedChannel,
 	[]*lnrpc.PendingChannelsResponse_ForceClosedChannel,
 	[]*lnrpc.PendingChannelsResponse_WaitingCloseChannel,
+	[]*lnrpc.ChannelCloseSummary,
 	error) {
 
 	var respListChannels *lnrpc.ListChannelsResponse
@@ -33,20 +33,33 @@ func fetchChannels(c lnrpc.LightningClient) (
 
 	{
 		reqInfo := &lnrpc.ListChannelsRequest{}
-		ctx, _ := context.WithTimeout(getContext(), time.Second*5)
-		respListChannels, err = c.ListChannels(ctx, reqInfo)
+		respListChannels, err = c.ListChannels(timeout(10), reqInfo)
 		if err != nil {
-			return nil, nil, nil, nil, nil, err
+			return nil, nil, nil, nil, nil, nil, err
 		}
 	}
 
 	var respPendingChannels *lnrpc.PendingChannelsResponse
 	{
 		reqInfo := &lnrpc.PendingChannelsRequest{}
-		ctx, _ := context.WithTimeout(getContext(), time.Second*5)
-		respPendingChannels, err = c.PendingChannels(ctx, reqInfo)
+		respPendingChannels, err = c.PendingChannels(timeout(10), reqInfo)
 		if err != nil {
-			return nil, nil, nil, nil, nil, err
+			return nil, nil, nil, nil, nil, nil, err
+		}
+	}
+
+	var respClosedChannels *lnrpc.ClosedChannelsResponse
+	{
+		reqInfo := &lnrpc.ClosedChannelsRequest{
+			Cooperative:     true,
+			LocalForce:      true,
+			RemoteForce:     true,
+			Breach:          true,
+			FundingCanceled: true,
+		}
+		respClosedChannels, err = c.ClosedChannels(timeout(10), reqInfo)
+		if err != nil {
+			return nil, nil, nil, nil, nil, nil, err
 		}
 	}
 
@@ -54,17 +67,19 @@ func fetchChannels(c lnrpc.LightningClient) (
 		respPendingChannels.PendingOpenChannels,
 		respPendingChannels.PendingClosingChannels,
 		respPendingChannels.PendingForceClosingChannels,
-		respPendingChannels.WaitingCloseChannels, nil
+		respPendingChannels.WaitingCloseChannels,
+		respClosedChannels.Channels, nil
 }
 
 // fetchInvoicePayments fetches the information about invoices which were
 // created by lightning network node, and its state.
 func fetchInvoicePayments(c lnrpc.LightningClient) (
 	[]*lnrpc.Invoice, error) {
-	reqInfo := &lnrpc.ListInvoiceRequest{}
-	ctx, _ := context.WithTimeout(getContext(), time.Second*5)
 
-	resp, err := c.ListInvoices(ctx, reqInfo)
+	reqInfo := &lnrpc.ListInvoiceRequest{
+		NumMaxInvoices: math.MaxInt16,
+	}
+	resp, err := c.ListInvoices(timeout(10), reqInfo)
 	if err != nil {
 		return nil, err
 	}
@@ -75,19 +90,17 @@ func fetchInvoicePayments(c lnrpc.LightningClient) (
 // fetchNodeInfo fetched information about hub node.
 func fetchNodeInfo(c lnrpc.LightningClient) (
 	*lnrpc.GetInfoResponse, error) {
+
 	reqInfo := &lnrpc.GetInfoRequest{}
-	ctx, _ := context.WithTimeout(getContext(), time.Second*5)
-	return c.GetInfo(ctx, reqInfo)
+	return c.GetInfo(timeout(10), reqInfo)
 }
 
 // fetchOutgoingPayments fetched the list of payments which is going from hub,
 // to users.
-func fetchOutgoingPayments(c lnrpc.LightningClient) ([]*lnrpc.Payment,
-	error) {
-	reqInfo := &lnrpc.ListPaymentsRequest{}
-	ctx, _ := context.WithTimeout(getContext(), time.Second*5)
+func fetchOutgoingPayments(c lnrpc.LightningClient) ([]*lnrpc.Payment, error) {
 
-	resp, err := c.ListPayments(ctx, reqInfo)
+	reqInfo := &lnrpc.ListPaymentsRequest{}
+	resp, err := c.ListPayments(timeout(10), reqInfo)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +126,7 @@ func fetchForwardingPayments(c lnrpc.LightningClient, index uint32) (
 			NumMaxEvents: limit,
 		}
 
-		resp, err := c.ForwardingHistory(getContext(), req)
+		resp, err := c.ForwardingHistory(timeout(10), req)
 		if err != nil {
 			return nil, err
 		}
@@ -135,11 +148,11 @@ func fetchForwardingPayments(c lnrpc.LightningClient, index uint32) (
 	return events, nil
 }
 
-// getPubKeyByChainID returns the pubkey which identifies the user by the
-// given channel id.
+// getPubKeyByChainID returns the pubkey which identifies the lighting node by
+// the given channel id.
 func getPubKeyByChainID(c lnrpc.LightningClient, chanID uint64) (string, error) {
 	req := &lnrpc.ListChannelsRequest{}
-	resp, err := c.ListChannels(getContext(), req)
+	resp, err := c.ListChannels(timeout(10), req)
 	if err != nil {
 		return "", err
 	}

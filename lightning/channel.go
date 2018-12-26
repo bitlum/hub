@@ -1,385 +1,151 @@
 package lightning
 
 import (
-	"github.com/bitlum/hub/common/broadcast"
+	"github.com/btcsuite/btcutil"
 	"github.com/go-errors/errors"
-	"time"
 )
 
 // ChannelID uniquely identifies the channel in the lightning network.
-// For Bitcoin lightning network, we user lnd wire.OutPoint as the channel
-// identification, which is
+// Currently lightning network channel point is used as channel id.
 type ChannelID string
 
-// BalanceUnit represent the number of funds.
-type BalanceUnit int64
-
-// ChannelState
-type ChannelState struct {
-	Time int64
-	Name ChannelStateName
-}
-
-func (s ChannelState) String() string {
-	return string(s.Name)
-}
-
-type ChannelStateName string
-
-const (
-	// ChannelOpening denotes that channel open request has been sent in
-	// blockchain network, and that we wait for its approval.
-	ChannelOpening ChannelStateName = "opening"
-
-	// ChannelOpened denotes that channel open request was approved in blockchain,
-	// and it could be used for routing the payments.
-	ChannelOpened ChannelStateName = "opened"
-
-	// ChannelClosing denotes that channel close request has been sent in
-	// blockchain network, and that we wait for its approval.
-	// Channel couldn't be used for routing payments,
-	// and funds in this channel are still couldn't be used.
-	ChannelClosing ChannelStateName = "closing"
-
-	// ChannelClosed denotes that channel close request was approved in blockchain,
-	// and couldn't be used for routing payment anymore, locked on our side
-	// funds now are back in wallet.
-	ChannelClosed ChannelStateName = "closed"
-
-	// ChannelUpdating denotes that channel overall capacity is updating,
-	// either decreasing or increasing. During this update previous channel
-	// should stay in operational mode i.e. being able to route payments.
-	ChannelUpdating ChannelStateName = "updating"
-)
-
-type PaymentStatus string
-
-const (
-	Successful PaymentStatus = "successful"
-
-	// InsufficientFunds means that lightning node haven't posses/locked enough
-	// funds with receiver peer to route through the payment.
-	InsufficientFunds PaymentStatus = "insufficient_funds"
-
-	// UserNotFound means that lightning node wasn't able to forward payment
-	// because of the receiver peer not being connected.
-	UserNotFound PaymentStatus = "user_not_found"
-
-	// ExternalFail means that receiver failed to receive payment because of
-	// the unknown to us reason.
-	ExternalFail PaymentStatus = "external_fail"
-
-	// UserLocalFail means that from user's side all channel are in
-	// pending states or not exist at all, or number of funds from user side
-	// is not enough.
-	UserLocalFail PaymentStatus = "user_local_fail"
-)
-
-type PaymentType string
-
-const (
-	// Outgoing is the payment which was sent from the lightning node.
-	Outgoing PaymentType = "outgoing"
-
-	// Incoming is the payment which was sent from remote peer to lighting node.
-	Incoming PaymentType = "incoming"
-
-	// Forward is the payment which was send from random node in the network to
-	// another random node in the network.
-	Forward PaymentType = "forward"
-)
-
+// ChannelInitiator is the side which initiated the open or close of channel.
 type ChannelInitiator string
 
 const (
-	// RemoteInitiator is used when close or update or open was initiated from
+	// RemoteInitiator is used when close or open was initiated from
 	// the remote side.
 	RemoteInitiator ChannelInitiator = "remote"
 
-	// LocalInitiator is used when channel close or update or open was
+	// LocalInitiator is used when channel close or open was
 	// initiated by the local side.
 	LocalInitiator ChannelInitiator = "local"
 )
 
-// ChannelConfig contains all external replaceable subsystems.
-type ChannelConfig struct {
-	// Broadcast is used to by the channel to send channel notifications updates
-	// to it, usually it is populated by the lightning client broadcaster.
-	Broadcaster *broadcast.Broadcaster
-
-	// Storage is used by channel to keep important data persistent.
-	Storage ChannelStorage
-}
-
-func (c *ChannelConfig) validate() error {
-	if c.Broadcaster == nil {
-		return errors.Errorf("broadcaster is empty")
-	}
-
-	if c.Storage == nil {
-		return errors.Errorf("storage is empty")
-	}
-
-	return nil
-}
-
 // Channel represent the Lightning Network channel.
 type Channel struct {
 	ChannelID ChannelID
-	UserID    UserID
+	NodeID    NodeID
 
-	RemoteBalance BalanceUnit
-	LocalBalance  BalanceUnit
-
-	// Initiator side which initiated open of the channel.
-	Initiator ChannelInitiator
-
-	// CloseFee is the number of funds which are needed to close the channel
-	// and release locked funds, might change with time, because of the
-	// commitment transaction size and fee rate in the network.
-	CloseFee BalanceUnit
-
-	// CloseFee is the number of funds which were needed to open the channel
-	// and lock funds.
-	OpenFee BalanceUnit
-
-	// IsUserConnected is used to determine is user connected with tcp/ip
-	// connection to the hub, which means that this channel could be used for
-	// payments.
-	IsUserConnected bool
-
-	// States is the array of states which this channel went thorough.
-	States []*ChannelState
-
-	cfg *ChannelConfig
+	State  ChannelStateName
+	States map[ChannelStateName]interface{}
 }
 
-func NewChannel(channelID ChannelID, userID UserID, openFee, remoteBalance,
-localBalance, closeFee BalanceUnit, initiator ChannelInitiator,
-	cfg *ChannelConfig) (*Channel, error) {
+// ...
+func (c *Channel) CurrentState() ChannelStateName {
+	return c.State
+}
 
-	c := &Channel{
-		ChannelID:     channelID,
-		UserID:        userID,
-		OpenFee:       openFee,
-		RemoteBalance: remoteBalance,
-		LocalBalance:  localBalance,
-		Initiator:     initiator,
-		CloseFee:      closeFee,
+// ...
+func (c *Channel) OpeningTime() (int64, error) {
+	openingState, ok := c.States[ChannelOpening]
+	if !ok {
+		return 0, errors.Errorf("channel state not found")
 	}
 
-	if err := c.SetConfig(cfg); err != nil {
-		return nil, err
+	return openingState.(*ChannelStateOpening).CreationTime, nil
+}
+
+// ...
+func (c *Channel) ClosingTime() (int64, error) {
+	state, ok := c.States[ChannelClosing]
+	if !ok {
+		return 0, errors.Errorf("channel state not found")
 	}
 
-	return c, nil
+	return state.(*ChannelStateClosing).CreationTime, nil
 }
 
-// Save is used to save the channel in the database, without saving it states.
-func (c *Channel) Save() error {
-	return c.cfg.Storage.UpdateChannel(c)
-}
-
-// CurrentState return current state of payment channel.
-func (c *Channel) CurrentState() *ChannelState {
-	return c.States[len(c.States)-1]
-}
-
-// SetOpeningState...
-func (c *Channel) SetOpeningState() error {
-	c.States = append(c.States, &ChannelState{
-		Time: time.Now().UnixNano(),
-		Name: ChannelOpening,
-	})
-
-	err := c.cfg.Storage.AddChannelState(c.ChannelID, c.CurrentState())
-	if err != nil {
-		return errors.Errorf("unable save channel: %v", err)
+// ...
+func (c *Channel) StuckBalance() (btcutil.Amount, error) {
+	state, ok := c.States[ChannelOpened]
+	if !ok {
+		return 0, errors.Errorf("channel state not found")
 	}
 
-	c.cfg.Broadcaster.Write(&UpdateChannelOpening{
-		UserID:        c.UserID,
-		ChannelID:     c.ChannelID,
-		RemoteBalance: c.RemoteBalance,
-		LocalBalance:  c.LocalBalance,
-		Fee:           c.FundingFee(),
-	})
-
-	return nil
+	return state.(*ChannelStateOpened).StuckBalance, nil
 }
 
-// SetOpenedState...
-func (c *Channel) SetOpenedState() error {
-	lastStateTime := c.CurrentState().Time
-
-	c.States = append(c.States, &ChannelState{
-		Time: time.Now().UnixNano(),
-		Name: ChannelOpened,
-	})
-
-	err := c.cfg.Storage.AddChannelState(c.ChannelID, c.CurrentState())
-	if err != nil {
-		return errors.Errorf("unable to save channel state: %v", err)
+// ...
+func (c *Channel) LimboBalance() (btcutil.Amount, error) {
+	state, ok := c.States[ChannelClosing]
+	if !ok {
+		return 0, errors.Errorf("channel state not found")
 	}
 
-	c.cfg.Broadcaster.Write(&UpdateChannelOpened{
-		UserID:        c.UserID,
-		ChannelID:     c.ChannelID,
-		RemoteBalance: c.RemoteBalance,
-		LocalBalance:  c.LocalBalance,
-		Fee:           c.FundingFee(),
-		Duration:      time.Now().UnixNano() - lastStateTime,
-	})
-
-	return nil
+	return state.(*ChannelStateClosing).LockedBalance, nil
 }
 
-// SetUpdatingState puts channel in the state of being updating,
-// depending on static or dynamic channel update it either could be used for
-// forwarding payment or couldn't be used. For more information go to
-// lightning mailing list.
-func (c *Channel) SetUpdatingState(fee BalanceUnit) error {
-	c.States = append(c.States, &ChannelState{
-		Time: time.Now().UnixNano(),
-		Name: ChannelUpdating,
-	})
-
-	err := c.cfg.Storage.AddChannelState(c.ChannelID, c.CurrentState())
-	if err != nil {
-		return errors.Errorf("unable save channel: %v", err)
+// ...
+func (c *Channel) SwipeFee() (btcutil.Amount, error) {
+	state, ok := c.States[ChannelClosing]
+	if !ok {
+		return 0, errors.Errorf("channel state not found")
 	}
 
-	c.cfg.Broadcaster.Write(&UpdateChannelUpdating{
-		UserID:        c.UserID,
-		ChannelID:     c.ChannelID,
-		RemoteBalance: c.RemoteBalance,
-		LocalBalance:  c.LocalBalance,
-		Fee:           fee,
-	})
-
-	return nil
+	return state.(*ChannelStateClosing).SwipeFee, nil
 }
 
-// SetUpdatedState put channel in the state of being updated,
-// which means that it again open and eligible for forwarding payments.
-func (c *Channel) SetUpdatedState(fee BalanceUnit) error {
-	lastStateTime := c.CurrentState().Time
-
-	c.States = append(c.States, &ChannelState{
-		Time: time.Now().UnixNano(),
-		Name: ChannelOpened,
-	})
-
-	err := c.cfg.Storage.AddChannelState(c.ChannelID, c.CurrentState())
-	if err != nil {
-		return errors.Errorf("unable to save channel state: %v", err)
+// ...
+func (c *Channel) OpenFee() (btcutil.Amount, error) {
+	state, ok := c.States[ChannelOpening]
+	if !ok {
+		return 0, errors.Errorf("channel state not found")
 	}
 
-	c.cfg.Broadcaster.Write(&UpdateChannelUpdated{
-		UserID:        c.UserID,
-		ChannelID:     c.ChannelID,
-		RemoteBalance: c.RemoteBalance,
-		LocalBalance:  c.LocalBalance,
-		Fee:           fee,
-		Duration:      time.Now().UnixNano() - lastStateTime,
-	})
-
-	return nil
+	return state.(*ChannelStateOpening).OpenFee, nil
 }
 
-// SetClosingState...
-func (c *Channel) SetClosingState() error {
-	c.States = append(c.States, &ChannelState{
-		Time: time.Now().UnixNano(),
-		Name: ChannelClosing,
-	})
+// ...
+func (c *Channel) CommitFee() (btcutil.Amount, error) {
+	switch c.State {
 
-	err := c.cfg.Storage.AddChannelState(c.ChannelID, c.CurrentState())
-	if err != nil {
-		return errors.Errorf("unable save channel: %v", err)
+	// Commitment transaction fee might be exist on opening state.
+	case ChannelOpening:
+		state, ok := c.States[ChannelOpening]
+		if !ok {
+			return 0, errors.Errorf("channel state not found")
+		}
+
+		return state.(*ChannelStateOpening).CommitFee, nil
+
+	// With time commitment transaction fee might change of the commitment
+	// transaction size, after channel is in the closing or closed state,
+	// commitment fee, doesn't make a lot of sense anymore.
+	case ChannelOpened:
+		state, ok := c.States[ChannelOpened]
+		if !ok {
+			return 0, errors.Errorf("channel state not found")
+		}
+
+		return state.(*ChannelStateOpened).CommitFee, nil
+
+	default:
+		return 0, errors.Errorf("unhandled channel state(%v)", c.State)
+	}
+}
+
+// ...
+func (c *Channel) CloseFee() (btcutil.Amount, error) {
+	state, ok := c.States[ChannelClosing]
+	if !ok {
+		return 0, errors.Errorf("channel state not found")
 	}
 
-	c.cfg.Broadcaster.Write(&UpdateChannelClosing{
-		UserID:    c.UserID,
-		ChannelID: c.ChannelID,
-		Fee:       c.CloseFee,
-	})
-
-	return nil
+	return state.(*ChannelStateClosing).CloseFee, nil
 }
 
-// SetClosedState...
-func (c *Channel) SetClosedState() error {
-	lastStateTime := c.CurrentState().Time
-	c.States = append(c.States, &ChannelState{
-		Time: time.Now().UnixNano(),
-		Name: ChannelClosed,
-	})
-
-	err := c.cfg.Storage.AddChannelState(c.ChannelID, c.CurrentState())
-	if err != nil {
-		return errors.Errorf("unable save channel: %v", err)
-	}
-
-	c.cfg.Broadcaster.Write(&UpdateChannelClosed{
-		UserID:    c.UserID,
-		ChannelID: c.ChannelID,
-		Fee:       c.CloseFee,
-		Duration:  time.Now().UnixNano() - lastStateTime,
-	})
-
-	return nil
-}
-
-// IsPending returns is the channel going thorough the stage of being accepted
-// in blockchain. It either updating, opening or closing.
-func (c *Channel) IsPending() bool {
-	// TODO(andrew.shvv) Channel is not pending if it is in update mode,
-	// because of the dynamic mode, for more info watch lightning labs conner
-	// l2 summit watchtower video.
-	currentState := c.CurrentState()
-	return currentState.Name == ChannelOpening ||
-		currentState.Name == ChannelClosing ||
-		currentState.Name == ChannelUpdating
-}
-
-// IsConnected returns does this channel could be used for receiving and sending
-// payment. For channel to be active it should be in proper state and user of
-// this channel should be connected to hub.
+// ...
 func (c *Channel) IsActive() bool {
-	currentState := c.CurrentState()
-	return c.IsUserConnected &&
-		!c.IsPending() &&
-		currentState.Name != ChannelClosed
-}
+	switch c.State {
+	case ChannelOpened:
+		state, ok := c.States[ChannelOpened]
+		if !ok {
+			return false
+		}
 
-// FundingFee is the amount of money which was spent to open this channel.
-func (c *Channel) FundingFee() BalanceUnit {
-	if c.Initiator == LocalInitiator {
-		return c.OpenFee
+		return state.(*ChannelStateOpened).IsActive
 	}
 
-	// If user is initiator of this channel than we are
-	// not paying funding fee.
-	return 0
-}
-
-// SetConfig is used to set config which is used for using the external
-// subsystems by channel.
-func (c *Channel) SetConfig(cfg *ChannelConfig) error {
-	if err := cfg.validate(); err != nil {
-		return err
-	}
-
-	// Copy config file
-	c.cfg = &(*cfg)
-	return nil
-}
-
-// SetUserConnected sets user of this channel as being connected,
-// which means that hub and user could exchange protocol message and use
-// channel for payments.
-func (c *Channel) SetUserConnected(isConnected bool) error {
-	c.IsUserConnected = isConnected
-	return c.cfg.Storage.UpdateChannel(c)
+	return false
 }
