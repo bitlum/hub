@@ -17,6 +17,23 @@ type RankedStat struct {
 	NodeStats
 }
 
+// RankByPaymentSentNum...
+func RankByPaymentSentNum(nodeStats map[lightning.NodeID]NodeStats) []RankedStat {
+	var rankedNodes []RankedStat
+	for _, stat := range nodeStats {
+		rankedNodes = append(rankedNodes, RankedStat{
+			Rank:      float64(stat.NumSentPayments),
+			NodeStats: stat,
+		})
+	}
+
+	sort.Slice(rankedNodes, func(i, j int) bool {
+		return rankedNodes[i].Rank > rankedNodes[j].Rank
+	})
+
+	return rankedNodes
+}
+
 // RankByAveragePaymentSentFlow Rank nodes by the amount of funds sent to
 // them in average during the over inspected period of time.
 // First node in the list is most active one.

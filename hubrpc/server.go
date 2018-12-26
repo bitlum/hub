@@ -540,7 +540,7 @@ func (h *Hub) CheckNodeStats(ctx context.Context,
 		return 0
 	}
 
-	rankedByPaymentSentFlow := stats.RankByAveragePaymentSentFlow(nodeStats)
+	rankedByPaymentSentNum := stats.RankByPaymentSentNum(nodeStats)
 	rankedByPaymentVolume := stats.RankByPaymentVolume(nodeStats)
 	rankedByIdleFunds := stats.RankByIdleFunds(nodeStats)
 
@@ -552,7 +552,7 @@ func (h *Hub) CheckNodeStats(ctx context.Context,
 			Available: checkAvailable(nodeStat),
 			Anomalies: []string{},
 			RankStats: &CheckNodeStatsResponse_NodeStatus_RankStats{
-				RankPaymentsSentNum:    searchPosition(nodeID, rankedByPaymentSentFlow),
+				RankPaymentsSentNum:    searchPosition(nodeID, rankedByPaymentSentNum),
 				RankPaymentsSentVolume: searchPosition(nodeID, rankedByPaymentVolume),
 				RankIdle:               searchPosition(nodeID, rankedByIdleFunds),
 			},
