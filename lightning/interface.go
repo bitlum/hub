@@ -1,58 +1,75 @@
 package lightning
 
 import (
-	"github.com/bitlum/hub/common/broadcast"
+	"github.com/btcsuite/btcutil"
+	"github.com/lightningnetwork/lnd/zpay32"
+	"github.com/shopspring/decimal"
 )
 
 // Client aka payment provider, aka hub, aka lightning network node.
 // This interface gives as unified way of managing different implementations of
 // lightning network daemons.
 type Client interface {
-	// SendPayment makes the payment on behalf of lightning node.
-	SendPayment(userID UserID, amount BalanceUnit) error
+	TopologyClient
+	PaymentClient
 
-	// OpenChannel opens the channel with the given user.
-	OpenChannel(id UserID, funds BalanceUnit) error
-
-	// CloseChannel closes the specified channel.
-	CloseChannel(id ChannelID) error
-
-	// UpdateChannel updates the number of locked funds in the specified
-	// channel.
-	UpdateChannel(id ChannelID, funds BalanceUnit) error
-
-	// SetFeeBase sets base number of milli units (i.e milli satoshis in
-	// Bitcoin) which will be taken for every forwarding payment.
-	SetFeeBase(feeBase int64) error
-
-	// SetFeeProportional sets the number of milli units (i.e milli
-	// satoshis in Bitcoin) which will be taken for every killo-unit of
-	// forwarding payment amount as a forwarding fee.
-	SetFeeProportional(feeProportional int64) error
-
-	// RegisterOnUpdates returns register which returns updates about
-	// lightning client local network topology changes, about attempts of
-	// propagating the payment through the lightning node, about fee changes etc.
-	RegisterOnUpdates() *broadcast.Receiver
-
-	// Channels returns all channels which are connected to lightning node.
-	Channels() ([]*Channel, error)
-
-	// Users return all users which connected or were connected to lightning
-	// node with payment channel.
-	Users() ([]*User, error)
-
-	// FreeBalance returns the amount of funds at lightning node disposal.
-	FreeBalance() (BalanceUnit, error)
+	// AvailableBalance return the amount of confirmed funds available for account.
+	AvailableBalance() (btcutil.Amount, error)
 
 	// PendingBalance returns the amount of funds which in the process of
 	// being accepted by blockchain.
-	PendingBalance() (BalanceUnit, error)
+	PendingBalance() (btcutil.Amount, error)
 
-	// Done returns error if lightning client stopped working for some reason,
-	// and nil if it was stopped.
-	Done() chan error
+	// Info returns the information about our lnd node.
+	Info() (*Info, error)
 
 	// Asset returns asset with which corresponds to this lightning client.
 	Asset() string
+}
+
+type TopologyClient interface {
+	// Channels returns all lightning network channels which belongs to us.
+	Channels() ([]*Channel, error)
+
+	// OpenChannel opens the lightning network channel with the given node.
+	OpenChannel(nodeID NodeID, funds btcutil.Amount) error
+
+	// CloseChannel closes the specified lightning network channel.
+	CloseChannel(channelID ChannelID) error
+
+	// ConnectToNode connects to node with tcp / ip connection.
+	ConnectToNode(nodeID NodeID) error
+}
+
+type PaymentClient interface {
+	// EstimateFee estimate fee for the payment with the given sending
+	// amount, to the given node.
+	EstimateFee(invoice string, amount btcutil.Amount) (decimal.Decimal, error)
+
+	// QueryRoutes returns list of routes from to the given lnd node,
+	// and insures the the capacity of the channels is sufficient.
+	QueryRoutes(invoiceStr string, amount btcutil.Amount,
+		maxRoutes int32) ([]*Route, error)
+
+	// SendPayment makes the payment on behalf of lightning node.
+	SendPaymentToRoute(route *Route, paymentHash PaymentHash) (*Payment, error)
+
+	// CreateInvoice is used to create lightning network invoice.
+	CreateInvoice(receipt string, amount btcutil.Amount,
+		description string) (string, *zpay32.Invoice, error)
+
+	// ValidateInvoice takes the encoded lightning network invoice and ensure
+	// its valid.
+	ValidateInvoice(invoice string, amount btcutil.Amount) (*zpay32.Invoice, error)
+
+	// ListPayments returns list of incoming and outgoing payment.
+	ListPayments(asset string, status PaymentStatus,
+		direction PaymentDirection, system PaymentSystem) ([]*Payment, error)
+
+	// ListForwardPayments returns list of forward payments which were routed
+	// thorough lightning node.
+	ListForwardPayments() ([]*ForwardPayment, error)
+
+	// PaymentByInvoice returns payment by given lightning network invoice.
+	PaymentByInvoice(invoice string) (*Payment, error)
 }
