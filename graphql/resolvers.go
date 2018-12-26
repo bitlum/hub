@@ -45,7 +45,7 @@ func getPaymentsResolver(client lightning.PaymentClient,
 				toNode = getAlias(payment.Receiver)
 			} else if payment.Direction == lightning.Incoming {
 				toNode = "bitlum.io"
-				fromNode = "unknown"
+				fromNode = getAlias("random string")
 			}
 
 			payments = append(payments, &Payment{
