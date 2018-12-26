@@ -364,9 +364,9 @@ func (c *Client) Info() (*lightning.Info, error) {
 		MaxPaymentAmount: btcutil.Amount(4200000),
 		Version:          info.Version,
 		NodeInfo: &lightning.NodeInfo{
-			Alias:          "",
-			Host:           c.cfg.Host,
-			Port:           c.cfg.Port,
+			Alias:          info.Alias,
+			Host:           c.cfg.PeerHost,
+			Port:           c.cfg.PeerPort,
 			IdentityPubKey: info.IdentityPubkey,
 		},
 		BlockHeight: info.BlockHeight,
@@ -374,7 +374,7 @@ func (c *Client) Info() (*lightning.Info, error) {
 		Network:     c.cfg.Net,
 		NeutrinoInfo: &lightning.NeutrinoInfo{
 			Host: c.cfg.NeutrinoHost,
-			Port: c.cfg.PeerHost,
+			Port: c.cfg.NeutrinoPort,
 		},
 	}, nil
 }
