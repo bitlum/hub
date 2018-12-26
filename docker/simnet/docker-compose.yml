@@ -8,7 +8,7 @@ networks:
     driver: bridge
     ipam:
       config:
-      - subnet: 172.100.1.0/24
+        - subnet: 172.100.1.0/24
 
 # Default settings for all containers.
 x-defaults:
@@ -17,10 +17,10 @@ x-defaults:
   logging:
     driver: "json-file"
     options:
-        max-size: "200m"
-        max-file: "10"
+      max-size: "200m"
+      max-file: "10"
 
-# Using automatically assigned ip address from connect.simnet network.
+  # Using automatically assigned ip address from connect.simnet network.
   networks:
     connector.simnet:
 
@@ -29,7 +29,7 @@ x-defaults:
 
 services:
   hub.simnet:
-    << : *defaults
+    <<: *defaults
     container_name: hub.simnet
     image: hub.simnet
     build:
@@ -47,7 +47,7 @@ services:
       - "19999:19999"
 
   hubcli.simnet:
-    << : *defaults
+    <<: *defaults
     container_name: hubcli.simnet
     image: hubcli.simnet
     build: hubcli

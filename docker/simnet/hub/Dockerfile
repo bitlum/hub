@@ -9,6 +9,7 @@ RUN update-ca-certificates
 # This implies that service has to be built locally first, and putted in the
 # docker directory, fore running docker build.
 COPY /bin/hub /usr/local/bin/
+RUN chmod -R +x /usr/local/bin/hub
 
 # This implies that service config is defines and located in the
 # directory with docker file.

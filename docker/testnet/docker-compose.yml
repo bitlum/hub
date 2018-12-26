@@ -8,7 +8,7 @@ networks:
     driver: bridge
     ipam:
       config:
-      - subnet: 172.100.1.0/24
+        - subnet: 172.100.1.0/24
 
 # Default settings for all containers.
 x-defaults:
@@ -17,8 +17,8 @@ x-defaults:
   logging:
     driver: "json-file"
     options:
-        max-size: "200m"
-        max-file: "10"
+      max-size: "200m"
+      max-file: "10"
 
   # Using automatically assigned ip address from connect.testnet network.
   networks:
@@ -29,14 +29,15 @@ x-defaults:
 
 services:
   hub.testnet:
-    << : *defaults
+    <<: *defaults
     container_name: hub.testnet
     image: hub.testnet
     build:
       context: ./hub/
-      args:
-        - HUB_REVISION
     restart: always
+    environment:
+      - BITCOIN_RPC_USER
+      - BITCOIN_RPC_PASSWORD
     volumes:
       - /connector/hub.testnet/:/root/.hub/
 
@@ -51,7 +52,7 @@ services:
       - "19999:19999"
 
   hubcli.testnet:
-    << : *defaults
+    <<: *defaults
     container_name: hubcli.testnet
     image: hubcli.testnet
     build: hubcli

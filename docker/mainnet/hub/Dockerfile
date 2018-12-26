@@ -1,19 +1,17 @@
-FROM golang:1.10.3 AS builder
+FROM golang:1.11.4 AS builder
 
 # Take setted in docker compose hub revision
 ARG HUB_REVISION
 
 # Install golang dependencies manager
-RUN go get -u github.com/golang/dep/cmd/dep
+RUN go get -u github.com/golang/dep/cmd/dep && dep version
 
 # Create work directory
 WORKDIR $GOPATH/src/github.com/bitlum/hub/
 
 # Download revision version of hub
-RUN curl -L https://github.com/bitlum/hub/archive/$HUB_REVISION.tar.gz | tar xz --strip 1
-
-# Go into direction where manager aka hub resides
-WORKDIR $GOPATH/src/github.com/bitlum/hub/manager
+RUN echo "HUB_REVISION: ${HUB_REVISION}" && \
+    curl -L https://github.com/bitlum/hub/archive/$HUB_REVISION.tar.gz | tar xz --strip 1
 
 # Install dependencies
 RUN dep ensure -v
@@ -28,9 +26,8 @@ RUN apt-get install -y ca-certificates curl
 RUN update-ca-certificates
 RUN rm -rf /var/lib/apt/lists/*
 
-# This implies that service has to be built locally first, and putted
-# in the docker directory, for running docker build.
-COPY --from=builder /go/bin/manager /usr/local/bin/hub
+# This implies that service has been build of previos stage of dockerfile.
+COPY --from=builder go/bin/hub /usr/local/bin/
 
 # Default config used to initalize datadir volume at first or
 # cleaned deploy. It will be restored and used after each restart.

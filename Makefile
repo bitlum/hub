@@ -111,13 +111,21 @@ mainnet-logs:
 # Golang build  #
 # # # # # # # # #
 
-clean:
-		@$(call print, "Removing build hub binaries...")
+simnet-clean:
+		@$(call print, "Removing build simnet hub binaries...")
 		rm -rf ./docker/simnet/hub/bin/
 
-build:
-		@$(call print, "Building hub...")
+testnet-clean:
+		@$(call print, "Removing build testnet hub binaries...")
+		rm -rf ./docker/testnet/hub/bin/
+
+simnet-build:
+		@$(call print, "Building simnet hub...")
 		GOOS=linux GOARCH=amd64 CC=/usr/local/gcc-4.8.1-for-linux64/bin/x86_64-pc-linux-gcc CGO_ENABLED=1 go build -v -i -o ./docker/simnet/hub/bin/hub
+
+testnet-build:
+		@$(call print, "Building testnet hub...")
+		GOOS=linux GOARCH=amd64 CC=/usr/local/gcc-4.8.1-for-linux64/bin/x86_64-pc-linux-gcc CGO_ENABLED=1 go build -v -i -o ./docker/testnet/hub/bin/hub
 
 ifeq ($(SLACK_HOOK),)
 simnet-deploy:
@@ -125,9 +133,9 @@ simnet-deploy:
 else
 simnet-deploy: \
 		start-simnet-notification \
-		build \
+		simnet-build \
 		simnet-build-compose \
-		clean \
+		simnet-clean \
 		end-simnet-notification
 endif
 
@@ -137,7 +145,9 @@ testnet-deploy:
 else
 testnet-deploy: \
 		start-testnet-notification \
+		testnet-build \
 		testnet-build-compose \
+		testnet-clean \
 		end-testnet-notification
 endif
 
