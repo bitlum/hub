@@ -1,6 +1,7 @@
-package hub
+package main
 
 import (
+	"github.com/bitlum/hub/manager"
 	"os"
 
 	"io"
@@ -8,13 +9,9 @@ import (
 	"fmt"
 	"path/filepath"
 
+	"github.com/bitlum/hub/lightning/lnd"
 	"github.com/btcsuite/btclog"
 	"github.com/jrick/logrotate/rotator"
-	"github.com/bitlum/hub/lightning/emulation"
-	"github.com/bitlum/hub/lightning/lnd"
-	"github.com/bitlum/hub/processing"
-	"github.com/bitlum/hub/optimisation"
-	"github.com/bitlum/hub/logs"
 )
 
 // logWriter implements an io.Writer that outputs to both standard output and
@@ -50,31 +47,22 @@ var (
 	// It is written to by the Write method of the logWriter type.
 	logRotatorPipe *io.PipeWriter
 
-	mainLog         = backendLog.Logger("MAIN")
-	emulatorLog     = backendLog.Logger("EMUL")
-	lndLog          = backendLog.Logger("LND")
-	procLog         = backendLog.Logger("PROC")
-	optimisationLog = backendLog.Logger("OPTI")
-	loggerLog       = backendLog.Logger("LOGS")
+	mainLog    = backendLog.Logger("MAIN")
+	lndLog     = backendLog.Logger("LND")
+	managerLog = backendLog.Logger("MNGR")
 )
 
 // Initialize package-global logger variables.
 func init() {
-	emulation.UseLogger(emulatorLog)
 	lnd.UseLogger(lndLog)
-	processing.UseLogger(procLog)
-	optimisation.UseLogger(optimisationLog)
-	logs.UseLogger(loggerLog)
+	manager.UseLogger(managerLog)
 }
 
 // subsystemLoggers maps each subsystem identifier to its associated logger.
 var subsystemLoggers = map[string]btclog.Logger{
 	"BACKEND": mainLog,
-	"EMUL":    emulatorLog,
 	"LND":     lndLog,
-	"PROC":    procLog,
-	"OPTI":    optimisationLog,
-	"LOGS":    loggerLog,
+	"MNGR":    managerLog,
 }
 
 // initLogRotator initializes the logging rotator to write logs to logFile and
