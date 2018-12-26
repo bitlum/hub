@@ -4,6 +4,8 @@ import (
 	"encoding/hex"
 	"github.com/bitlum/hub/common"
 	"github.com/bitlum/hub/lightning"
+	"github.com/bitlum/hub/manager"
+	"github.com/bitlum/hub/manager/stats"
 	"github.com/bitlum/hub/metrics"
 	"github.com/bitlum/hub/metrics/rpc"
 	"github.com/btcsuite/btcutil"
@@ -11,6 +13,7 @@ import (
 	"github.com/shopspring/decimal"
 	"golang.org/x/net/context"
 	"math/rand"
+	"sort"
 )
 
 type Config struct {
@@ -19,6 +22,9 @@ type Config struct {
 
 	// MetricsBackend...
 	MetricsBackend rpc.MetricsBackend
+
+	// ...
+	NodeManager *manager.NodeManager
 }
 
 // Hub is an implementation of gRPC server which receive the message from
@@ -467,9 +473,162 @@ func (h *Hub) ListPayments(ctx context.Context,
 	return resp, nil
 }
 
-// NodesStats return statistical data about node, and sort nodes by
+// CheckNodeStats return statistical data about node, and sort nodes by
 // internal ranking algorithm.
 func (h *Hub) CheckNodeStats(ctx context.Context,
 	req *CheckNodeStatsRequest) (*CheckNodeStatsResponse, error) {
-	return nil, errors.Errorf("endpoint is no supported")
+
+	m := rpc.NewMetric(common.GetFunctionName(), h.cfg.MetricsBackend)
+	defer m.Finish()
+
+	requestID := rand.Int()
+	log.Tracef("command(%v), id(%v), request(%v)", common.GetFunctionName(),
+		requestID, convertProtoMessage(req))
+
+	var period string
+	switch req.Period {
+	case Period_DAY:
+		period = "day"
+	case Period_WEEK, Period_PERIOD_NONE:
+		period = "week"
+	case Period_MONTH:
+		period = "month"
+	case Period_THREE_MONTH:
+		period = "three month"
+	default:
+		return nil, errors.Errorf("unknown period(%v)", req.Period)
+	}
+
+	nodeStats, err := h.cfg.NodeManager.GetNodeStats(period)
+	if err != nil {
+		err := newErrInternal(err.Error())
+		log.Errorf("command(%v), id(%v), error: %v",
+			common.GetFunctionName(), requestID, err)
+		m.AddError(metrics.LowSeverity)
+		return nil, err
+	}
+
+	resp := &CheckNodeStatsResponse{}
+
+	checkAvailable := func(stats stats.NodeStats) bool {
+		// TODO check connection availability
+		return stats.LockedLocallyActive > (stats.AverageSentSat + stats.
+			AverageReceivedForwardSat - stats.AverageReceivedForwardSat)
+	}
+
+	btcUSDPrice, err := common.GetBitcoinUSDPRice()
+	if err != nil {
+		err := newErrInternal(err.Error())
+		log.Errorf("command(%v), id(%v), error: %v",
+			common.GetFunctionName(), requestID, err)
+		m.AddError(metrics.LowSeverity)
+		return nil, err
+	}
+
+	convertUSD := func(amount btcutil.Amount) float64 {
+		return amount.ToBTC() * btcUSDPrice
+	}
+
+	searchPosition := func(nodeID lightning.NodeID,
+		rankedNodes []stats.RankedStat) int64 {
+		for position, node := range rankedNodes {
+			if node.NodeID == nodeID {
+				return int64(position) + 1
+			}
+		}
+
+		return 0
+	}
+
+	rankedByPaymentSentFlow := stats.RankByAveragePaymentSentFlow(nodeStats)
+	rankedByPaymentVolume := stats.RankByPaymentVolume(nodeStats)
+	rankedByIdleFunds := stats.RankByIdleFunds(nodeStats)
+
+	var statuses []*CheckNodeStatsResponse_NodeStatus
+	for nodeID, nodeStat := range nodeStats {
+		name := string(nodeID)
+		domain := h.cfg.NodeManager.GetDomain(nodeID)
+		if domain != "" {
+			name = domain
+		}
+
+		statuses = append(statuses, &CheckNodeStatsResponse_NodeStatus{
+			Name:      name,
+			Available: checkAvailable(nodeStat),
+			Anomalies: []string{},
+			RankStats: &CheckNodeStatsResponse_NodeStatus_RankStats{
+				RankPaymentsSentNum:    searchPosition(nodeID, rankedByPaymentSentFlow),
+				RankPaymentsSentVolume: searchPosition(nodeID, rankedByPaymentVolume),
+				RankIdle:               searchPosition(nodeID, rankedByIdleFunds),
+			},
+			PaymentStats: &CheckNodeStatsResponse_NodeStatus_PaymentsStats{
+				AverageSentForward:     convertUSD(nodeStat.AverageSentForwardSat),
+				AverageReceivedForward: convertUSD(nodeStat.AverageReceivedForwardSat),
+				AverageSent:            convertUSD(nodeStat.AverageSentSat),
+				OverallSentForward:     convertUSD(nodeStat.OverallSentForwardSat),
+				OverallReceivedForward: convertUSD(nodeStat.OverallReceivedForwardSat),
+				OverallSent:            convertUSD(nodeStat.OverallSentSat),
+				NumSent:                nodeStat.NumSentPayments,
+				NumReceivedForward:     nodeStat.NumForwardReceivedPayments,
+				NumSentForward:         nodeStat.NumForwardSentPayments,
+			},
+			ChannelStats: &CheckNodeStatsResponse_NodeStatus_ChannelStats{
+				LockedLocallyActive:   convertUSD(nodeStat.LockedLocallyActive),
+				LockedRemotelyActive:  convertUSD(nodeStat.LockedRemotelyActive),
+				LockedLocallyOverall:  convertUSD(nodeStat.LockedLocallyOverall),
+				LockedRemotelyOverall: convertUSD(nodeStat.LockedRemotelyOverall),
+			},
+		})
+	}
+
+	switch req.SortType {
+	case SortType_BY_SENT_NUM:
+		sort.Slice(statuses, func(i, j int) bool {
+			return statuses[i].RankStats.RankPaymentsSentNum <
+				statuses[j].RankStats.RankPaymentsSentNum
+		})
+
+	case SortType_BY_IDLENESS:
+		sort.Slice(statuses, func(i, j int) bool {
+			return statuses[i].RankStats.RankIdle <
+				statuses[j].RankStats.RankIdle
+		})
+
+	case SortType_BY_VOLUME, SortType_SORT_NONE:
+		sort.Slice(statuses, func(i, j int) bool {
+			return statuses[i].RankStats.RankPaymentsSentVolume <
+				statuses[j].RankStats.RankPaymentsSentVolume
+		})
+
+	default:
+		return nil, errors.Errorf("unknown sort type(%v)", req.SortType)
+	}
+
+	if req.Node != "" {
+		var s *CheckNodeStatsResponse_NodeStatus
+		for _, status := range statuses {
+			if status.Name == req.Node {
+				s = status
+				break
+			}
+		}
+
+		if s != nil {
+			resp.Statuses = []*CheckNodeStatsResponse_NodeStatus{s}
+		} else {
+			err := errors.Errorf("node(%v) not found", req.Node)
+			log.Errorf("command(%v), id(%v), error: %v",
+				common.GetFunctionName(), requestID, err)
+			m.AddError(metrics.LowSeverity)
+			return nil, err
+		}
+
+	} else {
+		resp.Statuses = statuses[:req.Limit]
+	}
+
+	log.Tracef("command(%v), id(%v), response(%v)", common.GetFunctionName(),
+		requestID, convertProtoMessage(resp))
+
+	return resp, nil
 }
