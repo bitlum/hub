@@ -220,6 +220,7 @@ func backendMain() error {
 	hub := hubrpc.NewHub(&hubrpc.Config{
 		Client:         client,
 		MetricsBackend: rpcMetricsBackend,
+		NodeManager:    nodeManager,
 	})
 	hubrpc.RegisterHubServer(grpcServer, hub)
 
