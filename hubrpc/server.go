@@ -546,14 +546,9 @@ func (h *Hub) CheckNodeStats(ctx context.Context,
 
 	var statuses []*CheckNodeStatsResponse_NodeStatus
 	for nodeID, nodeStat := range nodeStats {
-		name := string(nodeID)
-		domain := h.cfg.NodeManager.GetDomain(nodeID)
-		if domain != "" {
-			name = domain
-		}
-
 		statuses = append(statuses, &CheckNodeStatsResponse_NodeStatus{
-			Name:      name,
+			Domain:    h.cfg.NodeManager.GetDomain(nodeID),
+			PubKey:    string(nodeID),
 			Available: checkAvailable(nodeStat),
 			Anomalies: []string{},
 			RankStats: &CheckNodeStatsResponse_NodeStatus_RankStats{
