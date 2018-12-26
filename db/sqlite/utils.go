@@ -28,4 +28,3 @@ func MakeTestDB() (*DB, func(), error) {
 
 	return db, cleanUp, nil
 }
-

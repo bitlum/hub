@@ -1,11 +1,7 @@
 package sqlite
 
-import (
-	"github.com/bitlum/hub/lightning/lnd"
-)
-
 // Runtime check to ensure that DB implements lnd.SyncStorage interface.
-var _ lnd.SyncStorage = (*DB)(nil)
+// var _ lnd.SyncStorage = (*DB)(nil)
 
 // PutLastForwardingIndex is used to save last forward pagination index
 // which was used for getting forwarding events. With this we avoid

@@ -5,7 +5,7 @@ import (
 )
 
 // Runtime check to ensure that DB implements lnd.InfoStorage interface.
-var _ lightning.InfoStorage = (*DB)(nil)
+// var _ lightning.InfoStorage = (*DB)(nil)
 
 // UpdateInfo updates information about the hub lightning network node.
 func (d *DB) UpdateInfo(info *lightning.Info) error {

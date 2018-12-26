@@ -21,12 +21,12 @@ type Channel struct {
 	// Initiator side which initiated open of the channel.
 	Initiator string
 
-	// CloseFee is the number of funds which are needed to close the channel
+	// CommitFee is the number of funds which are needed to close the channel
 	// and release locked funds, might change with time, because of the
 	// commitment transaction size and fee rate in the network.
 	CloseFee int64
 
-	// CloseFee is the number of funds which were needed to open the channel
+	// CommitFee is the number of funds which were needed to open the channel
 	// and lock funds.
 	OpenFee int64
 
@@ -35,7 +35,7 @@ type Channel struct {
 	// payments.
 	IsUserConnected bool
 
-	// States is the array of states which this channel went thorough.
+	// State is the array of states which this channel went thorough.
 	States []State `gorm:"foreignkey:ChannelID"`
 }
 
