@@ -1,4 +1,4 @@
-package hub
+package main
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 
 	"log"
 
-	"github.com/bitlum/btcutil"
+	"github.com/btcsuite/btcutil"
 	"github.com/jessevdk/go-flags"
 )
 
@@ -26,8 +26,8 @@ const (
 
 	defaultLogDirname     = "logs"
 	defaultLogLevel       = "info"
-	defaultConfigFilename = "hubmanager.conf"
-	defaultLogFilename    = "hubmanager.log"
+	defaultConfigFilename = "hub.conf"
+	defaultLogFilename    = "hub.log"
 
 	defaultPrometheusHost     = "0.0.0.0"
 	defaultPrometheusPort     = "19999"
@@ -56,11 +56,9 @@ var (
 type config struct {
 	ShowVersion bool `long:"version" description:"Display version information and exit"`
 
-	UpdateLogFile string `long:"updateslog" description:"Path to log file in which manager will direct lightning node network updates output"`
-
-	Backend  string               `long:"backend" description:"Type of lightning client backend used" choice:"emulator" choice:"lnd"`
-	Emulator *emulateClientConfig `group:"Emulator" namespace:"emulator"`
-	LND      *lndClientConfig     `group:"Lnd" namespace:"lnd"`
+	UpdateLogFile string           `long:"updateslog" description:"Path to log file in which manager will direct lightning node network updates output"`
+	LND           *lndClientConfig `group:"Lnd" namespace:"lnd"`
+	Bitcoind      *bitcoindConfig  `group:"Bitcoind" namespace:"bitcoind"`
 
 	Prometheus *prometheusConfig `group:"Prometheus" namespace:"prometheus"`
 	Hub        *hubConfig        `group:"Hub" namespace:"hub"`
@@ -79,28 +77,25 @@ type hubConfig struct {
 	Host string `long:"host" description:"Host on which GRPC hub manager is working"`
 }
 
-// emulateClientConfig defines the gRPC parameters for emulation lightning
-// client, with this interface third-party service could send the emulation
-// network activity.
-type emulateClientConfig struct {
-	ListenPort string `long:"listenport" description:"Port on which GRPC emulator lightning client should listen for incoming requests"`
-	ListenHost string `long:"listenhost" description:"Host on which GRPC emulator lightning client should listen for incoming requests"`
-
+type lndClientConfig struct {
+	Network      string            `long:"network" description:"Blockchain network which should be used" choice:"simnet" choice:"testnet" choice:"mainnet"`
+	DataDir      string            `long:"dbpath" description:"Path to dir where BoltDB will be stored"`
+	TlsCertPath  string            `long:"tlscertpath" description:"Path to the LND certificate"`
+	MacaroonPath string            `long:"macaroonpath" description:"Path to the LND macaroon"`
+	GRPCHost     string            `long:"grpchost" description:"Host on which we expect to find LND gRPC endpoint"`
+	GRPCPort     string            `long:"grpcport" description:"Port on which we expect to find LND gRPC endpoint"`
+	NeutrinoHost string            `long:"neutrinohost" description:"Public host where neutrino Bitcoin node resides. Needed only to inform users over API"`
+	NeutrinoPort string            `long:"neutrinoport" description:"Public port where neutrino Bitcoin node resides. Needed only to inform users over API"`
+	PeerHost     string            `long:"peerhost" description:"Public host where LND node resides. Needed only to inform users over API"`
+	PeerPort     string            `long:"peerport" description:"Public port where LND node resides. Needed only to inform users over API"`
+	KnownPeers   map[string]string `long:"knownpeer" description:"A map from peer alias to its public key"`
 }
 
-type lndClientConfig struct {
-	Network         string            `long:"network" description:"Blockchain network which should be used" choice:"simnet" choice:"testnet" choice:"mainnet"`
-	DataDir         string            `long:"dbpath" description:"Path to dir where BoltDB will be stored"`
-	TlsCertPath     string            `long:"tlscertpath" description:"Path to the LND certificate"`
-	MacaroonPath    string            `long:"macaroonpath" description:"Path to the LND macaroon"`
-	GRPCHost        string            `long:"grpchost" description:"Host on which we expect to find LND gRPC endpoint"`
-	GRPCPort        string            `long:"grpcport" description:"Port on which we expect to find LND gRPC endpoint"`
-	NeutrinoHost    string            `long:"neutrinohost" description:"Public host where neutrino Bitcoin node resides. Needed only to inform users over API"`
-	NeutrinoPort    string            `long:"neutrinoport" description:"Public port where neutrino Bitcoin node resides. Needed only to inform users over API"`
-	PeerHost        string            `long:"peerhost" description:"Public host where LND node resides. Needed only to inform users over API"`
-	PeerPort        string            `long:"peerport" description:"Public port where LND node resides. Needed only to inform users over API"`
-	BalancerEnabled bool              `long:"balancerenabled" description:"enable creation of the channel to connected peers"`
-	KnownPeers      map[string]string `long:"knownpeer" description:"A map from peer alias to its public key"`
+type bitcoindConfig struct {
+	User string `long:"user" description:"User for accessing rpc endpoint"`
+	Pass string `long:"pass" description:"Password for accessing rpc endpoint"`
+	Host string `long:"host" description:"Host on which we expect to bitcoind"`
+	Port string `long:"port" description:"Port on which we expect to bitcoind"`
 }
 
 type prometheusConfig struct {
@@ -134,11 +129,6 @@ func getDefaultConfig() config {
 			ListenHost:       defaultGraphQLHost,
 			ListenPort:       defaultGraphQLPort,
 			SecureListenPort: defaultGraphQLSecurePort,
-		},
-		Backend: "emulator",
-		Emulator: &emulateClientConfig{
-			ListenPort: defaultEmulateNetworkPort,
-			ListenHost: defaultEmulateNetworkHost,
 		},
 	}
 }
