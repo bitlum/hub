@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	defaultRPCPort     = "9002"
+	defaultRPCPort     = "8686"
 	defaultRPCHostPort = "localhost:" + defaultRPCPort
 )
 
@@ -63,6 +63,7 @@ func main() {
 		paymentByIDCommand,
 		paymentByInvoiceCommand,
 		listPaymentsCommand,
+		checkNodeStatsCommand,
 	}
 
 	if err := app.Run(os.Args); err != nil {

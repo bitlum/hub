@@ -432,46 +432,90 @@ func listPayments(ctx *cli.Context) error {
 	return nil
 }
 
-var checkNodesCommand = cli.Command{
-	Name:     "checknodes",
+var checkNodeStatsCommand = cli.Command{
+	Name:     "nodestats",
 	Category: "Nodes",
-	Usage:    "Gives statistical information about node",
+	Usage:    "Return statistical information about nodes in ln",
 	Flags: []cli.Flag{
 		cli.StringFlag{
 			Name: "period",
-			Usage: "Period of time for which we should calculate statistic, " +
-				"default(week)",
+			Usage: "(optional) Period of time for which we should calculate" +
+				" statistic, (day, week, month, three month)",
 		},
 		cli.StringFlag{
 			Name: "node",
 			Usage: "(optional) Node is public key or node name of about which" +
-				" we should show statistic, default(show all)",
+				" we should show statistic, by default it will show all",
+		},
+		cli.StringFlag{
+			Name:  "limit",
+			Usage: "(optional) Limit output to the given number",
+		},
+		cli.StringFlag{
+			Name: "sort_type",
+			Usage: "(optional) Sorts nodes by the given sorting algo, " +
+				"by default by volume, (by_sent_num, " +
+				"by_idleness, by_volume)",
 		},
 	},
-	Action: validateInvoice,
+	Action: checkNodeStats,
 }
 
-func checkNodes(ctx *cli.Context) error {
+func checkNodeStats(ctx *cli.Context) error {
 	client, cleanUp := getClient(ctx)
 	defer cleanUp()
 
 	var (
-		period string
-		node   string
+		period   hubrpc.Period
+		node     string
+		limit    int64
+		sortType hubrpc.SortType
 	)
 
 	if ctx.IsSet("period") {
-		period = ctx.String("period")
+		p := ctx.String("period")
+		switch p {
+		case "day":
+			period = hubrpc.Period_DAY
+		case "week":
+			period = hubrpc.Period_WEEK
+		case "month":
+			period = hubrpc.Period_MONTH
+		case "three month":
+			period = hubrpc.Period_THREE_MONTH
+		default:
+			return errors.Errorf("unknown period option(%v)", p)
+		}
 	}
 
 	if ctx.IsSet("node") {
 		node = ctx.String("node")
 	}
 
+	if ctx.IsSet("limit") {
+		limit = ctx.Int64("limit")
+	}
+
+	if ctx.IsSet("sort_type") {
+		st := ctx.String("sort_type")
+		switch st {
+		case "by_sent_num":
+			sortType = hubrpc.SortType_BY_SENT_NUM
+		case "by_idleness":
+			sortType = hubrpc.SortType_BY_IDLENESS
+		case "by_volume":
+			sortType = hubrpc.SortType_BY_VOLUME
+		default:
+			return errors.Errorf("unknown sort type(%v)", st)
+		}
+	}
+
 	ctxb := context.Background()
-	resp, err := client.ValidateInvoice(ctxb, &hubrpc.ValidateInvoiceRequest{
-		Amount:  amount,
-		Invoice: invoice,
+	resp, err := client.CheckNodeStats(ctxb, &hubrpc.CheckNodeStatsRequest{
+		Period:   period,
+		Node:     node,
+		Limit:    int32(limit),
+		SortType: sortType,
 	})
 	if err != nil {
 		return err
