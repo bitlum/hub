@@ -286,11 +286,11 @@ func (c *Client) ListPayments(asset string, status lightning.PaymentStatus,
 		payments = append(payments, &lightning.Payment{
 			PaymentID:   "",
 			Receiver:    c.lightningNodeUserID,
-			UpdatedAt:   time.Now().Unix(),
+			UpdatedAt:   incomingPayment.SettleDate,
 			Status:      lightning.Completed,
 			Direction:   lightning.Incoming,
 			System:      lightning.External,
-			Amount:      btcutil.Amount(incomingPayment.AmtPaid),
+			Amount:      btcutil.Amount(incomingPayment.AmtPaidSat),
 			MediaFee:    0,
 			PaymentHash: lightning.PaymentHash(hex.EncodeToString(incomingPayment.RHash)),
 		})
@@ -304,7 +304,7 @@ func (c *Client) ListPayments(asset string, status lightning.PaymentStatus,
 			Status:      lightning.Completed,
 			Direction:   lightning.Outgoing,
 			System:      lightning.External,
-			Amount:      btcutil.Amount(outgoingPayment.ValueSat),
+			Amount:      btcutil.Amount(outgoingPayment.Value),
 			MediaFee:    btcutil.Amount(outgoingPayment.Fee),
 			PaymentHash: lightning.PaymentHash(outgoingPayment.PaymentHash),
 		})
@@ -379,7 +379,7 @@ func (c *Client) ListForwardPayments() ([]*lightning.ForwardPayment, error) {
 			ToChannel:      toChannel.ChannelID,
 			IncomingAmount: btcutil.Amount(event.AmtIn),
 			OutgoingAmount: btcutil.Amount(event.AmtOut),
-			ForwardFee:     btcutil.Amount(event.AmtIn - event.AmtOut),
+			ForwardFee:     btcutil.Amount(event.Fee),
 			Time:           int64(event.Timestamp),
 		})
 	}
