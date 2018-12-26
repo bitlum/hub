@@ -73,7 +73,7 @@ func getPaymentsResolver(client lightning.PaymentClient,
 		}
 
 		sort.Slice(payments, func(i, j int) bool {
-			return payments[i].Time < payments[j].Time
+			return payments[i].Time > payments[j].Time
 		})
 
 		return payments, nil
