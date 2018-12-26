@@ -36,6 +36,24 @@ func RankByAveragePaymentSentFlow(nodeStats map[lightning.NodeID]NodeStats) []Ra
 	return rankedNodes
 }
 
+// RankByPaymentVolume...
+func RankByPaymentVolume(nodeStats map[lightning.NodeID]NodeStats) []RankedStat {
+	var rankedNodes []RankedStat
+	for _, stat := range nodeStats {
+		rankedNodes = append(rankedNodes, RankedStat{
+			Rank: float64(stat.AverageSentSat + stat.
+				AverageReceivedForwardSat + stat.AverageReceivedForwardSat),
+			NodeStats: stat,
+		})
+	}
+
+	sort.Slice(rankedNodes, func(i, j int) bool {
+		return rankedNodes[i].Rank > rankedNodes[j].Rank
+	})
+
+	return rankedNodes
+}
+
 // RankByIdleFunds sort nodes based on idleness of out funds locked with it,
 // if we don't have any activity, and we have local funds,
 // than we should release them first. First node in the list is most idle one.

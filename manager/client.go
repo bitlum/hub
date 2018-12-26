@@ -93,6 +93,38 @@ func (c *Config) validate() error {
 		return errors.New("our node name should be specified")
 	}
 
+	if c.GetBitcoinPriceUSD == nil {
+		return errors.New("get bitcoin price func should be specified")
+	}
+
+	if c.MaxChannelSizeUSD == 0 {
+		return errors.New("max channel size should be specified")
+	}
+
+	if c.MinChannelSizeUSD == 0 {
+		return errors.New("min channel size should be specified")
+	}
+
+	if c.MaxCloseSpendingPerDayUSD == 0 {
+		return errors.New("max close spending should be specified")
+	}
+
+	if c.MaxOpenSpendingPerDayUSD == 0 {
+		return errors.New("max open spending should be specified")
+	}
+
+	if c.MaxCommitFeeUSD == 0 {
+		return errors.New("max commit fee should be specified")
+	}
+
+	if c.MaxLimboUSD == 0 {
+		return errors.New("max limbo should be specified")
+	}
+
+	if c.MaxStuckBalanceUSD == 0 {
+		return errors.New("max stuck balance be specified")
+	}
+
 	return nil
 }
 
@@ -574,6 +606,22 @@ func (nm *NodeManager) AddImportantNode(nodeID lightning.NodeID, nodeName string
 func getRandomPseudonym() string {
 	rand.Seed(time.Now().UTC().UnixNano())
 	return names[rand.Intn(len(names))]
+}
+
+func (nm *NodeManager) GetDomain(nodeID lightning.NodeID) string {
+	nm.importantNodesMutex.Lock()
+	defer nm.importantNodesMutex.Unlock()
+
+	if nm.cfg.OurNodeID == nodeID {
+		return nm.cfg.OurName
+	}
+
+	name, ok := nm.importantNodes[nodeID]
+	if !ok {
+		return ""
+	}
+
+	return strings.ToLower(name)
 }
 
 // GetAlias return the alias by the given public key of the receiver/server,
