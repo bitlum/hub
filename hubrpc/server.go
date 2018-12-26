@@ -602,7 +602,7 @@ func (h *Hub) CheckNodeStats(ctx context.Context,
 	if req.Node != "" {
 		var s *CheckNodeStatsResponse_NodeStatus
 		for _, status := range statuses {
-			if status.Name == req.Node {
+			if status.Domain == req.Node || status.PubKey == req.Node {
 				s = status
 				break
 			}
