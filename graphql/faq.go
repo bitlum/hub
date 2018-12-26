@@ -51,16 +51,4 @@ query GetPayments {
     status
   }
 }
-
-# Q: How to get info about peers?
-#
-# Press "Run", and "GetPeers" to execute the
-# query.
-query GetPeers {
-  peers {
-    alias
-    lockedByPeer
-    lockedByHub
-  }
-}
 `

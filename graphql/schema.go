@@ -130,34 +130,6 @@ var typeInfo = graphql.NewObject(graphql.ObjectConfig{
 	},
 })
 
-var typePeer = graphql.NewObject(graphql.ObjectConfig{
-	Name:        "Peer",
-	Description: "",
-	Fields: graphql.Fields{
-		"alias": &graphql.Field{
-			Description: "",
-			Type:        graphql.NewNonNull(graphql.String),
-			Resolve: func(rp graphql.ResolveParams) (interface{}, error) {
-				return rp.Source.(*lightning.User).Alias, nil
-			},
-		},
-		"lockedByPeer": &graphql.Field{
-			Description: "",
-			Type:        graphql.NewNonNull(graphql.Int),
-			Resolve: func(rp graphql.ResolveParams) (interface{}, error) {
-				return int64(rp.Source.(*lightning.User).LockedByUser), nil
-			},
-		},
-		"lockedByHub": &graphql.Field{
-			Description: "",
-			Type:        graphql.NewNonNull(graphql.Int),
-			Resolve: func(rp graphql.ResolveParams) (interface{}, error) {
-				return int64(rp.Source.(*lightning.User).LockedByHub), nil
-			},
-		},
-	},
-})
-
 var typePayment = graphql.NewObject(graphql.ObjectConfig{
 	Name:        "Payment",
 	Description: "",
@@ -166,48 +138,49 @@ var typePayment = graphql.NewObject(graphql.ObjectConfig{
 			Description: "",
 			Type:        graphql.NewNonNull(graphql.String),
 			Resolve: func(rp graphql.ResolveParams) (interface{}, error) {
-				return rp.Source.(*lightning.Payment).FromAlias, nil
+				return rp.Source.(*Payment).FromNode, nil
 			},
 		},
 		"toPeer": &graphql.Field{
 			Description: "",
 			Type:        graphql.NewNonNull(graphql.String),
 			Resolve: func(rp graphql.ResolveParams) (interface{}, error) {
-				return rp.Source.(*lightning.Payment).ToAlias, nil
+				return rp.Source.(*Payment).ToNode, nil
 			},
 		},
 		"amount": &graphql.Field{
 			Description: "",
 			Type:        graphql.NewNonNull(graphql.Int),
 			Resolve: func(rp graphql.ResolveParams) (interface{}, error) {
-				return int64(rp.Source.(*lightning.Payment).Amount), nil
+				return int64(rp.Source.(*Payment).Amount), nil
 			},
 		},
 		"status": &graphql.Field{
 			Description: "",
 			Type:        graphql.NewNonNull(graphql.String),
 			Resolve: func(rp graphql.ResolveParams) (interface{}, error) {
-				return string(rp.Source.(*lightning.Payment).Status), nil
+				return string(rp.Source.(*Payment).Status), nil
 			},
 		},
 		"time": &graphql.Field{
 			Description: "",
 			Type:        graphql.NewNonNull(graphql.Int),
 			Resolve: func(rp graphql.ResolveParams) (interface{}, error) {
-				return rp.Source.(*lightning.Payment).Time, nil
+				return rp.Source.(*Payment).Time, nil
 			},
 		},
 		"type": &graphql.Field{
 			Description: "",
 			Type:        graphql.NewNonNull(graphql.String),
 			Resolve: func(rp graphql.ResolveParams) (interface{}, error) {
-				return string(rp.Source.(*lightning.Payment).Type), nil
+				return string(rp.Source.(*Payment).Type), nil
 			},
 		},
 	},
 })
 
-func New(storage GraphQLStorage) (graphql.Schema, error) {
+func New(cfg Config) (
+	graphql.Schema, error) {
 	return graphql.NewSchema(graphql.SchemaConfig{
 		Query: graphql.NewObject(graphql.ObjectConfig{
 			Name: "Query",
@@ -218,19 +191,13 @@ func New(storage GraphQLStorage) (graphql.Schema, error) {
 				"info": &graphql.Field{
 					Description: "",
 					Type:        graphql.NewNonNull(typeInfo),
-					Resolve:     getInfoResolver(storage),
-				},
-
-				"peers": &graphql.Field{
-					Description: "",
-					Type:        graphql.NewNonNull(graphql.NewList(typePeer)),
-					Resolve:     getPeersResolver(storage),
+					Resolve:     getInfoResolver(cfg.Client),
 				},
 
 				"payments": &graphql.Field{
 					Description: "",
 					Type:        graphql.NewNonNull(graphql.NewList(typePayment)),
-					Resolve:     getPaymentsResolver(storage),
+					Resolve:     getPaymentsResolver(cfg.Client, cfg.GetAlias),
 				},
 			},
 		}),

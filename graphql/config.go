@@ -2,6 +2,7 @@ package graphql
 
 import (
 	"errors"
+	"github.com/bitlum/hub/lightning"
 	"net"
 	"strconv"
 )
@@ -10,7 +11,9 @@ type Config struct {
 	ListenIP         string
 	ListenPort       string
 	SecureListenPort string
-	Storage          GraphQLStorage
+
+	Client   lightning.Client
+	GetAlias func(nodeID lightning.NodeID) string
 }
 
 func (c Config) validate() error {
@@ -45,6 +48,14 @@ func (c Config) validate() error {
 	if c.SecureListenPort == c.ListenPort {
 		return errors.New("secure listen port should not be" +
 			" equal to listen port")
+	}
+
+	if c.Client == nil {
+		return errors.New("client should be specified")
+	}
+
+	if c.GetAlias == nil {
+		return errors.New("get alias func should be specified")
 	}
 
 	return nil

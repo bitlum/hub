@@ -5,12 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/graphql-go/graphql"
+	"html/template"
 	"net/http"
 	"sync"
-	"time"
-	"github.com/graphql-go/graphql"
 	"sync/atomic"
-	"html/template"
+	"time"
 )
 
 // Server is a zigzag graphQL server.
@@ -38,7 +38,7 @@ func NewServer(c Config) (*Server, error) {
 			err.Error())
 	}
 
-	schema, err := New(c.Storage)
+	schema, err := New(c)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create schema: %v",
 			err)

@@ -2,39 +2,75 @@ package graphql
 
 import (
 	"github.com/bitlum/hub/lightning"
+	"github.com/go-errors/errors"
 	"github.com/graphql-go/graphql"
+	"strings"
 )
 
-func getInfoResolver(storage lightning.InfoStorage) graphql.FieldResolveFn {
+func getInfoResolver(client lightning.Client) graphql.FieldResolveFn {
 	return func(rp graphql.ResolveParams) (
 		interface{}, error) {
-		return storage.Info()
+		return client.Info()
 	}
 }
 
-func getPaymentsResolver(storage lightning.PaymentStorage) graphql.FieldResolveFn {
+func getPaymentsResolver(client lightning.PaymentClient,
+	getAlias func(nodeID lightning.NodeID) string) graphql.FieldResolveFn {
 	return func(rp graphql.ResolveParams) (
 		interface{}, error) {
-		return storage.Payments()
-	}
-}
 
-func getPeersResolver(storage lightning.UserStorage) graphql.FieldResolveFn {
-	return func(rp graphql.ResolveParams) (
-		interface{}, error) {
-		var users []*lightning.User
+		var payments []*Payment
 
-		allUsers, err := storage.Users()
+		directPayments, err := client.ListPayments("", lightning.AllStatuses,
+			lightning.AllDirections, lightning.AllSystems)
 		if err != nil {
-			return nil, err
+			return nil, errors.Errorf("unable to list payments: %v", err)
 		}
 
-		for _, user := range allUsers {
-			if user.IsConnected {
-				users = append(users, user)
+		forwardPayments, err := client.ListForwardPayments()
+		if err != nil {
+			return nil, errors.Errorf("unable to list forward payments: %v",
+				err)
+		}
+
+		for _, payment := range directPayments {
+			if payment.Status != lightning.Completed {
+				continue
 			}
+
+			var fromNode, toNode string
+			if payment.Direction == lightning.Outgoing {
+				fromNode = "bitlum.io"
+				toNode = getAlias(payment.Receiver)
+			} else if payment.Direction == lightning.Incoming {
+				toNode = "bitlum.io"
+				fromNode = "unknown"
+			}
+
+			payments = append(payments, &Payment{
+				FromNode: fromNode,
+				ToNode:   toNode,
+				Amount:   int64(payment.Amount),
+				// TODO(andrew.shvv) remove compatibility
+				Status: "successful",
+				Time:   payment.UpdatedAt,
+				Type:   strings.ToLower(string(payment.Direction)),
+			})
 		}
 
-		return users, nil
+		for _, payment := range forwardPayments {
+			payments = append(payments, &Payment{
+				FromNode: getAlias(payment.FromNode),
+				ToNode:   getAlias(payment.ToNode),
+				Amount:   int64(payment.OutgoingAmount),
+				// TODO(andrew.shvv) remove compatibility
+				Status: "successful",
+				Time:   payment.Time,
+				// TODO(andrew.shvv) remove compatibility
+				Type: "forward",
+			})
+		}
+
+		return payments, nil
 	}
 }
