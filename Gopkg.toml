@@ -26,6 +26,10 @@
 
 
 [[override]]
+  name = "golang.org/x/crypto"
+  revision = "614d502a4dac94afa3a6ce146bd1736da82514c6"
+
+[[override]]
   name = "github.com/prometheus/client_model"
   revision = "99fa1f4be8e564e8a6b613da7fa6f46c9edafc6c"
 
@@ -36,12 +40,8 @@
   revision = "df60624c1e9b9d2973e889c7a1cff73155da81c4"
 
 [[constraint]]
-  branch = "master"
-  name = "github.com/bitlum/btcutil"
-
-[[constraint]]
-  name = "github.com/go-errors/errors"
-  version = "1.0.1"
+  name = "github.com/btcsuite/btcd"
+  revision = "79e00513b1011888b1e675157ab89f527f901cae"
 
 [[constraint]]
   name = "github.com/golang/protobuf"
@@ -52,15 +52,11 @@
   version = "1.4.0"
 
 [[constraint]]
-  branch = "master"
-  name = "github.com/jrick/logrotate"
-
-[[constraint]]
   # Use bitlum source for lnd as a temporary fork till pull requests will be
   # merged
   name = "github.com/lightningnetwork/lnd"
   source = "github.com/bitlum/lnd"
-  revision = "625b210f441ece841c76b81377dd96e8d09aba8e"
+  revision = "b07499f227bd78dbceaa8c6ee047f1c033716cdf"
 
 [[constraint]]
   name = "github.com/prometheus/client_golang"
@@ -72,7 +68,7 @@
 
 [[constraint]]
   name = "google.golang.org/grpc"
-  revision = "b3ddf786825de56a4178401b7e174ee332173b66"
+  revision = "8dea3dc473e90c8179e519d91302d0597c0ca1d1"
 
 [[constraint]]
   name = "gopkg.in/macaroon.v2"
@@ -81,6 +77,10 @@
 [[constraint]]
   name = "github.com/jinzhu/gorm"
   version = "1.9.1"
+
+[[constraint]]
+  name = "github.com/montanaflynn/stats"
+  version = "0.3.0"
 
 
 [prune]
