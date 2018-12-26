@@ -1,4 +1,4 @@
-package crypto
+package rpc
 
 import (
 	"time"
@@ -11,15 +11,11 @@ import (
 const (
 	// subsystem is used as the second part in the name of the metric,
 	// after the metrics namespace.
-	subsystem = "crypto"
+	subsystem = "rpc"
 
-	// methodLabel is used to distinguish different methods during the
+	// requestLabel is used to distinguish different requests during the
 	// process of metric analysis and alert rule constructing.
-	methodLabel = "method"
-
-	// assetLabel is used to distinguish different currency and daemon on the
-	// metrics server.
-	assetLabel = "asset"
+	requestLabel = "request"
 
 	// severityLabel is used to distinguish different error codes by its
 	// level of importance.
@@ -29,50 +25,49 @@ const (
 // MetricsBackend is a system which is responsible for receiving and storing
 // the connector metricsBackend.
 type MetricsBackend interface {
-	AddMethod(asset, method string)
-	AddError(asset, method string, severity metrics.Severity)
-	AddPanic(asset, method string)
-	AddMethodDuration(asset, method string, dur time.Duration)
+	AddRequest(request string)
+	AddError(request string, severity metrics.Severity)
+	AddPanic(request string)
+	AddRequestDuration(request string, dur time.Duration)
 }
 
 // EmptyBackend is used as an empty metricsBackend backend in order to avoid
 type EmptyBackend struct{}
 
-func (b *EmptyBackend) AddMethod(query string)                            {}
-func (b *EmptyBackend) AddError(query string, errCode string)             {}
-func (b *EmptyBackend) AddPanic(query string)                             {}
-func (b *EmptyBackend) AddMethodDuration(query string, dur time.Duration) {}
+func (b *EmptyBackend) AddRequest(query string)                            {}
+func (b *EmptyBackend) AddError(query string, errCode string)              {}
+func (b *EmptyBackend) AddPanic(query string)                              {}
+func (b *EmptyBackend) AddRequestDuration(query string, dur time.Duration) {}
 
 // PrometheusBackend is the main subsystem metrics implementation. Uses
 // prometheus metrics singletons defined above.
 //
-// WARN: Method name should be taken from limited set.
+// WARN: request name should be taken from limited set.
 // Don't use dynamic naming, it may cause dramatic increase of the amount of
 // data on the metric server.
 //
 // NOTE: Non-pointer receiver made by intent to avoid conflict in the system
 // with parallel metrics report.
 type PrometheusBackend struct {
-	methodsTotal          *prometheus.CounterVec
-	errorsTotal           *prometheus.CounterVec
-	panicsTotal           *prometheus.CounterVec
-	methodDurationSeconds *prometheus.HistogramVec
+	requestsTotal          *prometheus.CounterVec
+	errorsTotal            *prometheus.CounterVec
+	panicsTotal            *prometheus.CounterVec
+	requestDurationSeconds *prometheus.HistogramVec
 }
 
-// AddMethod increases method counter for the given method name.
+// AddRequest increases request counter for the given request name.
 //
 // NOTE: Non-pointer receiver made by intent to avoid conflict in the system
 // with parallel metrics report.
-func (m PrometheusBackend) AddMethod(asset, method string) {
-	m.methodsTotal.With(
+func (m PrometheusBackend) AddRequest(request string) {
+	m.requestsTotal.With(
 		prometheus.Labels{
-			methodLabel: method,
-			assetLabel:  asset,
+			requestLabel: request,
 		},
 	).Add(1)
 }
 
-// AddError increases error counter for the given method name.
+// AddError increases error counter for the given request name.
 //
 // WARN: Error code name should be taken from limited set.
 // Don't use dynamic naming, it may cause dramatic increase of the amount of
@@ -80,41 +75,38 @@ func (m PrometheusBackend) AddMethod(asset, method string) {
 //
 // NOTE: Non-pointer receiver made by intent to avoid conflict in the system
 // with parallel metrics report.
-func (m PrometheusBackend) AddError(asset, method string,
+func (m PrometheusBackend) AddError(request string,
 	severity metrics.Severity) {
 	m.errorsTotal.With(
 		prometheus.Labels{
-			methodLabel:   method,
+			requestLabel:  request,
 			severityLabel: string(severity),
-			assetLabel:    asset,
 		},
 	).Add(1)
 }
 
-// AddPanic increases panic counter for the given method name.
+// AddPanic increases panic counter for the given request name.
 //
 // NOTE: Non-pointer receiver made by intent to avoid conflict in the system
 // with parallel metrics report.
-func (m PrometheusBackend) AddPanic(asset, method string) {
+func (m PrometheusBackend) AddPanic(request string) {
 	m.panicsTotal.With(
 		prometheus.Labels{
-			methodLabel: method,
-			assetLabel:  asset,
+			requestLabel: request,
 		},
 	).Add(1)
 }
 
-// AddMethodDuration sends the metric with how much time method has taken
+// AddRequestDuration sends the metric with how much time request has taken
 // to proceed.
 //
 // NOTE: Non-pointer receiver made by intent to avoid conflict in the system
 // with parallel metrics report.
-func (m PrometheusBackend) AddMethodDuration(asset, method string,
+func (m PrometheusBackend) AddRequestDuration(request string,
 	dur time.Duration) {
-	m.methodDurationSeconds.With(
+	m.requestDurationSeconds.With(
 		prometheus.Labels{
-			methodLabel: method,
-			assetLabel:  asset,
+			requestLabel: request,
 		},
 	).Observe(dur.Seconds())
 }
@@ -125,25 +117,24 @@ func (m PrometheusBackend) AddMethodDuration(asset, method string,
 func InitMetricsBackend(net string) (MetricsBackend, error) {
 	backend := PrometheusBackend{}
 
-	backend.methodsTotal = prometheus.NewCounterVec(
+	backend.requestsTotal = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Namespace: metrics.Namespace,
 			Subsystem: subsystem,
-			Name:      "methods_total",
-			Help:      "Total methods processed",
+			Name:      "requests_total",
+			Help:      "Total requests processed",
 			ConstLabels: prometheus.Labels{
 				metrics.NetLabel: net,
 			},
 		},
 		[]string{
-			methodLabel,
-			assetLabel,
+			requestLabel,
 		},
 	)
 
-	if err := prometheus.Register(backend.methodsTotal); err != nil {
+	if err := prometheus.Register(backend.requestsTotal); err != nil {
 		return backend, errors.Errorf(
-			"unable to register 'methodsTotal' metric:" +
+			"unable to register 'requestsTotal' metric:" +
 				err.Error())
 
 	}
@@ -153,14 +144,13 @@ func InitMetricsBackend(net string) (MetricsBackend, error) {
 			Namespace: metrics.Namespace,
 			Subsystem: subsystem,
 			Name:      "errors_total",
-			Help:      "Total methods which processing ended with error",
+			Help:      "Total requests which processing ended with error",
 			ConstLabels: prometheus.Labels{
 				metrics.NetLabel: net,
 			},
 		},
 		[]string{
-			methodLabel,
-			assetLabel,
+			requestLabel,
 			severityLabel,
 		},
 	)
@@ -177,14 +167,13 @@ func InitMetricsBackend(net string) (MetricsBackend, error) {
 			Namespace: metrics.Namespace,
 			Subsystem: subsystem,
 			Name:      "panics_total",
-			Help:      "Total methods which processing ended with panic",
+			Help:      "Total requests which processing ended with panic",
 			ConstLabels: prometheus.Labels{
 				metrics.NetLabel: net,
 			},
 		},
 		[]string{
-			methodLabel,
-			assetLabel,
+			requestLabel,
 		},
 	)
 
@@ -194,25 +183,24 @@ func InitMetricsBackend(net string) (MetricsBackend, error) {
 				err.Error())
 	}
 
-	backend.methodDurationSeconds = prometheus.NewHistogramVec(
+	backend.requestDurationSeconds = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Namespace: metrics.Namespace,
 			Subsystem: subsystem,
-			Name:      "method_duration_seconds",
-			Help:      "Method processing duration in seconds",
+			Name:      "request_duration_seconds",
+			Help:      "request processing duration in seconds",
 			ConstLabels: prometheus.Labels{
 				metrics.NetLabel: net,
 			},
 		},
 		[]string{
-			methodLabel,
-			assetLabel,
+			requestLabel,
 		},
 	)
 
-	if err := prometheus.Register(backend.methodDurationSeconds); err != nil {
+	if err := prometheus.Register(backend.requestDurationSeconds); err != nil {
 		return backend, errors.Errorf(
-			"unable to register 'methodDurationSeconds' metric: " +
+			"unable to register 'requestDurationSeconds' metric: " +
 				err.Error())
 	}
 

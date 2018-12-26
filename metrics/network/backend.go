@@ -173,7 +173,7 @@ func InitMetricsBackend(net string) (MetricsBackend, error) {
 			Namespace: metrics.Namespace,
 			Subsystem: subsystem,
 			Name:      "channels_current",
-			Help:      "Current channels connected to our lightning network" +
+			Help: "Current channels connected to our lightning network" +
 				" node",
 			ConstLabels: prometheus.Labels{
 				metrics.NetLabel: net,
@@ -220,7 +220,7 @@ func InitMetricsBackend(net string) (MetricsBackend, error) {
 			Namespace: metrics.Namespace,
 			Subsystem: subsystem,
 			Name:      "locked_funds_current",
-			Help:      "Current funds locked in local network of our" +
+			Help: "Current funds locked in local network of our" +
 				" lightning network node",
 			ConstLabels: prometheus.Labels{
 				metrics.NetLabel: net,
@@ -243,7 +243,7 @@ func InitMetricsBackend(net string) (MetricsBackend, error) {
 			Namespace: metrics.Namespace,
 			Subsystem: subsystem,
 			Name:      "free_funds_current",
-			Help:      "Current funds free under control of our lightning" +
+			Help: "Current funds free under control of our lightning" +
 				" network node",
 			ConstLabels: prometheus.Labels{
 				metrics.NetLabel: net,
@@ -265,7 +265,7 @@ func InitMetricsBackend(net string) (MetricsBackend, error) {
 			Namespace: metrics.Namespace,
 			Subsystem: subsystem,
 			Name:      "earned_total",
-			Help:      "Total funds earned under control of our lightning" +
+			Help: "Total funds earned under control of our lightning" +
 				" network node",
 			ConstLabels: prometheus.Labels{
 				metrics.NetLabel: net,
@@ -287,7 +287,7 @@ func InitMetricsBackend(net string) (MetricsBackend, error) {
 			Namespace: metrics.Namespace,
 			Subsystem: subsystem,
 			Name:      "forwards_total",
-			Help:      "Total payments forwarded through the our lightning" +
+			Help: "Total payments forwarded through the our lightning" +
 				" network node",
 			ConstLabels: prometheus.Labels{
 				metrics.NetLabel: net,
