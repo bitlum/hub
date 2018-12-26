@@ -17,7 +17,7 @@ RUN echo "HUB_REVISION: ${HUB_REVISION}" && \
 RUN dep ensure -v
 
 # Build hub
-RUN go install
+RUN go install . ./cmd/...
 
 FROM ubuntu:18.04
 
@@ -27,7 +27,8 @@ RUN update-ca-certificates
 RUN rm -rf /var/lib/apt/lists/*
 
 # This implies that service has been build of previos stage of dockerfile.
-COPY --from=builder go/bin/hub /usr/local/bin/
+COPY --from=builder go/bin/hub /usr/local/bin/hub
+COPY --from=builder go/bin/cli  /usr/local/bin/hubcli
 
 # Default config used to initalize datadir volume at first or
 # cleaned deploy. It will be restored and used after each restart.
