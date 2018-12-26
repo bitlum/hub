@@ -21,9 +21,6 @@ const (
 	defaultGraphQLPort       = "3000"
 	defaultGraphQLSecurePort = "3443"
 
-	defaultEmulateNetworkPort = "9393"
-	defaultEmulateNetworkHost = "localhost"
-
 	defaultLogDirname     = "logs"
 	defaultLogLevel       = "info"
 	defaultConfigFilename = "hub.conf"
