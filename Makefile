@@ -111,6 +111,11 @@ mainnet-logs:
 # Golang build  #
 # # # # # # # # #
 
+
+
+CCPATH := "/usr/local/gcc-4.8.1-for-linux64/bin/x86_64-pc-linux-gcc"
+GOBUILD := GOOS=linux GOARCH=amd64 CC=$(CCPATH) CGO_ENABLED=1 go build -v -i -o
+
 simnet-clean:
 		@$(call print, "Removing build simnet hub binaries...")
 		rm -rf ./docker/simnet/hub/bin/
@@ -121,11 +126,18 @@ testnet-clean:
 
 simnet-build:
 		@$(call print, "Building simnet hub...")
-		GOOS=linux GOARCH=amd64 CC=/usr/local/gcc-4.8.1-for-linux64/bin/x86_64-pc-linux-gcc CGO_ENABLED=1 go build -v -i -o ./docker/simnet/hub/bin/hub
+		$(GOBUILD) ./docker/simnet/hub/bin/hub  .
+		$(GOBUILD) ./docker/simnet/hub/bin/hubcli ./cmd/hubcli
+
+
+
 
 testnet-build:
 		@$(call print, "Building testnet hub...")
-		GOOS=linux GOARCH=amd64 CC=/usr/local/gcc-4.8.1-for-linux64/bin/x86_64-pc-linux-gcc CGO_ENABLED=1 go build -v -i -o ./docker/testnet/hub/bin/hub
+		$(GOBUILD) ./docker/testnet/hub/bin/hub .
+		$(GOBUILD) ./docker/testnet/hub/bin/hubcli ./cmd/hubcli
+
+
 
 ifeq ($(SLACK_HOOK),)
 simnet-deploy:
