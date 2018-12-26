@@ -279,6 +279,10 @@ func (c *Client) ListPayments(asset string, status lightning.PaymentStatus,
 
 	var payments []*lightning.Payment
 	for _, incomingPayment := range incomingPayments {
+		if !incomingPayment.Settled {
+			continue
+		}
+
 		payments = append(payments, &lightning.Payment{
 			PaymentID:   "",
 			Receiver:    c.lightningNodeUserID,
