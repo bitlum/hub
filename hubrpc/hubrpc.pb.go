@@ -8,12 +8,27 @@ It is generated from these files:
 	hubrpc.proto
 
 It has these top-level messages:
-	UpdateLinkRequest
-	UpdateLinkResponse
-	SetPaymentFeeBaseRequest
-	SetPaymentFeeBaseResponse
-	SetPaymentFeeProportionalRequest
-	SetPaymentFeeProportionalResponse
+	EmptyRequest
+	EmptyResponse
+	CheckNodeStatsRequest
+	CheckNodeStatsResponse
+	CreateInvoiceRequest
+	CreateInvoiceResponse
+	BalanceRequest
+	Balance
+	ValidateInvoiceResponse
+	Invoice
+	BalanceResponse
+	ValidateInvoiceRequest
+	EstimateFeeRequest
+	EstimateFeeResponse
+	SendPaymentRequest
+	PaymentByIDRequest
+	PaymentByInvoiceRequest
+	ListPaymentsRequest
+	ListPaymentsResponse
+	NodeIdentificator
+	Payment
 */
 package hubrpc
 
@@ -37,111 +52,1114 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 
-type UpdateLinkRequest struct {
-	// Time of the last sync with state of the lightning node.
-	Time         uint64 `protobuf:"varint,1,opt,name=time" json:"time,omitempty"`
-	UserId       string `protobuf:"bytes,2,opt,name=user_id,json=userId" json:"user_id,omitempty"`
-	LocalBalance int64  `protobuf:"varint,4,opt,name=local_balance,json=localBalance" json:"local_balance,omitempty"`
+// Media is a list of possible media types. Media is a type of technology which
+// is used to transport value of underlying asset.
+type Media int32
+
+const (
+	Media_MEDIA_NONE Media = 0
+	//
+	// BLOCKCHAIN means that blockchain direct used for making the payments.
+	Media_BLOCKCHAIN Media = 1
+	//
+	// LIGHTNING means that second layer on top of the blockchain is used for
+	// making the payments.
+	Media_LIGHTNING Media = 2
+)
+
+var Media_name = map[int32]string{
+	0: "MEDIA_NONE",
+	1: "BLOCKCHAIN",
+	2: "LIGHTNING",
+}
+var Media_value = map[string]int32{
+	"MEDIA_NONE": 0,
+	"BLOCKCHAIN": 1,
+	"LIGHTNING":  2,
 }
 
-func (m *UpdateLinkRequest) Reset()                    { *m = UpdateLinkRequest{} }
-func (m *UpdateLinkRequest) String() string            { return proto.CompactTextString(m) }
-func (*UpdateLinkRequest) ProtoMessage()               {}
-func (*UpdateLinkRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
+func (x Media) String() string {
+	return proto.EnumName(Media_name, int32(x))
+}
+func (Media) EnumDescriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
 
-func (m *UpdateLinkRequest) GetTime() uint64 {
-	if m != nil {
-		return m.Time
-	}
-	return 0
+// PaymentStatus denotes the stage of the processing the payment.
+type PaymentStatus int32
+
+const (
+	PaymentStatus_STATUS_NONE PaymentStatus = 0
+	//
+	// WAITING means that payment has been created and waiting to be approved
+	// for sending.
+	PaymentStatus_WAITING PaymentStatus = 1
+	//
+	// PENDING means that service is seeing the payment, but it not yet approved
+	// from the its POV.
+	PaymentStatus_PENDING PaymentStatus = 2
+	//
+	// COMPLETED in case of outgoing/incoming payment this means that we
+	// sent/received the transaction in/from the network and it was confirmed
+	// number of times service believe sufficient. In case of the forward
+	// transaction it means that we succesfully routed it through and
+	// earned fee for that.
+	PaymentStatus_COMPLETED PaymentStatus = 3
+	//
+	// FAILED means that services has tryied to send payment for couple of
+	// times, but without success, and now service gave up.
+	PaymentStatus_FAILED PaymentStatus = 4
+)
+
+var PaymentStatus_name = map[int32]string{
+	0: "STATUS_NONE",
+	1: "WAITING",
+	2: "PENDING",
+	3: "COMPLETED",
+	4: "FAILED",
+}
+var PaymentStatus_value = map[string]int32{
+	"STATUS_NONE": 0,
+	"WAITING":     1,
+	"PENDING":     2,
+	"COMPLETED":   3,
+	"FAILED":      4,
 }
 
-func (m *UpdateLinkRequest) GetUserId() string {
+func (x PaymentStatus) String() string {
+	return proto.EnumName(PaymentStatus_name, int32(x))
+}
+func (PaymentStatus) EnumDescriptor() ([]byte, []int) { return fileDescriptor0, []int{1} }
+
+// PaymentDirection denotes the direction of the payment, whether payment is
+// 	going form us to someone else, or form someone else to us.
+type PaymentDirection int32
+
+const (
+	PaymentDirection_DIRECTION_NONE PaymentDirection = 0
+	//
+	// INCOMING type of payment which service has received from someone else
+	// in the media.
+	PaymentDirection_INCOMING PaymentDirection = 1
+	//
+	// OUTGOING type of payment which service has sent to someone else in the
+	// media.
+	PaymentDirection_OUTGOING PaymentDirection = 2
+)
+
+var PaymentDirection_name = map[int32]string{
+	0: "DIRECTION_NONE",
+	1: "INCOMING",
+	2: "OUTGOING",
+}
+var PaymentDirection_value = map[string]int32{
+	"DIRECTION_NONE": 0,
+	"INCOMING":       1,
+	"OUTGOING":       2,
+}
+
+func (x PaymentDirection) String() string {
+	return proto.EnumName(PaymentDirection_name, int32(x))
+}
+func (PaymentDirection) EnumDescriptor() ([]byte, []int) { return fileDescriptor0, []int{2} }
+
+// PaymentSystemSystem denotes is that payment belongs to business logic of
+// payment server or it was originated by user / third-party service.
+type PaymentSystem int32
+
+const (
+	PaymentSystem_SYSTEM_NONE PaymentSystem = 0
+	//
+	// INTERNAL type of payment usually services the purpose of payment
+	// server itself for stabilisation of system.
+	PaymentSystem_INTERNAL PaymentSystem = 1
+	//
+	// EXTERNAL type of payment which was originated by user / third-party
+	// services, this is what usually interesting for external viewer. This
+	// type of payment changes balance.
+	PaymentSystem_EXTERNAL PaymentSystem = 2
+)
+
+var PaymentSystem_name = map[int32]string{
+	0: "SYSTEM_NONE",
+	1: "INTERNAL",
+	2: "EXTERNAL",
+}
+var PaymentSystem_value = map[string]int32{
+	"SYSTEM_NONE": 0,
+	"INTERNAL":    1,
+	"EXTERNAL":    2,
+}
+
+func (x PaymentSystem) String() string {
+	return proto.EnumName(PaymentSystem_name, int32(x))
+}
+func (PaymentSystem) EnumDescriptor() ([]byte, []int) { return fileDescriptor0, []int{3} }
+
+type EmptyRequest struct {
+}
+
+func (m *EmptyRequest) Reset()                    { *m = EmptyRequest{} }
+func (m *EmptyRequest) String() string            { return proto.CompactTextString(m) }
+func (*EmptyRequest) ProtoMessage()               {}
+func (*EmptyRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
+
+type EmptyResponse struct {
+}
+
+func (m *EmptyResponse) Reset()                    { *m = EmptyResponse{} }
+func (m *EmptyResponse) String() string            { return proto.CompactTextString(m) }
+func (*EmptyResponse) ProtoMessage()               {}
+func (*EmptyResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{1} }
+
+type CheckNodeStatsRequest struct {
+	Period string `protobuf:"bytes,1,opt,name=period" json:"period,omitempty"`
+	Node   string `protobuf:"bytes,2,opt,name=node" json:"node,omitempty"`
+}
+
+func (m *CheckNodeStatsRequest) Reset()                    { *m = CheckNodeStatsRequest{} }
+func (m *CheckNodeStatsRequest) String() string            { return proto.CompactTextString(m) }
+func (*CheckNodeStatsRequest) ProtoMessage()               {}
+func (*CheckNodeStatsRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{2} }
+
+func (m *CheckNodeStatsRequest) GetPeriod() string {
 	if m != nil {
-		return m.UserId
+		return m.Period
 	}
 	return ""
 }
 
-func (m *UpdateLinkRequest) GetLocalBalance() int64 {
+func (m *CheckNodeStatsRequest) GetNode() string {
 	if m != nil {
-		return m.LocalBalance
+		return m.Node
+	}
+	return ""
+}
+
+type CheckNodeStatsResponse struct {
+	Statuses []*CheckNodeStatsResponse_NodeStatus `protobuf:"bytes,1,rep,name=statuses" json:"statuses,omitempty"`
+}
+
+func (m *CheckNodeStatsResponse) Reset()                    { *m = CheckNodeStatsResponse{} }
+func (m *CheckNodeStatsResponse) String() string            { return proto.CompactTextString(m) }
+func (*CheckNodeStatsResponse) ProtoMessage()               {}
+func (*CheckNodeStatsResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{3} }
+
+func (m *CheckNodeStatsResponse) GetStatuses() []*CheckNodeStatsResponse_NodeStatus {
+	if m != nil {
+		return m.Statuses
+	}
+	return nil
+}
+
+type CheckNodeStatsResponse_NodeStatus struct {
+	// Name it is either alias of node, or given by us name. Alias is
+	// assigned by node owner itself, so we shouldn't count on it being
+	// meaningful, whereas name assigned by us should be checked.
+	Name string `protobuf:"bytes,1,opt,name=name" json:"name,omitempty"`
+	// Available shows whether or not we could send payment directly to
+	// the node.
+	Available bool `protobuf:"varint,2,opt,name=available" json:"available,omitempty"`
+	// Anomalies will show message about anomalies which are related to
+	// this node, such as not all funds being active, or node being
+	// offline, or not enough funds being locked within channels, and
+	// other.
+	Anomalies []string `protobuf:"bytes,3,rep,name=anomalies" json:"anomalies,omitempty"`
+}
+
+func (m *CheckNodeStatsResponse_NodeStatus) Reset()         { *m = CheckNodeStatsResponse_NodeStatus{} }
+func (m *CheckNodeStatsResponse_NodeStatus) String() string { return proto.CompactTextString(m) }
+func (*CheckNodeStatsResponse_NodeStatus) ProtoMessage()    {}
+func (*CheckNodeStatsResponse_NodeStatus) Descriptor() ([]byte, []int) {
+	return fileDescriptor0, []int{3, 0}
+}
+
+func (m *CheckNodeStatsResponse_NodeStatus) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
+func (m *CheckNodeStatsResponse_NodeStatus) GetAvailable() bool {
+	if m != nil {
+		return m.Available
+	}
+	return false
+}
+
+func (m *CheckNodeStatsResponse_NodeStatus) GetAnomalies() []string {
+	if m != nil {
+		return m.Anomalies
+	}
+	return nil
+}
+
+type CheckNodeStatsResponse_NodeStatus_ChannelStats struct {
+	// LockedLocallyActive is number of funds aggregated from all channels,
+	// which could be used for send the payments. (In USD)
+	LockedLocallyActive string `protobuf:"bytes,1,opt,name=locked_locally_active,json=lockedLocallyActive" json:"locked_locally_active,omitempty"`
+	// LockedRemotelyActive is number of funds aggregated from all channels,
+	// which could be used for receiving the payments. (In USD)
+	LockedRemotelyActive string `protobuf:"bytes,2,opt,name=locked_remotely_active,json=lockedRemotelyActive" json:"locked_remotely_active,omitempty"`
+	// LockedLocallyOverall is number of funds aggregated from all channels,
+	// which are locked on local side. This number include pending, as well
+	// as active funds. (In USD)
+	LockedLocallyOverall string `protobuf:"bytes,3,opt,name=locked_locally_overall,json=lockedLocallyOverall" json:"locked_locally_overall,omitempty"`
+	// LockedRemotelyOverall is number of funds aggregated from all channels,
+	// which are locked on remote side. This number include pending, as well
+	// as active funds. (In USD)
+	LockedRemotelyOverall string `protobuf:"bytes,4,opt,name=locked_remotely_overall,json=lockedRemotelyOverall" json:"locked_remotely_overall,omitempty"`
+}
+
+func (m *CheckNodeStatsResponse_NodeStatus_ChannelStats) Reset() {
+	*m = CheckNodeStatsResponse_NodeStatus_ChannelStats{}
+}
+func (m *CheckNodeStatsResponse_NodeStatus_ChannelStats) String() string {
+	return proto.CompactTextString(m)
+}
+func (*CheckNodeStatsResponse_NodeStatus_ChannelStats) ProtoMessage() {}
+func (*CheckNodeStatsResponse_NodeStatus_ChannelStats) Descriptor() ([]byte, []int) {
+	return fileDescriptor0, []int{3, 0, 0}
+}
+
+func (m *CheckNodeStatsResponse_NodeStatus_ChannelStats) GetLockedLocallyActive() string {
+	if m != nil {
+		return m.LockedLocallyActive
+	}
+	return ""
+}
+
+func (m *CheckNodeStatsResponse_NodeStatus_ChannelStats) GetLockedRemotelyActive() string {
+	if m != nil {
+		return m.LockedRemotelyActive
+	}
+	return ""
+}
+
+func (m *CheckNodeStatsResponse_NodeStatus_ChannelStats) GetLockedLocallyOverall() string {
+	if m != nil {
+		return m.LockedLocallyOverall
+	}
+	return ""
+}
+
+func (m *CheckNodeStatsResponse_NodeStatus_ChannelStats) GetLockedRemotelyOverall() string {
+	if m != nil {
+		return m.LockedRemotelyOverall
+	}
+	return ""
+}
+
+type CheckNodeStatsResponse_NodeStatus_PaymentsStats struct {
+	// AverageSentForwardSat is the number of funds which were sent
+	// to this node generated by forwarding activity in the network. (In USD)
+	//
+	// NOTE: This metric will be non-zero if we have direct channel with node.
+	AverageSentForward string `protobuf:"bytes,1,opt,name=average_sent_forward,json=averageSentForward" json:"average_sent_forward,omitempty"`
+	// AverageReceivedForwardSat is the number of funds which were received
+	// from this node generated by forwarding activity in the network. (In USD)
+	//
+	// NOTE: This metric will be non-zero if we have direct channel with node.
+	AverageReceivedForward string `protobuf:"bytes,2,opt,name=average_received_forward,json=averageReceivedForward" json:"average_received_forward,omitempty"`
+	// AverageSent is the number of funds which were sens from
+	// us to remote node, calculated over given period of time.
+	// For example: average sent funds during the day, calculated over
+	// week period. (In USD)
+	AverageSent            string `protobuf:"bytes,3,opt,name=average_sent,json=averageSent" json:"average_sent,omitempty"`
+	OverallSentForward     string `protobuf:"bytes,4,opt,name=overall_sent_forward,json=overallSentForward" json:"overall_sent_forward,omitempty"`
+	OverallReceivedForward string `protobuf:"bytes,5,opt,name=overall_received_forward,json=overallReceivedForward" json:"overall_received_forward,omitempty"`
+	OverallSent            string `protobuf:"bytes,6,opt,name=overall_sent,json=overallSent" json:"overall_sent,omitempty"`
+	NumSent                string `protobuf:"bytes,7,opt,name=num_sent,json=numSent" json:"num_sent,omitempty"`
+	NumReceivedForward     string `protobuf:"bytes,8,opt,name=num_received_forward,json=numReceivedForward" json:"num_received_forward,omitempty"`
+	NumSentForward         string `protobuf:"bytes,9,opt,name=num_sent_forward,json=numSentForward" json:"num_sent_forward,omitempty"`
+}
+
+func (m *CheckNodeStatsResponse_NodeStatus_PaymentsStats) Reset() {
+	*m = CheckNodeStatsResponse_NodeStatus_PaymentsStats{}
+}
+func (m *CheckNodeStatsResponse_NodeStatus_PaymentsStats) String() string {
+	return proto.CompactTextString(m)
+}
+func (*CheckNodeStatsResponse_NodeStatus_PaymentsStats) ProtoMessage() {}
+func (*CheckNodeStatsResponse_NodeStatus_PaymentsStats) Descriptor() ([]byte, []int) {
+	return fileDescriptor0, []int{3, 0, 1}
+}
+
+func (m *CheckNodeStatsResponse_NodeStatus_PaymentsStats) GetAverageSentForward() string {
+	if m != nil {
+		return m.AverageSentForward
+	}
+	return ""
+}
+
+func (m *CheckNodeStatsResponse_NodeStatus_PaymentsStats) GetAverageReceivedForward() string {
+	if m != nil {
+		return m.AverageReceivedForward
+	}
+	return ""
+}
+
+func (m *CheckNodeStatsResponse_NodeStatus_PaymentsStats) GetAverageSent() string {
+	if m != nil {
+		return m.AverageSent
+	}
+	return ""
+}
+
+func (m *CheckNodeStatsResponse_NodeStatus_PaymentsStats) GetOverallSentForward() string {
+	if m != nil {
+		return m.OverallSentForward
+	}
+	return ""
+}
+
+func (m *CheckNodeStatsResponse_NodeStatus_PaymentsStats) GetOverallReceivedForward() string {
+	if m != nil {
+		return m.OverallReceivedForward
+	}
+	return ""
+}
+
+func (m *CheckNodeStatsResponse_NodeStatus_PaymentsStats) GetOverallSent() string {
+	if m != nil {
+		return m.OverallSent
+	}
+	return ""
+}
+
+func (m *CheckNodeStatsResponse_NodeStatus_PaymentsStats) GetNumSent() string {
+	if m != nil {
+		return m.NumSent
+	}
+	return ""
+}
+
+func (m *CheckNodeStatsResponse_NodeStatus_PaymentsStats) GetNumReceivedForward() string {
+	if m != nil {
+		return m.NumReceivedForward
+	}
+	return ""
+}
+
+func (m *CheckNodeStatsResponse_NodeStatus_PaymentsStats) GetNumSentForward() string {
+	if m != nil {
+		return m.NumSentForward
+	}
+	return ""
+}
+
+type CheckNodeStatsResponse_NodeStatus_RankStats struct {
+	RankPaymentsSentNum    int64 `protobuf:"varint,1,opt,name=rank_payments_sent_num,json=rankPaymentsSentNum" json:"rank_payments_sent_num,omitempty"`
+	RankPaymentsSentVolume int64 `protobuf:"varint,2,opt,name=rank_payments_sent_volume,json=rankPaymentsSentVolume" json:"rank_payments_sent_volume,omitempty"`
+	RankIdle               int64 `protobuf:"varint,3,opt,name=rank_idle,json=rankIdle" json:"rank_idle,omitempty"`
+	RankForwardActivity    int64 `protobuf:"varint,4,opt,name=rank_forward_activity,json=rankForwardActivity" json:"rank_forward_activity,omitempty"`
+}
+
+func (m *CheckNodeStatsResponse_NodeStatus_RankStats) Reset() {
+	*m = CheckNodeStatsResponse_NodeStatus_RankStats{}
+}
+func (m *CheckNodeStatsResponse_NodeStatus_RankStats) String() string {
+	return proto.CompactTextString(m)
+}
+func (*CheckNodeStatsResponse_NodeStatus_RankStats) ProtoMessage() {}
+func (*CheckNodeStatsResponse_NodeStatus_RankStats) Descriptor() ([]byte, []int) {
+	return fileDescriptor0, []int{3, 0, 2}
+}
+
+func (m *CheckNodeStatsResponse_NodeStatus_RankStats) GetRankPaymentsSentNum() int64 {
+	if m != nil {
+		return m.RankPaymentsSentNum
 	}
 	return 0
 }
 
-type UpdateLinkResponse struct {
-}
-
-func (m *UpdateLinkResponse) Reset()                    { *m = UpdateLinkResponse{} }
-func (m *UpdateLinkResponse) String() string            { return proto.CompactTextString(m) }
-func (*UpdateLinkResponse) ProtoMessage()               {}
-func (*UpdateLinkResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{1} }
-
-type SetPaymentFeeBaseRequest struct {
-	// PaymentFeeBase number of milli units (i.e milli satoshis in
-	// Bitcoin) which will be taken for every forwarding payment.
-	PaymentFeeBase int64 `protobuf:"varint,1,opt,name=payment_fee_base,json=paymentFeeBase" json:"payment_fee_base,omitempty"`
-}
-
-func (m *SetPaymentFeeBaseRequest) Reset()                    { *m = SetPaymentFeeBaseRequest{} }
-func (m *SetPaymentFeeBaseRequest) String() string            { return proto.CompactTextString(m) }
-func (*SetPaymentFeeBaseRequest) ProtoMessage()               {}
-func (*SetPaymentFeeBaseRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{2} }
-
-func (m *SetPaymentFeeBaseRequest) GetPaymentFeeBase() int64 {
+func (m *CheckNodeStatsResponse_NodeStatus_RankStats) GetRankPaymentsSentVolume() int64 {
 	if m != nil {
-		return m.PaymentFeeBase
+		return m.RankPaymentsSentVolume
 	}
 	return 0
 }
 
-type SetPaymentFeeBaseResponse struct {
-}
-
-func (m *SetPaymentFeeBaseResponse) Reset()                    { *m = SetPaymentFeeBaseResponse{} }
-func (m *SetPaymentFeeBaseResponse) String() string            { return proto.CompactTextString(m) }
-func (*SetPaymentFeeBaseResponse) ProtoMessage()               {}
-func (*SetPaymentFeeBaseResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{3} }
-
-type SetPaymentFeeProportionalRequest struct {
-	// PaymentFeeProportional number of milli units (i.e milli
-	// satoshis in Bitcoin) which will be taken for every killounit of
-	// payment amount.
-	PaymentFeeProportional int64 `protobuf:"varint,1,opt,name=payment_fee_proportional,json=paymentFeeProportional" json:"payment_fee_proportional,omitempty"`
-}
-
-func (m *SetPaymentFeeProportionalRequest) Reset()         { *m = SetPaymentFeeProportionalRequest{} }
-func (m *SetPaymentFeeProportionalRequest) String() string { return proto.CompactTextString(m) }
-func (*SetPaymentFeeProportionalRequest) ProtoMessage()    {}
-func (*SetPaymentFeeProportionalRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor0, []int{4}
-}
-
-func (m *SetPaymentFeeProportionalRequest) GetPaymentFeeProportional() int64 {
+func (m *CheckNodeStatsResponse_NodeStatus_RankStats) GetRankIdle() int64 {
 	if m != nil {
-		return m.PaymentFeeProportional
+		return m.RankIdle
 	}
 	return 0
 }
 
-type SetPaymentFeeProportionalResponse struct {
+func (m *CheckNodeStatsResponse_NodeStatus_RankStats) GetRankForwardActivity() int64 {
+	if m != nil {
+		return m.RankForwardActivity
+	}
+	return 0
 }
 
-func (m *SetPaymentFeeProportionalResponse) Reset()         { *m = SetPaymentFeeProportionalResponse{} }
-func (m *SetPaymentFeeProportionalResponse) String() string { return proto.CompactTextString(m) }
-func (*SetPaymentFeeProportionalResponse) ProtoMessage()    {}
-func (*SetPaymentFeeProportionalResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor0, []int{5}
+type CreateInvoiceRequest struct {
+	//
+	// (optional) Amount is the amount which should be received on this
+	// receipt, in bitcoin.
+	Amount string `protobuf:"bytes,1,opt,name=amount" json:"amount,omitempty"`
+	//
+	// (optional) Description description will be placed in the invoice itself,
+	// which would allow user to see what he paid for later in the wallet.
+	Description string `protobuf:"bytes,2,opt,name=description" json:"description,omitempty"`
+}
+
+func (m *CreateInvoiceRequest) Reset()                    { *m = CreateInvoiceRequest{} }
+func (m *CreateInvoiceRequest) String() string            { return proto.CompactTextString(m) }
+func (*CreateInvoiceRequest) ProtoMessage()               {}
+func (*CreateInvoiceRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{4} }
+
+func (m *CreateInvoiceRequest) GetAmount() string {
+	if m != nil {
+		return m.Amount
+	}
+	return ""
+}
+
+func (m *CreateInvoiceRequest) GetDescription() string {
+	if m != nil {
+		return m.Description
+	}
+	return ""
+}
+
+type CreateInvoiceResponse struct {
+	//
+	// When this invoice was created.
+	// NOTE: Only returns for lightning network media.
+	CreationDate int64 `protobuf:"varint,1,opt,name=creation_date,json=creationDate" json:"creation_date,omitempty"`
+	//
+	// Invoice it is lightning network invoice, which is the string which
+	// contains amount, description, destination, and other info which is
+	// needed for sender to successfully send payment.
+	Invoice string `protobuf:"bytes,2,opt,name=invoice" json:"invoice,omitempty"`
+	//
+	// Invoice expiry time in seconds. Default is 3600 (1 hour).
+	// NOTE: Only returns for lightning network media.
+	Expiry int64 `protobuf:"varint,3,opt,name=expiry" json:"expiry,omitempty"`
+}
+
+func (m *CreateInvoiceResponse) Reset()                    { *m = CreateInvoiceResponse{} }
+func (m *CreateInvoiceResponse) String() string            { return proto.CompactTextString(m) }
+func (*CreateInvoiceResponse) ProtoMessage()               {}
+func (*CreateInvoiceResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{5} }
+
+func (m *CreateInvoiceResponse) GetCreationDate() int64 {
+	if m != nil {
+		return m.CreationDate
+	}
+	return 0
+}
+
+func (m *CreateInvoiceResponse) GetInvoice() string {
+	if m != nil {
+		return m.Invoice
+	}
+	return ""
+}
+
+func (m *CreateInvoiceResponse) GetExpiry() int64 {
+	if m != nil {
+		return m.Expiry
+	}
+	return 0
+}
+
+type BalanceRequest struct {
+}
+
+func (m *BalanceRequest) Reset()                    { *m = BalanceRequest{} }
+func (m *BalanceRequest) String() string            { return proto.CompactTextString(m) }
+func (*BalanceRequest) ProtoMessage()               {}
+func (*BalanceRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{6} }
+
+type Balance struct {
+	//
+	// Available is the number of funds which could be used by this account
+	// to send funds to someone else.
+	Available string `protobuf:"bytes,1,opt,name=available" json:"available,omitempty"`
+	//
+	// Pending funds in pending payment channels.
+	Pending string `protobuf:"bytes,2,opt,name=pending" json:"pending,omitempty"`
+}
+
+func (m *Balance) Reset()                    { *m = Balance{} }
+func (m *Balance) String() string            { return proto.CompactTextString(m) }
+func (*Balance) ProtoMessage()               {}
+func (*Balance) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{7} }
+
+func (m *Balance) GetAvailable() string {
+	if m != nil {
+		return m.Available
+	}
+	return ""
+}
+
+func (m *Balance) GetPending() string {
+	if m != nil {
+		return m.Pending
+	}
+	return ""
+}
+
+type ValidateInvoiceResponse struct {
+	//
+	// Invoice it is lightning network invoice, which is the string which
+	// contains amount, description, destination, and other info which is
+	// needed for sender to successfully send payment.
+	Invoice *Invoice `protobuf:"bytes,1,opt,name=invoice" json:"invoice,omitempty"`
+}
+
+func (m *ValidateInvoiceResponse) Reset()                    { *m = ValidateInvoiceResponse{} }
+func (m *ValidateInvoiceResponse) String() string            { return proto.CompactTextString(m) }
+func (*ValidateInvoiceResponse) ProtoMessage()               {}
+func (*ValidateInvoiceResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{8} }
+
+func (m *ValidateInvoiceResponse) GetInvoice() *Invoice {
+	if m != nil {
+		return m.Invoice
+	}
+	return nil
+}
+
+type Invoice struct {
+	//
+	// An optional memo to attach along with the invoice. Used for record keeping
+	// purposes for the invoice's creator, and will also be set in the
+	// description field of the encoded payment request if the
+	// description_hash field is not being used.
+	Memo string `protobuf:"bytes,1,opt,name=memo" json:"memo,omitempty"`
+	//
+	// The value of this invoice in bitcoins.
+	Value string `protobuf:"bytes,2,opt,name=value" json:"value,omitempty"`
+	//
+	// When this invoice was created.
+	CreationDate int64 `protobuf:"varint,3,opt,name=creation_date,json=creationDate" json:"creation_date,omitempty"`
+	//
+	// Invoice expiry time in seconds. Default is 3600 (1 hour).
+	Expiry int64 `protobuf:"varint,4,opt,name=expiry" json:"expiry,omitempty"`
+	//
+	// Fallback on-chain address in case of lightning network payment fail.
+	FallbackAddr string `protobuf:"bytes,5,opt,name=fallback_addr,json=fallbackAddr" json:"fallback_addr,omitempty"`
+	//
+	// Lightning Network public key of receiving node.
+	Destination string `protobuf:"bytes,6,opt,name=destination" json:"destination,omitempty"`
+}
+
+func (m *Invoice) Reset()                    { *m = Invoice{} }
+func (m *Invoice) String() string            { return proto.CompactTextString(m) }
+func (*Invoice) ProtoMessage()               {}
+func (*Invoice) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{9} }
+
+func (m *Invoice) GetMemo() string {
+	if m != nil {
+		return m.Memo
+	}
+	return ""
+}
+
+func (m *Invoice) GetValue() string {
+	if m != nil {
+		return m.Value
+	}
+	return ""
+}
+
+func (m *Invoice) GetCreationDate() int64 {
+	if m != nil {
+		return m.CreationDate
+	}
+	return 0
+}
+
+func (m *Invoice) GetExpiry() int64 {
+	if m != nil {
+		return m.Expiry
+	}
+	return 0
+}
+
+func (m *Invoice) GetFallbackAddr() string {
+	if m != nil {
+		return m.FallbackAddr
+	}
+	return ""
+}
+
+func (m *Invoice) GetDestination() string {
+	if m != nil {
+		return m.Destination
+	}
+	return ""
+}
+
+type BalanceResponse struct {
+	Balances []*Balance `protobuf:"bytes,1,rep,name=balances" json:"balances,omitempty"`
+}
+
+func (m *BalanceResponse) Reset()                    { *m = BalanceResponse{} }
+func (m *BalanceResponse) String() string            { return proto.CompactTextString(m) }
+func (*BalanceResponse) ProtoMessage()               {}
+func (*BalanceResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{10} }
+
+func (m *BalanceResponse) GetBalances() []*Balance {
+	if m != nil {
+		return m.Balances
+	}
+	return nil
+}
+
+type ValidateInvoiceRequest struct {
+	//
+	// Invoice it is lightning network invoice, which is the string which
+	// contains amount, description, destination, and other info which is
+	// needed for sender to successfully send payment.
+	Invoice string `protobuf:"bytes,1,opt,name=invoice" json:"invoice,omitempty"`
+	//
+	// (optional) Amount is the amount which should be received on this
+	// receipt, in bitcoin.
+	Amount string `protobuf:"bytes,2,opt,name=amount" json:"amount,omitempty"`
+}
+
+func (m *ValidateInvoiceRequest) Reset()                    { *m = ValidateInvoiceRequest{} }
+func (m *ValidateInvoiceRequest) String() string            { return proto.CompactTextString(m) }
+func (*ValidateInvoiceRequest) ProtoMessage()               {}
+func (*ValidateInvoiceRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{11} }
+
+func (m *ValidateInvoiceRequest) GetInvoice() string {
+	if m != nil {
+		return m.Invoice
+	}
+	return ""
+}
+
+func (m *ValidateInvoiceRequest) GetAmount() string {
+	if m != nil {
+		return m.Amount
+	}
+	return ""
+}
+
+type EstimateFeeRequest struct {
+	//
+	// (optional) Amount is number of money which should be given to the
+	// another entity, in bitcoin.
+	Amount string `protobuf:"bytes,1,opt,name=amount" json:"amount,omitempty"`
+	//
+	// Invoice it is lightning network invoice, which is the string which
+	// contains amount, description, destination, and other info which is
+	// needed for sender to successfully send payment.
+	Invoice string `protobuf:"bytes,2,opt,name=invoice" json:"invoice,omitempty"`
+}
+
+func (m *EstimateFeeRequest) Reset()                    { *m = EstimateFeeRequest{} }
+func (m *EstimateFeeRequest) String() string            { return proto.CompactTextString(m) }
+func (*EstimateFeeRequest) ProtoMessage()               {}
+func (*EstimateFeeRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{12} }
+
+func (m *EstimateFeeRequest) GetAmount() string {
+	if m != nil {
+		return m.Amount
+	}
+	return ""
+}
+
+func (m *EstimateFeeRequest) GetInvoice() string {
+	if m != nil {
+		return m.Invoice
+	}
+	return ""
+}
+
+type EstimateFeeResponse struct {
+	//
+	// MediaFee is the fee which is taken by the lightning
+	// network in order to propagate the payment.
+	MediaFee string `protobuf:"bytes,1,opt,name=media_fee,json=mediaFee" json:"media_fee,omitempty"`
+}
+
+func (m *EstimateFeeResponse) Reset()                    { *m = EstimateFeeResponse{} }
+func (m *EstimateFeeResponse) String() string            { return proto.CompactTextString(m) }
+func (*EstimateFeeResponse) ProtoMessage()               {}
+func (*EstimateFeeResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{13} }
+
+func (m *EstimateFeeResponse) GetMediaFee() string {
+	if m != nil {
+		return m.MediaFee
+	}
+	return ""
+}
+
+type SendPaymentRequest struct {
+	//
+	// Amount is number of money which should be given to the another entity,
+	// in bitcoin.
+	Amount string `protobuf:"bytes,1,opt,name=amount" json:"amount,omitempty"`
+	//
+	// Invoice it is lightning network invoice, which is the string which
+	// contains amount, description, destination, and other info which is
+	// needed for sender to successfully send payment.
+	Invoice string `protobuf:"bytes,2,opt,name=invoice" json:"invoice,omitempty"`
+}
+
+func (m *SendPaymentRequest) Reset()                    { *m = SendPaymentRequest{} }
+func (m *SendPaymentRequest) String() string            { return proto.CompactTextString(m) }
+func (*SendPaymentRequest) ProtoMessage()               {}
+func (*SendPaymentRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{14} }
+
+func (m *SendPaymentRequest) GetAmount() string {
+	if m != nil {
+		return m.Amount
+	}
+	return ""
+}
+
+func (m *SendPaymentRequest) GetInvoice() string {
+	if m != nil {
+		return m.Invoice
+	}
+	return ""
+}
+
+type PaymentByIDRequest struct {
+	//
+	// PaymentID is the payment id which was created by service itself,
+	// for unified identification of the payment.
+	PaymentId string `protobuf:"bytes,1,opt,name=payment_id,json=paymentId" json:"payment_id,omitempty"`
+}
+
+func (m *PaymentByIDRequest) Reset()                    { *m = PaymentByIDRequest{} }
+func (m *PaymentByIDRequest) String() string            { return proto.CompactTextString(m) }
+func (*PaymentByIDRequest) ProtoMessage()               {}
+func (*PaymentByIDRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{15} }
+
+func (m *PaymentByIDRequest) GetPaymentId() string {
+	if m != nil {
+		return m.PaymentId
+	}
+	return ""
+}
+
+type PaymentByInvoiceRequest struct {
+	//
+	// Invoice it is lightning network invoice, which is the string which
+	// contains amount, description, destination, and other info which is
+	// needed for sender to successfully send payment.
+	Invoice string `protobuf:"bytes,1,opt,name=invoice" json:"invoice,omitempty"`
+}
+
+func (m *PaymentByInvoiceRequest) Reset()                    { *m = PaymentByInvoiceRequest{} }
+func (m *PaymentByInvoiceRequest) String() string            { return proto.CompactTextString(m) }
+func (*PaymentByInvoiceRequest) ProtoMessage()               {}
+func (*PaymentByInvoiceRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{16} }
+
+func (m *PaymentByInvoiceRequest) GetInvoice() string {
+	if m != nil {
+		return m.Invoice
+	}
+	return ""
+}
+
+type ListPaymentsRequest struct {
+	//
+	// (optional) Status denotes the stage of the processing the payment.
+	Status PaymentStatus `protobuf:"varint,1,opt,name=status,enum=hubrpc.PaymentStatus" json:"status,omitempty"`
+	//
+	// (optional) Direction denotes the direction of the payment.
+	Direction PaymentDirection `protobuf:"varint,2,opt,name=direction,enum=hubrpc.PaymentDirection" json:"direction,omitempty"`
+	//
+	// (optional) PaymentSystem denotes is that payment belongs to business
+	// logic of payment server or it was originated by user / third-party
+	// service.
+	System PaymentSystem `protobuf:"varint,3,opt,name=system,enum=hubrpc.PaymentSystem" json:"system,omitempty"`
+}
+
+func (m *ListPaymentsRequest) Reset()                    { *m = ListPaymentsRequest{} }
+func (m *ListPaymentsRequest) String() string            { return proto.CompactTextString(m) }
+func (*ListPaymentsRequest) ProtoMessage()               {}
+func (*ListPaymentsRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{17} }
+
+func (m *ListPaymentsRequest) GetStatus() PaymentStatus {
+	if m != nil {
+		return m.Status
+	}
+	return PaymentStatus_STATUS_NONE
+}
+
+func (m *ListPaymentsRequest) GetDirection() PaymentDirection {
+	if m != nil {
+		return m.Direction
+	}
+	return PaymentDirection_DIRECTION_NONE
+}
+
+func (m *ListPaymentsRequest) GetSystem() PaymentSystem {
+	if m != nil {
+		return m.System
+	}
+	return PaymentSystem_SYSTEM_NONE
+}
+
+type ListPaymentsResponse struct {
+	Payments []*Payment `protobuf:"bytes,1,rep,name=payments" json:"payments,omitempty"`
+}
+
+func (m *ListPaymentsResponse) Reset()                    { *m = ListPaymentsResponse{} }
+func (m *ListPaymentsResponse) String() string            { return proto.CompactTextString(m) }
+func (*ListPaymentsResponse) ProtoMessage()               {}
+func (*ListPaymentsResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{18} }
+
+func (m *ListPaymentsResponse) GetPayments() []*Payment {
+	if m != nil {
+		return m.Payments
+	}
+	return nil
+}
+
+type NodeIdentificator struct {
+	// Types that are valid to be assigned to Identificator:
+	//	*NodeIdentificator_NodePubKey
+	//	*NodeIdentificator_NodeName
+	Identificator isNodeIdentificator_Identificator `protobuf_oneof:"identificator"`
+}
+
+func (m *NodeIdentificator) Reset()                    { *m = NodeIdentificator{} }
+func (m *NodeIdentificator) String() string            { return proto.CompactTextString(m) }
+func (*NodeIdentificator) ProtoMessage()               {}
+func (*NodeIdentificator) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{19} }
+
+type isNodeIdentificator_Identificator interface{ isNodeIdentificator_Identificator() }
+
+type NodeIdentificator_NodePubKey struct {
+	NodePubKey string `protobuf:"bytes,1,opt,name=node_pub_key,json=nodePubKey,oneof"`
+}
+type NodeIdentificator_NodeName struct {
+	NodeName string `protobuf:"bytes,2,opt,name=node_name,json=nodeName,oneof"`
+}
+
+func (*NodeIdentificator_NodePubKey) isNodeIdentificator_Identificator() {}
+func (*NodeIdentificator_NodeName) isNodeIdentificator_Identificator()   {}
+
+func (m *NodeIdentificator) GetIdentificator() isNodeIdentificator_Identificator {
+	if m != nil {
+		return m.Identificator
+	}
+	return nil
+}
+
+func (m *NodeIdentificator) GetNodePubKey() string {
+	if x, ok := m.GetIdentificator().(*NodeIdentificator_NodePubKey); ok {
+		return x.NodePubKey
+	}
+	return ""
+}
+
+func (m *NodeIdentificator) GetNodeName() string {
+	if x, ok := m.GetIdentificator().(*NodeIdentificator_NodeName); ok {
+		return x.NodeName
+	}
+	return ""
+}
+
+// XXX_OneofFuncs is for the internal use of the proto package.
+func (*NodeIdentificator) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
+	return _NodeIdentificator_OneofMarshaler, _NodeIdentificator_OneofUnmarshaler, _NodeIdentificator_OneofSizer, []interface{}{
+		(*NodeIdentificator_NodePubKey)(nil),
+		(*NodeIdentificator_NodeName)(nil),
+	}
+}
+
+func _NodeIdentificator_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
+	m := msg.(*NodeIdentificator)
+	// identificator
+	switch x := m.Identificator.(type) {
+	case *NodeIdentificator_NodePubKey:
+		b.EncodeVarint(1<<3 | proto.WireBytes)
+		b.EncodeStringBytes(x.NodePubKey)
+	case *NodeIdentificator_NodeName:
+		b.EncodeVarint(2<<3 | proto.WireBytes)
+		b.EncodeStringBytes(x.NodeName)
+	case nil:
+	default:
+		return fmt.Errorf("NodeIdentificator.Identificator has unexpected type %T", x)
+	}
+	return nil
+}
+
+func _NodeIdentificator_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
+	m := msg.(*NodeIdentificator)
+	switch tag {
+	case 1: // identificator.node_pub_key
+		if wire != proto.WireBytes {
+			return true, proto.ErrInternalBadWireType
+		}
+		x, err := b.DecodeStringBytes()
+		m.Identificator = &NodeIdentificator_NodePubKey{x}
+		return true, err
+	case 2: // identificator.node_name
+		if wire != proto.WireBytes {
+			return true, proto.ErrInternalBadWireType
+		}
+		x, err := b.DecodeStringBytes()
+		m.Identificator = &NodeIdentificator_NodeName{x}
+		return true, err
+	default:
+		return false, nil
+	}
+}
+
+func _NodeIdentificator_OneofSizer(msg proto.Message) (n int) {
+	m := msg.(*NodeIdentificator)
+	// identificator
+	switch x := m.Identificator.(type) {
+	case *NodeIdentificator_NodePubKey:
+		n += proto.SizeVarint(1<<3 | proto.WireBytes)
+		n += proto.SizeVarint(uint64(len(x.NodePubKey)))
+		n += len(x.NodePubKey)
+	case *NodeIdentificator_NodeName:
+		n += proto.SizeVarint(2<<3 | proto.WireBytes)
+		n += proto.SizeVarint(uint64(len(x.NodeName)))
+		n += len(x.NodeName)
+	case nil:
+	default:
+		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
+	}
+	return n
+}
+
+type Payment struct {
+	//
+	// PaymentID it is unique identificator of the payment generated inside
+	// the system.
+	PaymentId string `protobuf:"bytes,1,opt,name=payment_id,json=paymentId" json:"payment_id,omitempty"`
+	//
+	// UpdatedAt denotes the time when payment object has been last updated.
+	UpdatedAt int64 `protobuf:"varint,2,opt,name=updated_at,json=updatedAt" json:"updated_at,omitempty"`
+	//
+	// Status denotes the stage of the processing the payment.
+	Status PaymentStatus `protobuf:"varint,3,opt,name=status,enum=hubrpc.PaymentStatus" json:"status,omitempty"`
+	//
+	// Direction denotes the direction of the payment, whether
+	// payment is going form us to someone else, or form someone else to us.
+	Direction PaymentDirection `protobuf:"varint,4,opt,name=direction,enum=hubrpc.PaymentDirection" json:"direction,omitempty"`
+	//
+	// System denotes is that payment belongs to business logic of
+	// payment server or it was originated by user / third-party service.
+	System PaymentSystem `protobuf:"varint,5,opt,name=system,enum=hubrpc.PaymentSystem" json:"system,omitempty"`
+	//
+	// Invoice it is lightning network invoice, which is the string which
+	// contains amount, description, destination, and other info which is
+	// needed for sender to successfully send payment.
+	Invoice string `protobuf:"bytes,6,opt,name=invoice" json:"invoice,omitempty"`
+	// PaymentHash is the uniq identificator of the payment.
+	PaymentHash string `protobuf:"bytes,7,opt,name=payment_hash,json=paymentHash" json:"payment_hash,omitempty"`
+	//
+	// Amount is the number of funds which receiver gets at the end in bitcoin.
+	Amount string `protobuf:"bytes,8,opt,name=amount" json:"amount,omitempty"`
+	//
+	// MediaFee is the fee which is taken by the lightning
+	// network in order to propagate the payment.
+	MediaFee string `protobuf:"bytes,9,opt,name=media_fee,json=mediaFee" json:"media_fee,omitempty"`
+}
+
+func (m *Payment) Reset()                    { *m = Payment{} }
+func (m *Payment) String() string            { return proto.CompactTextString(m) }
+func (*Payment) ProtoMessage()               {}
+func (*Payment) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{20} }
+
+func (m *Payment) GetPaymentId() string {
+	if m != nil {
+		return m.PaymentId
+	}
+	return ""
+}
+
+func (m *Payment) GetUpdatedAt() int64 {
+	if m != nil {
+		return m.UpdatedAt
+	}
+	return 0
+}
+
+func (m *Payment) GetStatus() PaymentStatus {
+	if m != nil {
+		return m.Status
+	}
+	return PaymentStatus_STATUS_NONE
+}
+
+func (m *Payment) GetDirection() PaymentDirection {
+	if m != nil {
+		return m.Direction
+	}
+	return PaymentDirection_DIRECTION_NONE
+}
+
+func (m *Payment) GetSystem() PaymentSystem {
+	if m != nil {
+		return m.System
+	}
+	return PaymentSystem_SYSTEM_NONE
+}
+
+func (m *Payment) GetInvoice() string {
+	if m != nil {
+		return m.Invoice
+	}
+	return ""
+}
+
+func (m *Payment) GetPaymentHash() string {
+	if m != nil {
+		return m.PaymentHash
+	}
+	return ""
+}
+
+func (m *Payment) GetAmount() string {
+	if m != nil {
+		return m.Amount
+	}
+	return ""
+}
+
+func (m *Payment) GetMediaFee() string {
+	if m != nil {
+		return m.MediaFee
+	}
+	return ""
 }
 
 func init() {
-	proto.RegisterType((*UpdateLinkRequest)(nil), "hubrpc.UpdateLinkRequest")
-	proto.RegisterType((*UpdateLinkResponse)(nil), "hubrpc.UpdateLinkResponse")
-	proto.RegisterType((*SetPaymentFeeBaseRequest)(nil), "hubrpc.SetPaymentFeeBaseRequest")
-	proto.RegisterType((*SetPaymentFeeBaseResponse)(nil), "hubrpc.SetPaymentFeeBaseResponse")
-	proto.RegisterType((*SetPaymentFeeProportionalRequest)(nil), "hubrpc.SetPaymentFeeProportionalRequest")
-	proto.RegisterType((*SetPaymentFeeProportionalResponse)(nil), "hubrpc.SetPaymentFeeProportionalResponse")
+	proto.RegisterType((*EmptyRequest)(nil), "hubrpc.EmptyRequest")
+	proto.RegisterType((*EmptyResponse)(nil), "hubrpc.EmptyResponse")
+	proto.RegisterType((*CheckNodeStatsRequest)(nil), "hubrpc.CheckNodeStatsRequest")
+	proto.RegisterType((*CheckNodeStatsResponse)(nil), "hubrpc.CheckNodeStatsResponse")
+	proto.RegisterType((*CheckNodeStatsResponse_NodeStatus)(nil), "hubrpc.CheckNodeStatsResponse.NodeStatus")
+	proto.RegisterType((*CheckNodeStatsResponse_NodeStatus_ChannelStats)(nil), "hubrpc.CheckNodeStatsResponse.NodeStatus.ChannelStats")
+	proto.RegisterType((*CheckNodeStatsResponse_NodeStatus_PaymentsStats)(nil), "hubrpc.CheckNodeStatsResponse.NodeStatus.PaymentsStats")
+	proto.RegisterType((*CheckNodeStatsResponse_NodeStatus_RankStats)(nil), "hubrpc.CheckNodeStatsResponse.NodeStatus.RankStats")
+	proto.RegisterType((*CreateInvoiceRequest)(nil), "hubrpc.CreateInvoiceRequest")
+	proto.RegisterType((*CreateInvoiceResponse)(nil), "hubrpc.CreateInvoiceResponse")
+	proto.RegisterType((*BalanceRequest)(nil), "hubrpc.BalanceRequest")
+	proto.RegisterType((*Balance)(nil), "hubrpc.Balance")
+	proto.RegisterType((*ValidateInvoiceResponse)(nil), "hubrpc.ValidateInvoiceResponse")
+	proto.RegisterType((*Invoice)(nil), "hubrpc.Invoice")
+	proto.RegisterType((*BalanceResponse)(nil), "hubrpc.BalanceResponse")
+	proto.RegisterType((*ValidateInvoiceRequest)(nil), "hubrpc.ValidateInvoiceRequest")
+	proto.RegisterType((*EstimateFeeRequest)(nil), "hubrpc.EstimateFeeRequest")
+	proto.RegisterType((*EstimateFeeResponse)(nil), "hubrpc.EstimateFeeResponse")
+	proto.RegisterType((*SendPaymentRequest)(nil), "hubrpc.SendPaymentRequest")
+	proto.RegisterType((*PaymentByIDRequest)(nil), "hubrpc.PaymentByIDRequest")
+	proto.RegisterType((*PaymentByInvoiceRequest)(nil), "hubrpc.PaymentByInvoiceRequest")
+	proto.RegisterType((*ListPaymentsRequest)(nil), "hubrpc.ListPaymentsRequest")
+	proto.RegisterType((*ListPaymentsResponse)(nil), "hubrpc.ListPaymentsResponse")
+	proto.RegisterType((*NodeIdentificator)(nil), "hubrpc.NodeIdentificator")
+	proto.RegisterType((*Payment)(nil), "hubrpc.Payment")
+	proto.RegisterEnum("hubrpc.Media", Media_name, Media_value)
+	proto.RegisterEnum("hubrpc.PaymentStatus", PaymentStatus_name, PaymentStatus_value)
+	proto.RegisterEnum("hubrpc.PaymentDirection", PaymentDirection_name, PaymentDirection_value)
+	proto.RegisterEnum("hubrpc.PaymentSystem", PaymentSystem_name, PaymentSystem_value)
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -152,154 +1170,376 @@ var _ grpc.ClientConn
 // is compatible with the grpc package it is being compiled against.
 const _ = grpc.SupportPackageIsVersion4
 
-// Client API for Manager service
+// Client API for Hub service
 
-type ManagerClient interface {
+type HubClient interface {
 	//
-	// UpdateLink is used to update lightning node link in accordance with
-	// givein request. Link might just one channel, or might be the set of
-	// channels betwen remote node and our. This hook is used by third-parties
-	// to put new equilibritum state.
-	UpdateLink(ctx context.Context, in *UpdateLinkRequest, opts ...grpc.CallOption) (*UpdateLinkResponse, error)
+	// CreateInvoice is used to create lightning network invoice in which
+	// will be used to receive money from external lightning network entity.
+	CreateInvoice(ctx context.Context, in *CreateInvoiceRequest, opts ...grpc.CallOption) (*CreateInvoiceResponse, error)
 	//
-	// SetPaymentFeeBase sets base number of milli units (i.e milli satoshis in
-	// Bitcoin) which will be taken for every forwarding payment.
-	SetPaymentFeeBase(ctx context.Context, in *SetPaymentFeeBaseRequest, opts ...grpc.CallOption) (*SetPaymentFeeBaseResponse, error)
+	// ValidateInvoice is used to validate invoice on proper network and amount.
+	ValidateInvoice(ctx context.Context, in *ValidateInvoiceRequest, opts ...grpc.CallOption) (*ValidateInvoiceResponse, error)
 	//
-	// SetPaymentFeeProportional sets the number of milli units (i.e milli
-	// satoshis in Bitcoin) which will be taken for every killounit of
-	// payment amount.
-	SetPaymentFeeProportional(ctx context.Context, in *SetPaymentFeeProportionalRequest, opts ...grpc.CallOption) (*SetPaymentFeeProportionalResponse, error)
+	// Balance is used to get info about number of funds locked in channels.
+	Balance(ctx context.Context, in *BalanceRequest, opts ...grpc.CallOption) (*BalanceResponse, error)
+	//
+	// EstimateFee estimates the fee of the payment.
+	EstimateFee(ctx context.Context, in *EstimateFeeRequest, opts ...grpc.CallOption) (*EstimateFeeResponse, error)
+	//
+	// SendPayment sends payment to the given invoice,
+	// ensures in the validity of the invoice.
+	SendPayment(ctx context.Context, in *SendPaymentRequest, opts ...grpc.CallOption) (*Payment, error)
+	//
+	// PaymentByID is used to fetch the information about payment, by the
+	// given payment id.
+	PaymentByID(ctx context.Context, in *PaymentByIDRequest, opts ...grpc.CallOption) (*Payment, error)
+	//
+	// PaymentByInvoice is used to fetch the information about payment, by the
+	// given invoice.
+	PaymentByInvoice(ctx context.Context, in *PaymentByInvoiceRequest, opts ...grpc.CallOption) (*Payment, error)
+	//
+	// ListPayments returns list of payment which were registered by the
+	// system.
+	ListPayments(ctx context.Context, in *ListPaymentsRequest, opts ...grpc.CallOption) (*ListPaymentsResponse, error)
+	//
+	// CheckNodeStats return statistical data about node, and sort nodes by
+	// internal ranking algorithm.
+	CheckNodeStats(ctx context.Context, in *CheckNodeStatsRequest, opts ...grpc.CallOption) (*CheckNodeStatsResponse, error)
 }
 
-type managerClient struct {
+type hubClient struct {
 	cc *grpc.ClientConn
 }
 
-func NewManagerClient(cc *grpc.ClientConn) ManagerClient {
-	return &managerClient{cc}
+func NewHubClient(cc *grpc.ClientConn) HubClient {
+	return &hubClient{cc}
 }
 
-func (c *managerClient) UpdateLink(ctx context.Context, in *UpdateLinkRequest, opts ...grpc.CallOption) (*UpdateLinkResponse, error) {
-	out := new(UpdateLinkResponse)
-	err := grpc.Invoke(ctx, "/hubrpc.Manager/UpdateLink", in, out, c.cc, opts...)
+func (c *hubClient) CreateInvoice(ctx context.Context, in *CreateInvoiceRequest, opts ...grpc.CallOption) (*CreateInvoiceResponse, error) {
+	out := new(CreateInvoiceResponse)
+	err := grpc.Invoke(ctx, "/hubrpc.Hub/CreateInvoice", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *managerClient) SetPaymentFeeBase(ctx context.Context, in *SetPaymentFeeBaseRequest, opts ...grpc.CallOption) (*SetPaymentFeeBaseResponse, error) {
-	out := new(SetPaymentFeeBaseResponse)
-	err := grpc.Invoke(ctx, "/hubrpc.Manager/SetPaymentFeeBase", in, out, c.cc, opts...)
+func (c *hubClient) ValidateInvoice(ctx context.Context, in *ValidateInvoiceRequest, opts ...grpc.CallOption) (*ValidateInvoiceResponse, error) {
+	out := new(ValidateInvoiceResponse)
+	err := grpc.Invoke(ctx, "/hubrpc.Hub/ValidateInvoice", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *managerClient) SetPaymentFeeProportional(ctx context.Context, in *SetPaymentFeeProportionalRequest, opts ...grpc.CallOption) (*SetPaymentFeeProportionalResponse, error) {
-	out := new(SetPaymentFeeProportionalResponse)
-	err := grpc.Invoke(ctx, "/hubrpc.Manager/SetPaymentFeeProportional", in, out, c.cc, opts...)
+func (c *hubClient) Balance(ctx context.Context, in *BalanceRequest, opts ...grpc.CallOption) (*BalanceResponse, error) {
+	out := new(BalanceResponse)
+	err := grpc.Invoke(ctx, "/hubrpc.Hub/Balance", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// Server API for Manager service
-
-type ManagerServer interface {
-	//
-	// UpdateLink is used to update lightning node link in accordance with
-	// givein request. Link might just one channel, or might be the set of
-	// channels betwen remote node and our. This hook is used by third-parties
-	// to put new equilibritum state.
-	UpdateLink(context.Context, *UpdateLinkRequest) (*UpdateLinkResponse, error)
-	//
-	// SetPaymentFeeBase sets base number of milli units (i.e milli satoshis in
-	// Bitcoin) which will be taken for every forwarding payment.
-	SetPaymentFeeBase(context.Context, *SetPaymentFeeBaseRequest) (*SetPaymentFeeBaseResponse, error)
-	//
-	// SetPaymentFeeProportional sets the number of milli units (i.e milli
-	// satoshis in Bitcoin) which will be taken for every killounit of
-	// payment amount.
-	SetPaymentFeeProportional(context.Context, *SetPaymentFeeProportionalRequest) (*SetPaymentFeeProportionalResponse, error)
+func (c *hubClient) EstimateFee(ctx context.Context, in *EstimateFeeRequest, opts ...grpc.CallOption) (*EstimateFeeResponse, error) {
+	out := new(EstimateFeeResponse)
+	err := grpc.Invoke(ctx, "/hubrpc.Hub/EstimateFee", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
-func RegisterManagerServer(s *grpc.Server, srv ManagerServer) {
-	s.RegisterService(&_Manager_serviceDesc, srv)
+func (c *hubClient) SendPayment(ctx context.Context, in *SendPaymentRequest, opts ...grpc.CallOption) (*Payment, error) {
+	out := new(Payment)
+	err := grpc.Invoke(ctx, "/hubrpc.Hub/SendPayment", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
-func _Manager_UpdateLink_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateLinkRequest)
+func (c *hubClient) PaymentByID(ctx context.Context, in *PaymentByIDRequest, opts ...grpc.CallOption) (*Payment, error) {
+	out := new(Payment)
+	err := grpc.Invoke(ctx, "/hubrpc.Hub/PaymentByID", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hubClient) PaymentByInvoice(ctx context.Context, in *PaymentByInvoiceRequest, opts ...grpc.CallOption) (*Payment, error) {
+	out := new(Payment)
+	err := grpc.Invoke(ctx, "/hubrpc.Hub/PaymentByInvoice", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hubClient) ListPayments(ctx context.Context, in *ListPaymentsRequest, opts ...grpc.CallOption) (*ListPaymentsResponse, error) {
+	out := new(ListPaymentsResponse)
+	err := grpc.Invoke(ctx, "/hubrpc.Hub/ListPayments", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *hubClient) CheckNodeStats(ctx context.Context, in *CheckNodeStatsRequest, opts ...grpc.CallOption) (*CheckNodeStatsResponse, error) {
+	out := new(CheckNodeStatsResponse)
+	err := grpc.Invoke(ctx, "/hubrpc.Hub/CheckNodeStats", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// Server API for Hub service
+
+type HubServer interface {
+	//
+	// CreateInvoice is used to create lightning network invoice in which
+	// will be used to receive money from external lightning network entity.
+	CreateInvoice(context.Context, *CreateInvoiceRequest) (*CreateInvoiceResponse, error)
+	//
+	// ValidateInvoice is used to validate invoice on proper network and amount.
+	ValidateInvoice(context.Context, *ValidateInvoiceRequest) (*ValidateInvoiceResponse, error)
+	//
+	// Balance is used to get info about number of funds locked in channels.
+	Balance(context.Context, *BalanceRequest) (*BalanceResponse, error)
+	//
+	// EstimateFee estimates the fee of the payment.
+	EstimateFee(context.Context, *EstimateFeeRequest) (*EstimateFeeResponse, error)
+	//
+	// SendPayment sends payment to the given invoice,
+	// ensures in the validity of the invoice.
+	SendPayment(context.Context, *SendPaymentRequest) (*Payment, error)
+	//
+	// PaymentByID is used to fetch the information about payment, by the
+	// given payment id.
+	PaymentByID(context.Context, *PaymentByIDRequest) (*Payment, error)
+	//
+	// PaymentByInvoice is used to fetch the information about payment, by the
+	// given invoice.
+	PaymentByInvoice(context.Context, *PaymentByInvoiceRequest) (*Payment, error)
+	//
+	// ListPayments returns list of payment which were registered by the
+	// system.
+	ListPayments(context.Context, *ListPaymentsRequest) (*ListPaymentsResponse, error)
+	//
+	// CheckNodeStats return statistical data about node, and sort nodes by
+	// internal ranking algorithm.
+	CheckNodeStats(context.Context, *CheckNodeStatsRequest) (*CheckNodeStatsResponse, error)
+}
+
+func RegisterHubServer(s *grpc.Server, srv HubServer) {
+	s.RegisterService(&_Hub_serviceDesc, srv)
+}
+
+func _Hub_CreateInvoice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateInvoiceRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ManagerServer).UpdateLink(ctx, in)
+		return srv.(HubServer).CreateInvoice(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/hubrpc.Manager/UpdateLink",
+		FullMethod: "/hubrpc.Hub/CreateInvoice",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ManagerServer).UpdateLink(ctx, req.(*UpdateLinkRequest))
+		return srv.(HubServer).CreateInvoice(ctx, req.(*CreateInvoiceRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Manager_SetPaymentFeeBase_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SetPaymentFeeBaseRequest)
+func _Hub_ValidateInvoice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ValidateInvoiceRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ManagerServer).SetPaymentFeeBase(ctx, in)
+		return srv.(HubServer).ValidateInvoice(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/hubrpc.Manager/SetPaymentFeeBase",
+		FullMethod: "/hubrpc.Hub/ValidateInvoice",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ManagerServer).SetPaymentFeeBase(ctx, req.(*SetPaymentFeeBaseRequest))
+		return srv.(HubServer).ValidateInvoice(ctx, req.(*ValidateInvoiceRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Manager_SetPaymentFeeProportional_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SetPaymentFeeProportionalRequest)
+func _Hub_Balance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BalanceRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ManagerServer).SetPaymentFeeProportional(ctx, in)
+		return srv.(HubServer).Balance(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/hubrpc.Manager/SetPaymentFeeProportional",
+		FullMethod: "/hubrpc.Hub/Balance",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ManagerServer).SetPaymentFeeProportional(ctx, req.(*SetPaymentFeeProportionalRequest))
+		return srv.(HubServer).Balance(ctx, req.(*BalanceRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-var _Manager_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "hubrpc.Manager",
-	HandlerType: (*ManagerServer)(nil),
+func _Hub_EstimateFee_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EstimateFeeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HubServer).EstimateFee(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/hubrpc.Hub/EstimateFee",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HubServer).EstimateFee(ctx, req.(*EstimateFeeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Hub_SendPayment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SendPaymentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HubServer).SendPayment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/hubrpc.Hub/SendPayment",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HubServer).SendPayment(ctx, req.(*SendPaymentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Hub_PaymentByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PaymentByIDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HubServer).PaymentByID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/hubrpc.Hub/PaymentByID",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HubServer).PaymentByID(ctx, req.(*PaymentByIDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Hub_PaymentByInvoice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PaymentByInvoiceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HubServer).PaymentByInvoice(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/hubrpc.Hub/PaymentByInvoice",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HubServer).PaymentByInvoice(ctx, req.(*PaymentByInvoiceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Hub_ListPayments_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListPaymentsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HubServer).ListPayments(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/hubrpc.Hub/ListPayments",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HubServer).ListPayments(ctx, req.(*ListPaymentsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Hub_CheckNodeStats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CheckNodeStatsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HubServer).CheckNodeStats(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/hubrpc.Hub/CheckNodeStats",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HubServer).CheckNodeStats(ctx, req.(*CheckNodeStatsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _Hub_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "hubrpc.Hub",
+	HandlerType: (*HubServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "UpdateLink",
-			Handler:    _Manager_UpdateLink_Handler,
+			MethodName: "CreateInvoice",
+			Handler:    _Hub_CreateInvoice_Handler,
 		},
 		{
-			MethodName: "SetPaymentFeeBase",
-			Handler:    _Manager_SetPaymentFeeBase_Handler,
+			MethodName: "ValidateInvoice",
+			Handler:    _Hub_ValidateInvoice_Handler,
 		},
 		{
-			MethodName: "SetPaymentFeeProportional",
-			Handler:    _Manager_SetPaymentFeeProportional_Handler,
+			MethodName: "Balance",
+			Handler:    _Hub_Balance_Handler,
+		},
+		{
+			MethodName: "EstimateFee",
+			Handler:    _Hub_EstimateFee_Handler,
+		},
+		{
+			MethodName: "SendPayment",
+			Handler:    _Hub_SendPayment_Handler,
+		},
+		{
+			MethodName: "PaymentByID",
+			Handler:    _Hub_PaymentByID_Handler,
+		},
+		{
+			MethodName: "PaymentByInvoice",
+			Handler:    _Hub_PaymentByInvoice_Handler,
+		},
+		{
+			MethodName: "ListPayments",
+			Handler:    _Hub_ListPayments_Handler,
+		},
+		{
+			MethodName: "CheckNodeStats",
+			Handler:    _Hub_CheckNodeStats_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -309,25 +1549,93 @@ var _Manager_serviceDesc = grpc.ServiceDesc{
 func init() { proto.RegisterFile("hubrpc.proto", fileDescriptor0) }
 
 var fileDescriptor0 = []byte{
-	// 308 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x52, 0x4f, 0x4b, 0xfb, 0x40,
-	0x10, 0x25, 0x6d, 0x69, 0xf9, 0x0d, 0xfd, 0x89, 0x1d, 0x44, 0xd3, 0x78, 0x49, 0xd3, 0x4b, 0xbc,
-	0xf4, 0xa0, 0x17, 0xcf, 0x55, 0x04, 0x41, 0xa1, 0x44, 0x04, 0x0f, 0x42, 0xd8, 0x24, 0xa3, 0x06,
-	0xd3, 0xdd, 0x75, 0x77, 0x73, 0xf0, 0xab, 0xf8, 0x69, 0xc5, 0x6c, 0x82, 0xa9, 0x8d, 0xc5, 0xdb,
-	0xce, 0xbf, 0xf7, 0xde, 0xbc, 0x59, 0x18, 0xbf, 0x94, 0x89, 0x92, 0xe9, 0x42, 0x2a, 0x61, 0x04,
-	0x0e, 0x6d, 0x14, 0x10, 0x4c, 0xee, 0x65, 0xc6, 0x0c, 0xdd, 0xe4, 0xfc, 0x35, 0xa2, 0xb7, 0x92,
-	0xb4, 0x41, 0x84, 0x81, 0xc9, 0xd7, 0xe4, 0x3a, 0xbe, 0x13, 0x0e, 0xa2, 0xea, 0x8d, 0x47, 0x30,
-	0x2a, 0x35, 0xa9, 0x38, 0xcf, 0xdc, 0x9e, 0xef, 0x84, 0xff, 0xa2, 0xe1, 0x57, 0x78, 0x9d, 0xe1,
-	0x1c, 0xfe, 0x17, 0x22, 0x65, 0x45, 0x9c, 0xb0, 0x82, 0xf1, 0x94, 0xdc, 0x81, 0xef, 0x84, 0xfd,
-	0x68, 0x5c, 0x25, 0x97, 0x36, 0x17, 0x1c, 0x00, 0xb6, 0x69, 0xb4, 0x14, 0x5c, 0x53, 0x70, 0x09,
-	0xee, 0x1d, 0x99, 0x15, 0x7b, 0x5f, 0x13, 0x37, 0x57, 0x44, 0x4b, 0xa6, 0xa9, 0xd1, 0x10, 0xc2,
-	0xbe, 0xb4, 0x85, 0xf8, 0x89, 0x28, 0x4e, 0x98, 0xb6, 0x7a, 0xfa, 0xd1, 0x9e, 0xdc, 0x18, 0x08,
-	0x8e, 0x61, 0xda, 0x81, 0x52, 0x53, 0x3c, 0x82, 0xbf, 0x51, 0x5c, 0x29, 0x21, 0x85, 0x32, 0xb9,
-	0xe0, 0xac, 0x68, 0xa8, 0xce, 0xc1, 0x6d, 0x53, 0xc9, 0x56, 0x4b, 0x4d, 0x79, 0x28, 0x3b, 0x01,
-	0x82, 0x39, 0xcc, 0x76, 0xa0, 0x5b, 0x09, 0xa7, 0x1f, 0x3d, 0x18, 0xdd, 0x32, 0xce, 0x9e, 0x49,
-	0xe1, 0x05, 0xc0, 0xb7, 0x0f, 0x38, 0x5d, 0xd4, 0x37, 0xd9, 0x3a, 0x81, 0xe7, 0x75, 0x95, 0x2c,
-	0x20, 0x3e, 0xc0, 0x64, 0x6b, 0x61, 0xf4, 0x9b, 0x81, 0xdf, 0x1c, 0xf5, 0x66, 0x3b, 0x3a, 0x6a,
-	0x64, 0xf9, 0xc3, 0xca, 0xf6, 0x3e, 0x18, 0x76, 0xce, 0x77, 0x18, 0xea, 0x9d, 0xfc, 0xa1, 0xd3,
-	0x32, 0x26, 0xc3, 0xea, 0x3b, 0x9e, 0x7d, 0x06, 0x00, 0x00, 0xff, 0xff, 0xd8, 0xc3, 0xd1, 0x4c,
-	0x9e, 0x02, 0x00, 0x00,
+	// 1397 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x57, 0xdd, 0x6e, 0x1a, 0x47,
+	0x14, 0x0e, 0xc6, 0xe6, 0xe7, 0x80, 0x31, 0x1d, 0xdb, 0x98, 0x90, 0x38, 0x71, 0xb6, 0x37, 0x4e,
+	0xaa, 0x46, 0x15, 0xae, 0xa2, 0xb6, 0xaa, 0x2a, 0x61, 0xc0, 0xf1, 0x36, 0x18, 0xac, 0x35, 0x49,
+	0xdb, 0x2b, 0x34, 0xb0, 0xe3, 0x78, 0xe5, 0xfd, 0xa1, 0xbb, 0xb3, 0xb4, 0x3c, 0x40, 0x1f, 0xa3,
+	0x77, 0xbd, 0xeb, 0x03, 0xf4, 0xa2, 0xaf, 0x50, 0xa9, 0x6f, 0xd1, 0xe7, 0xa8, 0x76, 0xe6, 0xcc,
+	0xb2, 0x0b, 0xb8, 0x49, 0x73, 0xc7, 0x9c, 0xef, 0x7c, 0xe7, 0x7f, 0xce, 0x2c, 0x50, 0xbe, 0x09,
+	0xc7, 0xfe, 0x74, 0xf2, 0x7c, 0xea, 0x7b, 0xdc, 0x23, 0x39, 0x79, 0xd2, 0x2a, 0x50, 0xee, 0x3a,
+	0x53, 0x3e, 0x37, 0xd8, 0x8f, 0x21, 0x0b, 0xb8, 0xb6, 0x03, 0xdb, 0x78, 0x0e, 0xa6, 0x9e, 0x1b,
+	0x30, 0xad, 0x0d, 0xfb, 0xed, 0x1b, 0x36, 0xb9, 0xed, 0x7b, 0x26, 0xbb, 0xe2, 0x94, 0x07, 0xa8,
+	0x49, 0x6a, 0x90, 0x9b, 0x32, 0xdf, 0xf2, 0xcc, 0x7a, 0xe6, 0x28, 0x73, 0x5c, 0x34, 0xf0, 0x44,
+	0x08, 0x6c, 0xba, 0x9e, 0xc9, 0xea, 0x1b, 0x42, 0x2a, 0x7e, 0x6b, 0xbf, 0x16, 0xa0, 0xb6, 0x6c,
+	0x45, 0xda, 0x27, 0x5d, 0x28, 0x04, 0x9c, 0xf2, 0x30, 0x60, 0x41, 0x3d, 0x73, 0x94, 0x3d, 0x2e,
+	0x35, 0x9f, 0x3e, 0xc7, 0x48, 0xd7, 0x33, 0x9e, 0x2b, 0x49, 0x18, 0x18, 0x31, 0xb5, 0xf1, 0x67,
+	0x1e, 0x60, 0x01, 0x88, 0x20, 0xa8, 0xc3, 0x30, 0x34, 0xf1, 0x9b, 0x3c, 0x84, 0x22, 0x9d, 0x51,
+	0xcb, 0xa6, 0x63, 0x5b, 0x46, 0x57, 0x30, 0x16, 0x02, 0x81, 0xba, 0x9e, 0x43, 0x6d, 0x8b, 0x05,
+	0xf5, 0xec, 0x51, 0xf6, 0xb8, 0x68, 0x2c, 0x04, 0x8d, 0x7f, 0x32, 0x50, 0x6e, 0xdf, 0x50, 0xd7,
+	0x65, 0xb6, 0x08, 0x86, 0x34, 0x61, 0xdf, 0xf6, 0x26, 0xb7, 0xcc, 0x1c, 0xd9, 0xde, 0x84, 0xda,
+	0xf6, 0x7c, 0x44, 0x27, 0xdc, 0x9a, 0x29, 0x8f, 0xbb, 0x12, 0xec, 0x49, 0xac, 0x25, 0x20, 0xf2,
+	0x39, 0xd4, 0x90, 0xe3, 0x33, 0xc7, 0xe3, 0x6c, 0x41, 0x92, 0xb5, 0xda, 0x93, 0xa8, 0x81, 0xe0,
+	0x0a, 0x4b, 0x79, 0xf2, 0x66, 0xcc, 0xa7, 0xb6, 0x5d, 0xcf, 0x26, 0x59, 0xe8, 0x6a, 0x20, 0x31,
+	0xf2, 0x02, 0x0e, 0x96, 0x7d, 0x29, 0xda, 0xa6, 0xa0, 0xed, 0xa7, 0x9d, 0x21, 0xaf, 0xf1, 0x5b,
+	0x16, 0xb6, 0x2f, 0xe9, 0xdc, 0x61, 0x2e, 0x0f, 0x64, 0xa6, 0x9f, 0xc1, 0x1e, 0x8d, 0xc0, 0xb7,
+	0x6c, 0x14, 0x30, 0x97, 0x8f, 0xae, 0x3d, 0xff, 0x27, 0xea, 0xab, 0xae, 0x13, 0xc4, 0xae, 0x98,
+	0xcb, 0xcf, 0x24, 0x42, 0xbe, 0x80, 0xba, 0x62, 0xf8, 0x6c, 0xc2, 0xac, 0x19, 0x33, 0x63, 0x96,
+	0xcc, 0xb4, 0x86, 0xb8, 0x81, 0xb0, 0x62, 0x3e, 0x81, 0x72, 0xd2, 0x17, 0x66, 0x58, 0x4a, 0xf8,
+	0x88, 0xc2, 0xc1, 0x44, 0xd2, 0xe1, 0xc8, 0xac, 0x08, 0x62, 0x4b, 0xe1, 0x28, 0xc6, 0x4a, 0x38,
+	0x5b, 0x32, 0x1c, 0xc4, 0xd7, 0x84, 0x93, 0xf4, 0x55, 0xcf, 0xc9, 0x70, 0x12, 0x3e, 0xc8, 0x7d,
+	0x28, 0xb8, 0xa1, 0x23, 0xe1, 0xbc, 0x80, 0xf3, 0x6e, 0xe8, 0xa8, 0x48, 0x23, 0x68, 0xc5, 0x67,
+	0x41, 0x46, 0xea, 0x86, 0xce, 0xb2, 0xbf, 0x63, 0xa8, 0x2a, 0x63, 0xb1, 0x76, 0x51, 0x68, 0x57,
+	0xd0, 0x28, 0x6a, 0x36, 0xfe, 0xca, 0x40, 0xd1, 0xa0, 0xee, 0xad, 0x6c, 0xd1, 0x09, 0xd4, 0x7c,
+	0xea, 0xde, 0x8e, 0xa6, 0xd8, 0x38, 0x69, 0xc1, 0x0d, 0x1d, 0xd1, 0xa4, 0xac, 0xb1, 0x1b, 0xa1,
+	0x71, 0x57, 0x99, 0xcb, 0xfb, 0xa1, 0x43, 0xbe, 0x84, 0xfb, 0x6b, 0x48, 0x33, 0xcf, 0x0e, 0x1d,
+	0x39, 0x90, 0x59, 0xa3, 0xb6, 0xcc, 0x7b, 0x23, 0x50, 0xf2, 0x00, 0x8a, 0x82, 0x6a, 0x99, 0x36,
+	0x13, 0x3d, 0xca, 0x1a, 0x85, 0x48, 0xa0, 0x9b, 0x36, 0x8b, 0x6e, 0x86, 0x00, 0x31, 0x01, 0x39,
+	0xe2, 0x16, 0x9f, 0x8b, 0x0e, 0x61, 0x2c, 0x98, 0x46, 0x0b, 0x21, 0xed, 0x12, 0xf6, 0xda, 0x3e,
+	0xa3, 0x9c, 0xe9, 0xee, 0xcc, 0xb3, 0x26, 0x2c, 0xb1, 0x63, 0xa8, 0xe3, 0x85, 0x2e, 0x57, 0x3b,
+	0x46, 0x9e, 0xc8, 0x11, 0x94, 0x4c, 0x16, 0x4c, 0x7c, 0x6b, 0xca, 0x2d, 0xcf, 0xc5, 0xa1, 0x4a,
+	0x8a, 0x34, 0x17, 0xf6, 0x97, 0x2c, 0xe2, 0xbe, 0xf9, 0x18, 0xb6, 0x27, 0x11, 0x60, 0x79, 0xee,
+	0xc8, 0xa4, 0x9c, 0x61, 0x89, 0xca, 0x4a, 0xd8, 0xa1, 0x9c, 0x91, 0x3a, 0xe4, 0x2d, 0xc9, 0x43,
+	0xdb, 0xea, 0x18, 0x45, 0xc4, 0x7e, 0x9e, 0x5a, 0xfe, 0x1c, 0xf3, 0xc6, 0x93, 0x56, 0x85, 0xca,
+	0x29, 0xb5, 0xa9, 0x1b, 0xc7, 0xae, 0xb5, 0x20, 0x8f, 0x92, 0xf4, 0xe6, 0x91, 0x99, 0x24, 0x36,
+	0x4f, 0x1d, 0xf2, 0x53, 0xe6, 0x9a, 0x96, 0xfb, 0x56, 0x39, 0xc3, 0xa3, 0xd6, 0x81, 0x83, 0x37,
+	0xd4, 0xb6, 0xcc, 0x35, 0x69, 0x3c, 0x5d, 0x44, 0x18, 0x19, 0x2c, 0x35, 0x77, 0xd4, 0xd6, 0x54,
+	0x9a, 0x0a, 0xd7, 0xfe, 0xc8, 0x40, 0x1e, 0x85, 0xd1, 0x5e, 0x74, 0x98, 0xe3, 0xa9, 0xbd, 0x18,
+	0xfd, 0x26, 0x7b, 0xb0, 0x35, 0xa3, 0x76, 0xa8, 0x52, 0x95, 0x87, 0xd5, 0x3a, 0x65, 0xd7, 0xd4,
+	0x69, 0x51, 0x8d, 0xcd, 0x64, 0x35, 0x22, 0xf2, 0x35, 0xb5, 0xed, 0x31, 0x9d, 0xdc, 0x8e, 0xa8,
+	0x69, 0xfa, 0x78, 0xcf, 0xca, 0x4a, 0xd8, 0x32, 0x4d, 0x1f, 0x9b, 0xc8, 0x2d, 0x57, 0xd8, 0x53,
+	0x97, 0x2b, 0x21, 0xd2, 0xbe, 0x81, 0x9d, 0xb8, 0xa8, 0x98, 0xf7, 0x27, 0x50, 0x18, 0x4b, 0x91,
+	0x7a, 0x2e, 0xe2, 0xc4, 0x95, 0x6a, 0xac, 0xa0, 0x7d, 0x0b, 0xb5, 0x95, 0xfa, 0xc9, 0xc1, 0xaa,
+	0xa7, 0xcb, 0x97, 0x6e, 0x30, 0x8e, 0xdc, 0x46, 0x72, 0xe4, 0xb4, 0x33, 0x20, 0xdd, 0x80, 0x5b,
+	0x0e, 0xe5, 0xec, 0x8c, 0xbd, 0x73, 0x40, 0xef, 0x1c, 0x20, 0xad, 0x09, 0xbb, 0x29, 0x3b, 0x98,
+	0xd7, 0x03, 0x28, 0x3a, 0xcc, 0xb4, 0xe8, 0xe8, 0x9a, 0xa9, 0x90, 0x0a, 0x42, 0x70, 0xc6, 0x58,
+	0xe4, 0xfb, 0x8a, 0xb9, 0x26, 0xde, 0xc4, 0x0f, 0xf7, 0x7d, 0x02, 0x04, 0x6d, 0x9c, 0xce, 0xf5,
+	0x8e, 0xb2, 0x73, 0x08, 0x80, 0x3b, 0x60, 0x64, 0xa9, 0xb5, 0x5e, 0x44, 0x89, 0x6e, 0x6a, 0x27,
+	0x70, 0xb0, 0x20, 0xbd, 0x67, 0x15, 0xb5, 0xdf, 0x33, 0xb0, 0xdb, 0xb3, 0x02, 0xae, 0x96, 0x87,
+	0x62, 0x7c, 0x0a, 0x39, 0xf9, 0x64, 0x0b, 0x42, 0xa5, 0xb9, 0xaf, 0x9a, 0x87, 0x8a, 0xf8, 0xae,
+	0xa3, 0x12, 0x79, 0x01, 0x45, 0xd3, 0xf2, 0xd9, 0x24, 0xbe, 0xe5, 0x95, 0x66, 0x7d, 0x89, 0xd1,
+	0x51, 0xb8, 0xb1, 0x50, 0x15, 0x6e, 0xe6, 0x01, 0x67, 0x8e, 0x98, 0xda, 0x35, 0x6e, 0x04, 0x68,
+	0xa0, 0x92, 0xd6, 0x86, 0xbd, 0x74, 0xb0, 0x8b, 0x61, 0x53, 0xdb, 0x71, 0x79, 0xd8, 0x54, 0x2f,
+	0x62, 0x05, 0xed, 0x2d, 0x7c, 0x14, 0x7d, 0x80, 0xe8, 0x26, 0x73, 0xb9, 0x75, 0x6d, 0x4d, 0x28,
+	0xf7, 0x7c, 0xa2, 0x41, 0x39, 0xfa, 0x00, 0x1a, 0x4d, 0xc3, 0xf1, 0xe8, 0x96, 0xcd, 0x65, 0x99,
+	0xce, 0xef, 0x19, 0x10, 0x49, 0x2f, 0xc3, 0xf1, 0x2b, 0x36, 0x27, 0x87, 0x50, 0x14, 0x3a, 0xe2,
+	0x83, 0x65, 0x03, 0x15, 0x0a, 0x91, 0xa8, 0x4f, 0x1d, 0x76, 0xba, 0x03, 0xdb, 0x56, 0xd2, 0xa6,
+	0xf6, 0xf7, 0x06, 0xe4, 0xd1, 0xfd, 0x3b, 0x7a, 0x17, 0xc1, 0xe1, 0x34, 0x1a, 0x7f, 0x73, 0x44,
+	0x39, 0x2e, 0xf5, 0x22, 0x4a, 0x5a, 0xc9, 0x6e, 0x64, 0xff, 0x77, 0x37, 0x36, 0x3f, 0xa4, 0x1b,
+	0x5b, 0xef, 0xd1, 0x8d, 0xe4, 0x54, 0xe5, 0xd2, 0x77, 0xf3, 0x09, 0x94, 0x55, 0xb6, 0x37, 0x34,
+	0xb8, 0xc1, 0x07, 0xb7, 0x84, 0xb2, 0x73, 0x1a, 0xdc, 0x24, 0x2e, 0x45, 0x21, 0x75, 0x29, 0x52,
+	0xf7, 0xab, 0x98, 0xbe, 0x5f, 0xcf, 0x5e, 0xc0, 0xd6, 0x45, 0xf4, 0x9b, 0x54, 0x00, 0x2e, 0xba,
+	0x1d, 0xbd, 0x35, 0xea, 0x0f, 0xfa, 0xdd, 0xea, 0xbd, 0xe8, 0x7c, 0xda, 0x1b, 0xb4, 0x5f, 0xb5,
+	0xcf, 0x5b, 0x7a, 0xbf, 0x9a, 0x21, 0xdb, 0x50, 0xec, 0xe9, 0x2f, 0xcf, 0x87, 0x7d, 0xbd, 0xff,
+	0xb2, 0xba, 0xf1, 0xec, 0x75, 0xfc, 0xad, 0x84, 0x9f, 0x9d, 0x3b, 0x50, 0xba, 0x1a, 0xb6, 0x86,
+	0xaf, 0xaf, 0x94, 0x81, 0x12, 0xe4, 0xbf, 0x6b, 0xe9, 0xc3, 0x48, 0x3d, 0x13, 0x1d, 0x2e, 0xbb,
+	0xfd, 0x8e, 0xe0, 0x46, 0xa6, 0xda, 0x83, 0x8b, 0xcb, 0x5e, 0x77, 0xd8, 0xed, 0x54, 0xb3, 0x04,
+	0x20, 0x77, 0xd6, 0xd2, 0x7b, 0xdd, 0x4e, 0x75, 0xf3, 0xd9, 0x29, 0x54, 0x97, 0xcb, 0x49, 0x08,
+	0x54, 0x3a, 0xba, 0xd1, 0x6d, 0x0f, 0xf5, 0x41, 0x5f, 0x19, 0x2f, 0x43, 0x41, 0xef, 0xb7, 0x07,
+	0x17, 0xd2, 0x7a, 0x19, 0x0a, 0x83, 0xd7, 0xc3, 0x97, 0x03, 0x19, 0xda, 0xd7, 0x8b, 0xd0, 0x64,
+	0x55, 0xa3, 0xd0, 0x7e, 0xb8, 0x1a, 0x76, 0x2f, 0x52, 0xec, 0x61, 0xd7, 0xe8, 0xb7, 0x7a, 0x92,
+	0xdd, 0xfd, 0x1e, 0x4f, 0x1b, 0xcd, 0x5f, 0xb6, 0x20, 0x7b, 0x1e, 0x8e, 0x49, 0x0f, 0xb6, 0x53,
+	0xaf, 0x28, 0x79, 0x18, 0x7f, 0x9b, 0xaf, 0x79, 0xae, 0x1b, 0x87, 0x77, 0xa0, 0x78, 0x9d, 0x0c,
+	0xd8, 0x59, 0x5a, 0xc7, 0xe4, 0x91, 0x62, 0xac, 0xdf, 0xd3, 0x8d, 0xc7, 0x77, 0xe2, 0x68, 0xf3,
+	0xab, 0xc5, 0x2b, 0x5b, 0x5b, 0x7e, 0x08, 0xd0, 0xc6, 0xc1, 0x8a, 0x1c, 0xb9, 0x67, 0x50, 0x4a,
+	0xac, 0x62, 0xd2, 0x50, 0x7a, 0xab, 0x7b, 0xbe, 0xf1, 0x60, 0x2d, 0x16, 0xc7, 0x50, 0x4a, 0xac,
+	0xe7, 0x85, 0x9d, 0xd5, 0x9d, 0xdd, 0x58, 0xde, 0x1f, 0x11, 0x37, 0xb1, 0x92, 0x17, 0xdc, 0xd5,
+	0x3d, 0xbd, 0xca, 0xed, 0xc4, 0x73, 0x12, 0x6f, 0x66, 0xf2, 0x78, 0xd5, 0x40, 0xba, 0xa2, 0x2b,
+	0x56, 0x74, 0x28, 0x27, 0x97, 0x1f, 0x89, 0x53, 0x5d, 0xb3, 0xbf, 0x1b, 0x0f, 0xd7, 0x83, 0x58,
+	0x88, 0x01, 0x54, 0xd2, 0xff, 0xd9, 0xc8, 0xe1, 0x5d, 0xff, 0xe5, 0xa4, 0xb9, 0x47, 0xff, 0xfd,
+	0x57, 0x6f, 0x9c, 0x13, 0x7f, 0x56, 0x4f, 0xfe, 0x0d, 0x00, 0x00, 0xff, 0xff, 0xb9, 0x8c, 0x94,
+	0xe6, 0xbc, 0x0e, 0x00, 0x00,
 }
