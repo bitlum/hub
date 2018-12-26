@@ -19,8 +19,8 @@ type Broadcaster struct {
 	// data is a written pendingBroadcasts stream
 	data chan interface{}
 
-	quit    chan struct{}
-	wg      sync.WaitGroup
+	quit chan struct{}
+	wg   sync.WaitGroup
 }
 
 func NewBroadcaster() *Broadcaster {

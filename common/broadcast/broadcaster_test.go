@@ -1,10 +1,10 @@
 package broadcast
 
 import (
+	"github.com/go-errors/errors"
+	"strconv"
 	"testing"
 	"time"
-	"strconv"
-	"github.com/go-errors/errors"
 )
 
 func TestBroadcaster_Broadcast(t *testing.T) {

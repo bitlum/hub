@@ -2,9 +2,9 @@ package broadcast
 
 import (
 	"container/list"
-	"time"
 	"sync"
 	"sync/atomic"
+	"time"
 )
 
 // Receiver is an entity which listens for broadcast update, receives in
