@@ -4,6 +4,7 @@ import (
 	"github.com/bitlum/hub/lightning"
 	"github.com/go-errors/errors"
 	"github.com/graphql-go/graphql"
+	"sort"
 	"strings"
 )
 
@@ -70,6 +71,10 @@ func getPaymentsResolver(client lightning.PaymentClient,
 				Type: "forward",
 			})
 		}
+
+		sort.Slice(payments, func(i, j int) bool {
+			return payments[i].Time < payments[j].Time
+		})
 
 		return payments, nil
 	}
