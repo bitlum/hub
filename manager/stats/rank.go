@@ -86,8 +86,7 @@ func RankByIdleFunds(nodeStats map[lightning.NodeID]NodeStats) []RankedStat {
 
 		// Calculate idle rank of node as a ratio of overall locked funds on
 		// overall flow of funds.
-		idleRank := (stat.LockedLocallyOverall + stat.
-			LockedRemotelyOverall) / overallFlow
+		idleRank := stat.LockedLocallyOverall / overallFlow
 
 		rankedNodes = append(rankedNodes, RankedStat{
 			Rank:      float64(idleRank),
