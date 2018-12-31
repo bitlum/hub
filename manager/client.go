@@ -533,7 +533,8 @@ func (nm *NodeManager) checkNodesAvailability() error {
 		}
 
 		if err := nm.cfg.Client.OpenChannel(stat.NodeID, channelSizeSat); err != nil {
-			err := errors.Errorf("unable open channel: %v", err)
+			err := errors.Errorf("unable open channel with node(%v) id("+
+				"%v), amount(%v): %v", nodeName, stat.NodeID, channelSizeSat, err)
 			m.AddError(metrics.HighSeverity)
 
 			if err := nm.suggestIdleNodes(channelSizeSat); err != nil {
