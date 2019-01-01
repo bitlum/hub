@@ -359,7 +359,7 @@ func (c *Client) OpenChannel(nodeID lightning.NodeID, funds btcutil.Amount) erro
 		MinHtlcMsat:        1000,
 	}
 
-	if _, err := c.rpc.OpenChannelSync(timeout(10), req); err != nil {
+	if _, err := c.rpc.OpenChannel(timeout(200), req); err != nil {
 		m.AddError(metrics.HighSeverity)
 		err := errors.Errorf("unable to send open channel request: %v", err)
 		log.Error(err)
