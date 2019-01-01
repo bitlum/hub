@@ -9,6 +9,8 @@ import (
 	"github.com/btcsuite/btcutil"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/go-errors/errors"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"math/rand"
 	"strings"
 	"sync"
@@ -537,9 +539,11 @@ func (nm *NodeManager) checkNodesAvailability() error {
 				"%v), amount(%v): %v", nodeName, stat.NodeID, channelSizeSat, err)
 			m.AddError(metrics.HighSeverity)
 
-			if err := nm.suggestIdleNodes(channelSizeSat); err != nil {
-				log.Warnf("unable to give suggestion which nodes are idle: %v"+
-					"", err)
+			if status.Code(err) != codes.DeadlineExceeded {
+				if err := nm.suggestIdleNodes(channelSizeSat); err != nil {
+					log.Warnf("unable to give suggestion which nodes are idle: %v"+
+						"", err)
+				}
 			}
 
 			return err
