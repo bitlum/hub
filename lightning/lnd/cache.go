@@ -112,19 +112,25 @@ func (c *Client) syncChannels() error {
 				continue
 			}
 
+			// Ignore explorer error, because sometime transaction might
+			// already be in the response of lightning node but not in the
+			// mem-pool.
 			openTxFee, err := c.cfg.Explorer.FetchTxFee(openTxID)
 			if err != nil {
-				log.Errorf("unable to get open fee of channel("+
+				log.Warn("unable to get open fee of channel("+
 					"%v): %v", chanID, err)
-				m.AddError(metrics.HighSeverity)
+				m.AddError(metrics.LowSeverity)
 				continue
 			}
 
+			// Ignore explorer error, because sometime transaction might
+			// already be in the response of lightning node but not in the
+			// mem-pool.
 			openTxTime, err := c.cfg.Explorer.FetchTxTime(openTxID)
 			if err != nil {
-				log.Errorf("unable to get open time of channel(%v): %v",
+				log.Warnf("unable to get open time of channel(%v): %v",
 					chanID, err)
-				m.AddError(metrics.HighSeverity)
+				m.AddError(metrics.LowSeverity)
 				continue
 			}
 
