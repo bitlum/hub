@@ -359,7 +359,7 @@ func (c *Client) ListForwardPayments() ([]*lightning.ForwardPayment, error) {
 			// TODO(andrew.shvv) cache might no be in sync
 			m.AddError(metrics.HighSeverity)
 			log.Errorf("unable to get sender id by short"+
-				" chan id: %v", err)
+				" chan id(%v): %v", event.ChanIdIn, err)
 			continue
 		}
 
@@ -368,7 +368,7 @@ func (c *Client) ListForwardPayments() ([]*lightning.ForwardPayment, error) {
 			// TODO(andrew.shvv) cache might no be in sync
 			m.AddError(metrics.HighSeverity)
 			log.Errorf("unable to get receiver id by"+
-				" short chan id: %v", err)
+				" short chan id(%v): %v", event.ChanIdOut, err)
 			continue
 		}
 
