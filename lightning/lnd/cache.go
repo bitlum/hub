@@ -123,10 +123,9 @@ func (c *Client) syncChannels() error {
 			// mem-pool.
 			openTxFee, err := c.cfg.Explorer.FetchTxFee(openTxID)
 			if err != nil {
-				log.Warn("unable to get open fee of channel("+
+				log.Warnf("unable to get open fee of channel("+
 					"%v): %v", chanID, err)
 				m.AddError(metrics.LowSeverity)
-				continue
 			}
 
 			// Ignore explorer error, because sometime transaction might
@@ -137,7 +136,6 @@ func (c *Client) syncChannels() error {
 				log.Warnf("unable to get open time of channel(%v): %v",
 					chanID, err)
 				m.AddError(metrics.LowSeverity)
-				continue
 			}
 
 			newInfo := &ChannelAdditionalInfo{
