@@ -64,15 +64,15 @@ func (c *Client) syncChannels() error {
 		chanID := lightning.ChannelID(openingChannel.Channel.ChannelPoint)
 		nodeID := lightning.NodeID(openingChannel.Channel.RemoteNodePub)
 
-		info, err := c.cfg.Storage.GetChannelAdditionalInfoByID(chanID)
+		prevInfo, err := c.cfg.Storage.GetChannelAdditionalInfoByID(chanID)
 		if err != nil && err != ErrorChannelInfoNotFound {
 			return errors.Errorf("unable to fetch channel(%v) info: %v",
 				chanID, err)
 		}
 
 		prevState := lightning.ChannelStateName("not synced yet")
-		if info != nil {
-			prevState = info.State
+		if prevInfo != nil {
+			prevState = prevInfo.State
 		}
 
 		switch prevState {
@@ -91,11 +91,17 @@ func (c *Client) syncChannels() error {
 			continue
 
 		case lightning.ChannelOpened:
-			// Transition from opened => opening
-			log.Errorf("impossible channel("+
-				"%v) change state opened => opening", chanID)
-			m.AddError(metrics.HighSeverity)
-			continue
+			// Sometime weird thing is happening when channel is changing its
+			// state from opened to opening,
+			// until this bug change channel state.
+
+			prevInfo.State = lightning.ChannelOpening
+			if err := c.cfg.Storage.UpdateChannelAdditionalInfo(prevInfo); err != nil {
+				log.Errorf("unable to save channel("+
+					"%v) additional info: %v", chanID, err)
+				m.AddError(metrics.HighSeverity)
+				continue
+			}
 
 		case lightning.ChannelOpening:
 			// Transition from opening => opening
