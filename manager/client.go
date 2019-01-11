@@ -483,7 +483,7 @@ func (nm *NodeManager) checkNodesAvailability() error {
 		if stat.LockedLocallyOverall == 0 {
 			additionalCapacity = minChannelSizeSat
 		} else {
-			additionalCapacity := btcutil.Amount(stat.Rank)
+			additionalCapacity = btcutil.Amount(stat.Rank)
 			if additionalCapacity == 0 {
 				log.Debugf("Important node(%v) not requires additional capacity, "+
 					"stats(%v)", nodeName, spew.Sdump(stat))
@@ -542,16 +542,16 @@ func (nm *NodeManager) checkNodesAvailability() error {
 		}
 
 		if err := nm.cfg.Client.OpenChannel(stat.NodeID, channelSizeSat); err != nil {
-			err := errors.Errorf("unable open channel with node(%v) id("+
-				"%v), amount(%v): %v", nodeName, stat.NodeID, channelSizeSat, err)
-			m.AddError(metrics.HighSeverity)
-
 			if status.Code(err) != codes.DeadlineExceeded {
 				if err := nm.suggestIdleNodes(channelSizeSat); err != nil {
 					log.Warnf("unable to give suggestion which nodes are idle: %v"+
 						"", err)
 				}
 			}
+
+			err := errors.Errorf("unable open channel with node(%v) id("+
+				"%v), amount(%v): %v", nodeName, stat.NodeID, channelSizeSat, err)
+			m.AddError(metrics.HighSeverity)
 
 			return err
 		}
