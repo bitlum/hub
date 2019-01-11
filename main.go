@@ -164,7 +164,7 @@ func backendMain() error {
 		managerConfig.MinChannelSizeUSD = 50
 		managerConfig.MaxCloseSpendingPerDayUSD = 1
 		managerConfig.MaxOpenSpendingPerDayUSD = 1
-		managerConfig.MaxCommitFeeUSD = 20
+		managerConfig.MaxCommitFeeUSD = 50
 		managerConfig.MaxLimboUSD = 300
 		managerConfig.MaxStuckBalanceUSD = 300
 	}
