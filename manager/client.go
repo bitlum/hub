@@ -455,13 +455,6 @@ func (nm *NodeManager) checkNodesAvailability() error {
 			continue
 		}
 
-		additionalCapacity := btcutil.Amount(stat.Rank)
-		if additionalCapacity == 0 {
-			log.Debugf("Important node(%v) not requires additional capacity, "+
-				"stats(%v)", nodeName, spew.Sdump(stat))
-			continue
-		}
-
 		bitcoinPriceUSD, err := nm.cfg.GetBitcoinPriceUSD()
 		if err != nil {
 			err := errors.Errorf("unable get bitcoin price: %v", err)
@@ -483,6 +476,20 @@ func (nm *NodeManager) checkNodesAvailability() error {
 
 		averageReceivedForwardInUSD := stat.AverageReceivedForwardSat.ToBTC() *
 			bitcoinPriceUSD
+
+		// If number of funds locked with important node is zero,
+		// than even if we don't have
+		var additionalCapacity btcutil.Amount
+		if stat.LockedLocallyOverall == 0 {
+			additionalCapacity = minChannelSizeSat
+		} else {
+			additionalCapacity := btcutil.Amount(stat.Rank)
+			if additionalCapacity == 0 {
+				log.Debugf("Important node(%v) not requires additional capacity, "+
+					"stats(%v)", nodeName, spew.Sdump(stat))
+				continue
+			}
+		}
 
 		// In average during the day we send more than we have in our
 		// channels locked locally. We have to create another channel,
