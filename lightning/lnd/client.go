@@ -208,7 +208,7 @@ func (c *Client) Start() error {
 	c.rpc = lnrpc.NewLightningClient(c.conn)
 
 	reqInfo := &lnrpc.GetInfoRequest{}
-	respInfo, err := c.rpc.GetInfo(timeout(10), reqInfo)
+	respInfo, err := c.rpc.GetInfo(timeout(30), reqInfo)
 	if err != nil {
 		m.AddError(metrics.HighSeverity)
 		return errors.Errorf("unable get lnd node info: %v", err)
@@ -278,7 +278,7 @@ func (c *Client) AvailableBalance() (btcutil.Amount, error) {
 	defer m.Finish()
 
 	req := &lnrpc.ListChannelsRequest{}
-	resp, err := c.rpc.ListChannels(timeout(20), req)
+	resp, err := c.rpc.ListChannels(timeout(30), req)
 	if err != nil {
 		m.AddError(metrics.HighSeverity)
 		log.Errorf("unable to list channels: %v", err)
@@ -306,7 +306,7 @@ func (c *Client) PendingBalance() (btcutil.Amount, error) {
 	defer m.Finish()
 
 	req := &lnrpc.PendingChannelsRequest{}
-	resp, err := c.rpc.PendingChannels(timeout(10), req)
+	resp, err := c.rpc.PendingChannels(timeout(30), req)
 	if err != nil {
 		m.AddError(metrics.HighSeverity)
 		log.Errorf("unable to fetch pending channels: %v", err)
@@ -353,7 +353,7 @@ func (c *Client) Info() (*lightning.Info, error) {
 	defer m.Finish()
 
 	req := &lnrpc.GetInfoRequest{}
-	info, err := c.rpc.GetInfo(timeout(10), req)
+	info, err := c.rpc.GetInfo(timeout(30), req)
 	if err != nil {
 		m.AddError(metrics.HighSeverity)
 		return nil, err

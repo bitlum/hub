@@ -55,7 +55,7 @@ func (c *Client) QueryRoutes(invoiceStr string, amount btcutil.Amount,
 	//		NumRoutes: int32(maxRoutes),
 	//	}
 	//
-	//	resp, err := c.rpc.QueryRoutes(timeout(10), req)
+	//	resp, err := c.rpc.QueryRoutes(timeout(30), req)
 	//	if err != nil {
 	//		return nil, errors.Errorf("unable to query routes: %v", err)
 	//	}
@@ -137,7 +137,7 @@ func (c *Client) EstimateFee(invoiceStr string,
 			return decimal.Zero, nil
 		}
 
-		resp, err := c.rpc.QueryRoutes(timeout(10), req)
+		resp, err := c.rpc.QueryRoutes(timeout(30), req)
 		if err != nil {
 			m.AddError(metrics.LowSeverity)
 			return decimal.Zero, err
@@ -183,7 +183,7 @@ func (c *Client) CreateInvoice(receipt string, amount btcutil.Amount,
 		Expiry:  int64(expirationTime.Seconds()),
 	}
 
-	invoiceResp, err := c.rpc.AddInvoice(timeout(10), invoiceReq)
+	invoiceResp, err := c.rpc.AddInvoice(timeout(30), invoiceReq)
 	if err != nil {
 		m.AddError(metrics.HighSeverity)
 		return "", nil, err

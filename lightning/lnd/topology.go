@@ -406,7 +406,7 @@ func (c *Client) CloseChannel(id lightning.ChannelID) error {
 		Force: false,
 	}
 
-	if _, err = c.rpc.CloseChannel(timeout(15), req); err != nil {
+	if _, err = c.rpc.CloseChannel(timeout(30), req); err != nil {
 		m.AddError(metrics.HighSeverity)
 		err := errors.Errorf("unable close the channel: %v", err)
 		log.Error(err)
@@ -437,7 +437,7 @@ func (c *Client) ConnectToNode(nodeID lightning.NodeID) error {
 	var addresses []*lnrpc.NodeAddress
 	{
 		req := &lnrpc.NodeInfoRequest{PubKey: pubKey}
-		resp, err := c.rpc.GetNodeInfo(timeout(10), req)
+		resp, err := c.rpc.GetNodeInfo(timeout(30), req)
 		if err != nil {
 			return errors.Errorf("unable to get node info: %v", err)
 		}
@@ -458,7 +458,7 @@ func (c *Client) ConnectToNode(nodeID lightning.NodeID) error {
 				Perm: false,
 			}
 
-			if _, err := c.rpc.ConnectPeer(timeout(10), req); err != nil {
+			if _, err := c.rpc.ConnectPeer(timeout(30), req); err != nil {
 				if !strings.Contains(err.Error(), "already connected to peer") {
 					log.Warnf("unable to connect(%v@%v): %v", addr.Pubkey,
 						addr.Host, err)
@@ -486,7 +486,7 @@ func (c *Client) ConnectToNode(nodeID lightning.NodeID) error {
 // connect with us for some reason.
 func (c *Client) checkNodeConn(nodeID lightning.NodeID) (bool, error) {
 	req := &lnrpc.ListPeersRequest{}
-	resp, err := c.rpc.ListPeers(timeout(10), req)
+	resp, err := c.rpc.ListPeers(timeout(30), req)
 	if err != nil {
 		return false, errors.Errorf("unable to list peers: %v", err)
 	}
